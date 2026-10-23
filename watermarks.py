@@ -11,8 +11,8 @@ import fitz
 from PIL import Image, ImageChops, ImageOps
 from ocr import _ocr_lock, read_pages
 
-VERSION='red-watermarks-v2'
-LABEL=re.compile(r'watermark|ib\s*docs|ibdocuments|papacambridge|exam[ -]mate|thinkib|www\.[a-z]|https?://|t\.me/|not for (?:sale|distribution)|do not copy|confidential|draft|sample copy',re.I)
+VERSION='red-watermarks-v3'
+LABEL=re.compile(r'watermark|\bib\s*papers\s*\.\s*info\b|ib\s*docs|ibdocuments|papacambridge|exam[ -]mate|thinkib|www\.[a-z]|https?://|t\.me/|not for (?:sale|distribution)|do not copy|confidential|draft|sample copy',re.I)
 SVG='{http://www.w3.org/2000/svg}'
 ET.register_namespace('',SVG[1:-1])
 ET.register_namespace('xlink','http://www.w3.org/1999/xlink')

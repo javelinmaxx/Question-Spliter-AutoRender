@@ -1,0 +1,165 @@
+{
+  "version": "red-watermarks-v3",
+  "key": "ecf1225389ad2d68b2c9ede226249d6cb6a93ddd14627023854617264e09eb14",
+  "source_sha256": "22e700539cc07b93df68dbfbbe5c3eaf8f245baa055be0c766d30bc8be967a64",
+  "hint": "",
+  "cleaned_pages": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "outline_pages": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "removed_labels": [
+    "DOWNLOADED FROM IBPAPERS.INFO",
+    "DOWNLOADED FROM IBPAPERS.INFO",
+    "DOWNLOADED FROM IBPAPERS.INFO",
+    "DOWNLOADED FROM IBPAPERS.INFO",
+    "DOWNLOADED FROM IBPAPERS.INFO",
+    "DOWNLOADED FROM IBPAPERS.INFO",
+    "DOWNLOADED FROM IBPAPERS.INFO",
+    "DOWNLOADED FROM IBPAPERS.INFO",
+    "DOWNLOADED FROM IBPAPERS.INFO",
+    "DOWNLOADED FROM IBPAPERS.INFO",
+    "DOWNLOADED FROM IBPAPERS.INFO",
+    "DOWNLOADED FROM IBPAPERS.INFO",
+    "DOWNLOADED FROM IBPAPERS.INFO",
+    "DOWNLOADED FROM IBPAPERS.INFO",
+    "DOWNLOADED FROM IBPAPERS.INFO",
+    "DOWNLOADED FROM IBPAPERS.INFO"
+  ],
+  "rejected_regions": [],
+  "warnings": [],
+  "validation": {
+    "pages": 16,
+    "all_pages_cleaned": true,
+    "method": "Dark RGB pixels at 144 dpi, allowing two pixels for SVG rasterization differences; less than 3% unmatched dark pixels on each page.",
+    "per_page": [
+      {
+        "page": 1,
+        "unmatched_dark_pixels": 0,
+        "original_dark_pixels": 30701,
+        "remaining_red_pixels": 0
+      },
+      {
+        "page": 2,
+        "unmatched_dark_pixels": 18,
+        "original_dark_pixels": 17966,
+        "remaining_red_pixels": 0
+      },
+      {
+        "page": 3,
+        "unmatched_dark_pixels": 24,
+        "original_dark_pixels": 19111,
+        "remaining_red_pixels": 0
+      },
+      {
+        "page": 4,
+        "unmatched_dark_pixels": 14,
+        "original_dark_pixels": 15358,
+        "remaining_red_pixels": 0
+      },
+      {
+        "page": 5,
+        "unmatched_dark_pixels": 8,
+        "original_dark_pixels": 12193,
+        "remaining_red_pixels": 0
+      },
+      {
+        "page": 6,
+        "unmatched_dark_pixels": 12,
+        "original_dark_pixels": 20505,
+        "remaining_red_pixels": 0
+      },
+      {
+        "page": 7,
+        "unmatched_dark_pixels": 9,
+        "original_dark_pixels": 12622,
+        "remaining_red_pixels": 0
+      },
+      {
+        "page": 8,
+        "unmatched_dark_pixels": 26,
+        "original_dark_pixels": 29134,
+        "remaining_red_pixels": 0
+      },
+      {
+        "page": 9,
+        "unmatched_dark_pixels": 14,
+        "original_dark_pixels": 49082,
+        "remaining_red_pixels": 0
+      },
+      {
+        "page": 10,
+        "unmatched_dark_pixels": 12,
+        "original_dark_pixels": 26921,
+        "remaining_red_pixels": 0
+      },
+      {
+        "page": 11,
+        "unmatched_dark_pixels": 9,
+        "original_dark_pixels": 8832,
+        "remaining_red_pixels": 0
+      },
+      {
+        "page": 12,
+        "unmatched_dark_pixels": 9,
+        "original_dark_pixels": 18089,
+        "remaining_red_pixels": 0
+      },
+      {
+        "page": 13,
+        "unmatched_dark_pixels": 12,
+        "original_dark_pixels": 23507,
+        "remaining_red_pixels": 0
+      },
+      {
+        "page": 14,
+        "unmatched_dark_pixels": 10,
+        "original_dark_pixels": 16386,
+        "remaining_red_pixels": 0
+      },
+      {
+        "page": 15,
+        "unmatched_dark_pixels": 23,
+        "original_dark_pixels": 18188,
+        "remaining_red_pixels": 0
+      },
+      {
+        "page": 16,
+        "unmatched_dark_pixels": 10,
+        "original_dark_pixels": 23951,
+        "remaining_red_pixels": 0
+      }
+    ]
+  }
+}

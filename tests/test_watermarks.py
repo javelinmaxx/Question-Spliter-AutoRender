@@ -9,17 +9,17 @@ import pytest
 
 from app import create_app
 from analysis_storage import source_hash
-from watermarks import prepare,red_mask,rejected
+from watermarks import is_label,prepare,red_mask,rejected
 
 
-def pdf_bytes(watermark=True,raster=False):
+def pdf_bytes(watermark=True,raster=False,label='WATERMARK'):
     with fitz.open() as pdf:
         page=pdf.new_page()
         page.insert_text((50,45),'Physics HL Paper 2 2025')
         page.insert_text((50,100),'1. Calculate the velocity of the cart. [3]',fontsize=14)
         page.insert_text((50,160),'A red graph label must remain.',fontsize=14,color=(1,0,0))
         page.draw_line((70,185),(300,185),color=(1,0,0))
-        if watermark:page.insert_text((100,105),'WATERMARK',fontsize=32,color=(1,0,0))
+        if watermark:page.insert_text((100,105),label,fontsize=32 if label=='WATERMARK' else 18,color=(1,0,0))
         if raster:
             image=page.get_pixmap(matrix=fitz.Matrix(2,2)).tobytes('png')
             with fitz.open() as scan:
@@ -46,6 +46,26 @@ def test_red_handwriting_and_diagram_labels_are_not_watermarks(tmp_path):
     path=tmp_path/'notes.pdf';path.write_bytes(pdf_bytes(False))
     cleaned,report=prepare(path,tmp_path/'cache')
     assert cleaned==path and not report['cleaned_pages'] and not report['rejected_regions']
+
+
+@pytest.mark.parametrize('label',['DOWNLOADED FROM IBPAPERS.INFO','downloaded from IB PAPERS . INFO'])
+def test_ibpapers_overlay_is_recognized_without_hint(tmp_path,label):
+    path=tmp_path/'source.pdf';path.write_bytes(pdf_bytes(label=label))
+    cleaned,report=prepare(path,tmp_path/'cache')
+    assert report['cleaned_pages']==[0] and report['rejected_regions']==[]
+    assert label in report['removed_labels']
+    with fitz.open(cleaned) as got,fitz.open(stream=pdf_bytes(False),filetype='pdf') as expected:
+        a=got[0].get_pixmap();b=expected[0].get_pixmap()
+        difference=ImageChops.difference(Image.frombytes('RGB',(a.width,a.height),a.samples),
+                                       Image.frombytes('RGB',(b.width,b.height),b.samples))
+        assert max(ImageStat.Stat(difference).mean)<2
+    assert not is_label('IB papers provide practice for physics.')
+
+
+def test_flattened_ibpapers_overlay_is_rejected_without_hint(tmp_path):
+    path=tmp_path/'scan.pdf';path.write_bytes(pdf_bytes(raster=True,label='DOWNLOADED FROM IBPAPERS.INFO'))
+    _,report=prepare(path,tmp_path/'cache')
+    assert report['rejected_regions'] and not report['cleaned_pages']
 
 
 def test_flattened_recognized_watermark_rejects_affected_image(tmp_path):

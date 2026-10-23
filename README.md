@@ -90,7 +90,7 @@ API level values: `SL`, `HL`, `SL_from_HL`, `Any` (blank search level also means
 
 ## Red watermark cleanup
 
-Imports automatically check for identifiable red watermark phrases, source URLs and an optional user-provided **Watermark text**. Ordinary coloured graph labels and handwriting are not removed just because they are red. Enter an unfamiliar watermark's brand/phrase when automatic recognition misses it.
+Imports automatically check for identifiable red watermark phrases (including **DOWNLOADED FROM IBPAPERS.INFO**), source URLs and an optional user-provided **Watermark text**. Ordinary coloured graph labels and handwriting are not removed just because they are red. Enter an unfamiliar watermark's brand/phrase when automatic recognition misses it. Detector updates trigger a fresh inspection of existing imports at the next startup.
 
 Native PDF text watermarks are removed as individual SVG glyph objects, retaining the original glyph outlines and diagrams—including black content behind the overlay. Recognized red FreeText/stamp annotations are removable too. Original PDFs remain in `instance/documents/`; cleaned rendering copies and inspection reports are cached in ignored `instance/watermarks/`. Native exam text is retained separately for analysis, so PDF-text-only imports remain supported; saved page/OCR data supports later reanalysis.
 
