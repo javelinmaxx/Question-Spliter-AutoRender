@@ -26,6 +26,7 @@ from model_backfill import ModelBackfill
 from year_filter import year_range, matches_year
 from assessment_timing import estimate as time_estimate, refresh as refresh_timing, PROFILES as TIME_PROFILES, SOURCE as TIMING_SOURCE
 from level_filter import normalize_mode, sl_mode, exclusion as level_exclusion, suitability, LABELS as LEVEL_LABELS
+from watermarks import prepare as prepare_watermarks, filter_analysis as filter_watermarks, rejected as watermark_rejected, page_records as watermark_records
 from upload_filter import markscheme_name, markscheme_heading
 
 
@@ -81,6 +82,27 @@ def create_app(data_dir=None):
         if row is None:
             raise ValueError('Document not found.')
         return dict(id=row['id'], filename=row['filename'], **json.loads(row['data']))
+
+    def source_path(doc_id):
+        report = document(doc_id).get('watermark', {})
+        if report.get('cleaned_pages'):
+            path = root / 'watermarks' / (report['key'] + '.pdf')
+            if not path.is_file():
+                raise ValueError('Cleaned source is missing. Run Clean watermarks or restart to rebuild it from the original PDF.')
+            return path
+        return root / 'documents' / (doc_id + '.pdf')
+
+    def analyze_pdf(path, filename, mode='auto', hint=''):
+        if len(hint) > 150:
+            raise ValueError('Watermark text must be at most 150 characters.')
+        cleaned, report = prepare_watermarks(path, root / 'watermarks', hint)
+        if report['cleaned_pages']:
+            records, warnings = watermark_records(path, cleaned, report, mode, root / 'ocr-cache')
+            result = extract(cleaned, filename, ocr_mode=mode, page_records=records)
+            result['warnings'].extend(warnings)
+        else:
+            result = extract(cleaned, filename, ocr_mode=mode, ocr_cache=root / 'ocr-cache')
+        return filter_watermarks(result, report)
 
     def questions():
         with db() as conn:
@@ -243,6 +265,9 @@ def create_app(data_dir=None):
                 else:
                     path.replace(existing_path)
                 response = document(prior['id'])
+                if request.form.get('watermark_text', '').strip():
+                    clean_document_watermarks(prior['id'], request.form['watermark_text'].strip())
+                    response = document(prior['id'])
                 if any(markscheme_heading(r.get('text', '')) or markscheme_heading(r.get('native', '')) for r in response.get('text_pages', [])[:4]):
                     return skipped_markscheme()
                 response['duplicate_document'] = True
@@ -254,7 +279,7 @@ def create_app(data_dir=None):
                                      (json.dumps({k: v for k, v in response.items() if k not in ('id', 'filename', 'duplicate_document', 'message')}), prior['id']))
                     response['import_result'] = import_document_questions(prior['id'])
                 return jsonify(response), 200
-            result = extract(path, uploaded.filename, ocr_mode=request.form.get('ocr_mode', 'auto'), ocr_cache=root / 'ocr-cache')
+            result = analyze_pdf(path, uploaded.filename, request.form.get('ocr_mode', 'auto'), request.form.get('watermark_text', '').strip())
         except Exception as error:
             path.unlink(missing_ok=True)
             raise ValueError('Could not read PDF: ' + str(error)) from error
@@ -311,14 +336,16 @@ def create_app(data_dir=None):
         old = document(doc_id)
         if not old.get('text_pages'):
             raise ValueError('This import has no saved OCR/page data. Upload it once to store page data before reanalysis.')
-        path = root / 'documents' / (doc_id + '.pdf')
+        path = source_path(doc_id)
         mode = old.get('analysis', {}).get('ocr_mode', 'auto')
         result = extract(path, old['filename'], ocr_mode=mode, page_records=old['text_pages'])
+        if old.get('watermark'):
+            filter_watermarks(result, old['watermark'])
         previous = {q['number']: q for q in old['questions']}
         for candidate in result['questions']:
             prior = previous.get(candidate['number'], {}).get('language_review')
             candidate['language_review'] = current_review(result, candidate, prior)
-        result['analysis'] = dict(version=1, rules_hash=rules_hash(), source_sha256=source_hash(path), status='complete',
+        result['analysis'] = dict(version=1, rules_hash=rules_hash(), source_sha256=source_hash(root / 'documents' / (doc_id + '.pdf')), status='complete',
                                   completed_at=datetime.now(timezone.utc).isoformat(), ocr_mode=mode,
                                   language_review_status='not_rerun', reused_page_data=True, auto_import=old.get('analysis', {}).get('auto_import', False))
         with db() as conn:
@@ -364,7 +391,7 @@ def create_app(data_dir=None):
         paper = value.get('paper', candidate['paper'])
         if paper not in ('Paper 1', 'Paper 1A', 'Paper 1B', 'Paper 2'):
             raise ValueError('Choose a paper type before language review.')
-        with fitz.open(root / 'documents' / (doc_id + '.pdf')) as pdf:
+        with fitz.open(source_path(doc_id)) as pdf:
             regions = validate_regions(pdf, value.get('regions', candidate['regions']))
         result = review_disagreement(*review_inputs(doc, regions, paper), TOPICS,
                                      cache_dir=root / 'language-reviews')
@@ -378,7 +405,7 @@ def create_app(data_dir=None):
     @app.get('/api/documents/<doc_id>/pages/<int:page>')
     def page_image(doc_id, page):
         document(doc_id)
-        with fitz.open(root / 'documents' / (doc_id + '.pdf')) as pdf:
+        with fitz.open(source_path(doc_id)) as pdf:
             if page >= len(pdf):
                 raise ValueError('Page not found.')
             pix = pdf[page].get_pixmap(matrix=fitz.Matrix(1.4, 1.4), alpha=False)
@@ -413,8 +440,10 @@ def create_app(data_dir=None):
         marks = int(value['marks']) if value.get('marks') not in (None, '') else None
         if marks is not None and not 1 <= marks <= 200:
             raise ValueError('Marks must be between 1 and 200.')
-        with fitz.open(root / 'documents' / (doc['id'] + '.pdf')) as pdf:
+        with fitz.open(source_path(doc['id'])) as pdf:
             regions = validate_regions(pdf, value['regions'])
+            if watermark_rejected(regions, doc.get('watermark', {})):
+                raise ValueError('This question contains a watermark that cannot be removed safely and cannot be added to the bank.')
             png = render_question(pdf, regions)
             text = (region_text(doc['text_pages'], regions) if 'text_pages' in doc
                     else '\n'.join(pdf[r['page']].get_text(clip=fitz.Rect(r['rect'])) for r in regions))
@@ -436,6 +465,7 @@ def create_app(data_dir=None):
                      ocr_comparison=comparison, level_conflicts=suggestions['level_conflicts'], review_status='imported' if imported else 'reviewed', language_review=language_result)
         original_level = doc.get('metadata', {}).get('level')
         saved['source_level'] = original_level if original_level in ('HL','SL') else level
+        saved['watermark_key'] = doc.get('watermark', {}).get('key')
         sl_suitability = value.get('sl_suitability', 'automatic')
         if sl_suitability not in ('automatic','sl_suitable','hl_only','needs_review'):
             raise ValueError('Choose a valid SL suitability decision.')
@@ -471,7 +501,7 @@ def create_app(data_dir=None):
         paper = value.get('paper', 'Unknown')
         if paper not in ('Unknown', 'Paper 1', 'Paper 1A', 'Paper 1B', 'Paper 2'):
             raise ValueError('Choose a valid paper type.')
-        with fitz.open(root / 'documents' / (doc_id + '.pdf')) as pdf:
+        with fitz.open(source_path(doc_id)) as pdf:
             regions = validate_regions(pdf, value['regions'])
             text = (region_text(doc['text_pages'], regions) if 'text_pages' in doc else
                     '\n'.join(pdf[r['page']].get_text(clip=fitz.Rect(r['rect'])) for r in regions))
@@ -540,7 +570,7 @@ def create_app(data_dir=None):
     @app.post('/api/documents/<doc_id>/preview')
     def preview(doc_id):
         document(doc_id)
-        with fitz.open(root / 'documents' / (doc_id + '.pdf')) as pdf:
+        with fitz.open(source_path(doc_id)) as pdf:
             regions = validate_regions(pdf, request.get_json()['regions'])
             png = render_question(pdf, regions)
         return send_file(BytesIO(png), mimetype='image/png')
@@ -557,7 +587,7 @@ def create_app(data_dir=None):
             raise ValueError('This question requires content outside the requested topic scope.')
         if mode == 'short' or scoped.get('omitted_parts'):
             variant = short_variants(q, scoped.get('omitted_parts', []), topics)[0] if mode == 'short' else scoped
-            with fitz.open(root / 'documents' / (q['document_id'] + '.pdf')) as pdf:
+            with fitz.open(source_path(q['document_id'])) as pdf:
                 png = render_question(pdf, variant['regions'])
             return send_file(BytesIO(png), mimetype='image/png')
         return send_file(root / 'images' / (qid + '.png'), mimetype='image/png')
@@ -585,7 +615,7 @@ def create_app(data_dir=None):
             parts = q['subquestions']['parts']
             if not any(p['id'] in variant['kept_parts'] and set(p.get('topics', [])) & set(topics) for p in parts):
                 raise ValueError('Keep at least one part that assesses a selected target topic.')
-        with fitz.open(root / 'documents' / (q['document_id'] + '.pdf')) as pdf:
+        with fitz.open(source_path(q['document_id'])) as pdf:
             png = render_question(pdf, variant['regions'])
         return send_file(BytesIO(png), mimetype='image/png')
 
@@ -682,8 +712,9 @@ def create_app(data_dir=None):
             layout = PaperLayout(pdf)
             for i, q in enumerate(chosen, 1):
                 # Keep every crop of the parent together and in source order.
-                with fitz.open(root / 'documents' / (q['document_id'] + '.pdf')) as source:
-                    numbering_results[q['id']] = erase_source_numbers(source, original_questions[q['id']], numbering_cache)
+                with fitz.open(source_path(q['document_id'])) as source:
+                    outline_pages = document(q['document_id']).get('watermark', {}).get('outline_pages', [])
+                    numbering_results[q['id']] = erase_source_numbers(source, original_questions[q['id']], numbering_cache, outline_pages=outline_pages)
                     rendered = add_question_pages(pdf, source, q, i, layout=layout)
                     numbering_results[q['id']]['rendered_pages'] = rendered
                     if not rendered:
@@ -715,6 +746,93 @@ def create_app(data_dir=None):
             if not conn.execute('SELECT id FROM papers WHERE id=?', (paper_id,)).fetchone():
                 raise ValueError('Paper not found.')
         return send_file(root / 'papers' / (paper_id + '.pdf'), as_attachment=True, download_name='physics-practice-paper.pdf')
+
+    def clean_document_watermarks(doc_id, hint=None):
+        doc = document(doc_id)
+        original = root / 'documents' / (doc_id + '.pdf')
+        if not original.is_file():
+            return dict(document_id=doc_id, deleted_question_ids=[], updated_question_ids=[], skipped=True)
+        hint = doc.get('watermark', {}).get('hint', '') if hint is None else hint
+        if not isinstance(hint, str) or len(hint) > 150:
+            raise ValueError('Watermark text must be at most 150 characters.')
+        cleaned, report = prepare_watermarks(original, root / 'watermarks', hint)
+        previous = doc.get('watermark', {})
+        report_changed = any(previous.get(field) != report.get(field) for field in
+                             ('key', 'cleaned_pages', 'outline_pages', 'removed_labels', 'rejected_regions', 'warnings'))
+        if report_changed:
+            if report['cleaned_pages']:
+                result = analyze_pdf(original, doc['filename'], doc.get('analysis', {}).get('ocr_mode', 'auto'), hint)
+                result['analysis'] = doc.get('analysis', {})
+            else:
+                result = {k: v for k, v in doc.items() if k not in ('id', 'filename')}
+                filter_watermarks(result, report)
+            if previous.get('deleted_question_ids'):
+                result['watermark']['deleted_question_ids'] = previous['deleted_question_ids']
+            with db() as conn:
+                conn.execute('UPDATE documents SET data=? WHERE id=?', (json.dumps(result), doc_id))
+        deleted, updated = [], []
+        with db() as conn:
+            rows = conn.execute('SELECT id,data FROM questions WHERE document_id=?', (doc_id,)).fetchall()
+        for row in rows:
+            q = json.loads(row['data'])
+            if watermark_rejected(q['regions'], report):
+                with db() as conn:
+                    count = conn.execute('DELETE FROM questions WHERE id=? AND data=?', (row['id'], row['data'])).rowcount
+                if count:
+                    (root / 'images' / (row['id'] + '.png')).unlink(missing_ok=True)
+                    deleted.append(row['id'])
+            elif q.get('watermark_key') != report['key'] or report_changed:
+                if report['cleaned_pages']:
+                    old_hash = question_hash(q)
+                    labels = {text.strip().casefold() for text in report['removed_labels']}
+                    q['text'] = '\n'.join(line for line in q['text'].splitlines() if line.strip().casefold() not in labels)
+                    q['text_hash'] = text_fingerprint(q['text'])
+                    mapping = q.get('subquestions')
+                    if mapping and mapping.get('source_hash') == old_hash:
+                        mapping['source_hash'] = question_hash(q)
+                    with fitz.open(cleaned) as pdf:
+                        png = render_question(pdf, q['regions'])
+                    q['content_hash'] = question_fingerprint(q['text'], png)
+                else:
+                    png = None
+                q['watermark_key'] = report['key']
+                with db() as conn:
+                    count = conn.execute('UPDATE questions SET data=? WHERE id=? AND data=?', (json.dumps(q), row['id'], row['data'])).rowcount
+                if count:
+                    if png is not None:
+                        (root / 'images' / (row['id'] + '.png')).write_bytes(png)
+                    updated.append(row['id'])
+        if deleted:
+            with db() as conn:
+                raw = conn.execute('SELECT data FROM documents WHERE id=?', (doc_id,)).fetchone()['data']
+                data = json.loads(raw)
+                audit = data.setdefault('watermark', {}).setdefault('deleted_question_ids', [])
+                audit.extend(i for i in deleted if i not in audit)
+                data.setdefault('warnings', []).append(f'Watermark cleanup deleted {len(deleted)} saved question groups that could not be cleaned safely.')
+                conn.execute('UPDATE documents SET data=? WHERE id=? AND data=?', (json.dumps(data), doc_id, raw))
+        return dict(document_id=doc_id, deleted_question_ids=deleted, updated_question_ids=updated,
+                    cleaned_pages=report['cleaned_pages'], rejected_regions=report['rejected_regions'], warnings=report['warnings'])
+
+    @app.post('/api/documents/<doc_id>/clean-watermarks')
+    def clean_watermarks(doc_id):
+        hint = (request.get_json() or {}).get('watermark_text', '')
+        if not isinstance(hint, str) or len(hint) > 150:
+            raise ValueError('Watermark text must be at most 150 characters.')
+        return jsonify(clean_document_watermarks(doc_id, hint.strip()))
+
+    # Retrofit existing banks once per source/hint version. Originals stay intact.
+    with db() as conn:
+        watermark_docs = [row['id'] for row in conn.execute('SELECT id FROM documents')]
+    for doc_id in watermark_docs:
+        try:
+            clean_document_watermarks(doc_id)
+        except (ValueError, RuntimeError, OSError, fitz.mupdf.FzErrorBase) as error:
+            with db() as conn:
+                row = conn.execute('SELECT data FROM documents WHERE id=?', (doc_id,)).fetchone()
+                data = json.loads(row['data'])
+                warning = 'Watermark cleanup could not finish; inspect this source or use Clean watermarks: ' + str(error)[:200]
+                if warning not in data.setdefault('warnings', []):data['warnings'].append(warning)
+                conn.execute('UPDATE documents SET data=? WHERE id=?', (json.dumps(data), doc_id))
 
     backfill = ModelBackfill(root, lambda: model_status(), review_inputs,
         lambda *args: review_disagreement(*args, TOPICS, cache_dir=root / 'language-reviews'),

@@ -60,7 +60,7 @@ def number_boxes(raw, region, number, ocr=False):
     return found
 
 
-def erase_source_numbers(source, question, cache):
+def erase_source_numbers(source, question, cache, outline_pages=()):
     erased = 0
     erased_administrative = 0
     warnings = []
@@ -104,7 +104,7 @@ def erase_source_numbers(source, question, cache):
             page.add_redact_annot(box, fill=(1, 1, 1))
         if boxes or administrative:
             # Raster number pixels are erased too, while diagrams and part labels stay.
-            page.apply_redactions(images=2, graphics=0, text=0)
+            page.apply_redactions(images=2, graphics=2 if page_number in outline_pages else 0, text=0)
             erased += len(boxes)
             erased_administrative += len(administrative)
     return dict(erased_labels=erased, erased_administrative=erased_administrative, warnings=warnings)

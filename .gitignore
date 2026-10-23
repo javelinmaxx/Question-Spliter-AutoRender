@@ -6,6 +6,7 @@ instance/images
 instance/papers
 instance/ocr-cache
 instance/language-reviews
+instance/watermarks/
 instance/bank.sqlite3
 *.pyc
 *.gguf

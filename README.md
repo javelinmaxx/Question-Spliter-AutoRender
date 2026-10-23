@@ -88,6 +88,16 @@ SL modes disable HL-only topic choices. They reject detected HL-only topics/conc
 
 API level values: `SL`, `HL`, `SL_from_HL`, `Any` (blank search level also means Any). Questions retain `source_level`, `sl_suitability` and `timing` details. Recorded level metadata remains separate from the four filter modes.
 
+## Red watermark cleanup
+
+Imports automatically check for identifiable red watermark phrases, source URLs and an optional user-provided **Watermark text**. Ordinary coloured graph labels and handwriting are not removed just because they are red. Enter an unfamiliar watermark's brand/phrase when automatic recognition misses it.
+
+Native PDF text watermarks are removed as individual SVG glyph objects, retaining the original glyph outlines and diagrams—including black content behind the overlay. Recognized red FreeText/stamp annotations are removable too. Original PDFs remain in `instance/documents/`; cleaned rendering copies and inspection reports are cached in ignored `instance/watermarks/`. Native exam text is retained separately for analysis, so PDF-text-only imports remain supported; saved page/OCR data supports later reanalysis.
+
+For raster/outlined stamps, red-ink-only OCR checks the visible label in several orientations. If the watermark is flattened into an image, or its native glyphs cannot be isolated, the app cannot safely recover obscured exam content. It excludes every affected question group from imports. Existing bank entries and their PNGs are deleted during the next startup inspection; original PDFs are retained, and deletion IDs/reasons are recorded on the document. An image-level rejection may exclude more than one question when they share that image. Unknown red marks are preserved, not silently classified as watermarks. OCR failures are reported for inspection.
+
+Use **Import & review → Resume an import → Clean watermarks** to check an existing document, using the optional watermark-text field if needed. The result reports cleaned pages, updated questions and deleted bank questions. Successful inspection results are reused at startup. Cleaned copies are used for source previews, bank PNGs, Short previews and new generated PDFs; source numbers are also erased correctly on outlined pages. Previously generated PDFs must be regenerated. API: `POST /api/documents/<id>/clean-watermarks` with optional `watermark_text`.
+
 ## Saved OCR data, reanalysis and duplicates
 
 When Qwen is configured, the app automatically checks saved imports for missing model reviews at startup and periodically while the app is in use. It reviews unresolved PDF/OCR topic disagreements and drafts dependency/topic maps for saved bank questions with identifiable subquestions. This runs in the background using saved text, without repeating OCR. Each result is saved immediately and reused after restart; failed or uncertain attempts remain for manual review instead of being retried continuously. Existing model reviews, teacher tags/crops and approved dependency maps are preserved. Proposals still require review before applying tags or approving a dependency map. The Qwen status line shows background activity; reopen a question to view completed proposals.
