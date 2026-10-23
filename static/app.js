@@ -2,6 +2,7 @@ const $ = s => document.querySelector(s);
 let prerequisitePolicy = {};
 let catalog = {}, currentDoc = null, currentQuestion = null;
 let previewUrl;
+let pendingImportIds = [], importing = false;
 document.addEventListener('DOMContentLoaded',()=>$('#preview-question').addEventListener('click',async()=>{ const button=$('#preview-question'); button.disabled=true; try { const response=await fetch(`/api/documents/${currentDoc.id}/preview`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({regions:currentQuestion.regions})}); if(!response.ok) throw new Error((await response.json()).error); if(previewUrl) URL.revokeObjectURL(previewUrl); previewUrl=URL.createObjectURL(await response.blob()); $('#crop-image').src=previewUrl; $('#crop-preview').hidden=false; } catch(error){status(error.message,true);} finally{button.disabled=false;} }));
 function status(message, error=false) { $('#status').textContent=message; $('#status').classList.toggle('error',error); }
 function el(tag, text, className) { const node=document.createElement(tag); if(text!==undefined) node.textContent=text; if(className) node.className=className; return node; }
@@ -12,9 +13,10 @@ document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener(
 async function search() {
  const params=new URLSearchParams(new FormData($('#search'))); const questions=await api('/api/questions?'+params);
  $('#count').textContent=`${questions.length} question${questions.length===1?'':'s'}`; $('#results').replaceChildren();
- if(!questions.length) { $('#results').append(el('div','No reviewed questions yet for these filters. Import a paper, check the crops and save questions to build your library.','empty')); return; }
+ if(!questions.length) { $('#results').append(el('div','No questions yet for these filters. Upload papers and use Confirm import, or save questions individually. For unknown metadata, choose All syllabuses.','empty')); return; }
  for(const q of questions) {
-  const card=el('article',undefined,'card'); card.append(el('h3',`Question ${q.number} · ${q.year}`),el('p',`${q.level} · ${q.paper} · ${q.marks??'?'} marks · ~${q.minutes} min · ${q.difficulty}`));
+  const card=el('article',undefined,'card'); card.append(el('h3',`Question ${q.number} · ${q.year??'Unknown year'}`),el('p',`${q.level} · ${q.paper} · ${q.marks??'?'} marks · ~${q.minutes} min · ${q.difficulty}`));
+  if(q.review_status==='imported') card.append(el('span','Imported · not individually reviewed','badge'));
   const tags=el('div',undefined,'tags'); for(const t of [...q.topics.map(t=>`${t} ${catalog[t]||''}`),...q.commands,...q.tags]) tags.append(el('span',t)); card.append(tags);
   const image=el('img'); const scope=new URLSearchParams(); for(const topic of new FormData($('#search')).getAll('topic').filter(Boolean))scope.append('topic',topic); image.src=`/api/questions/${q.id}/image?${scope}`; image.alt=`Cropped question ${q.number}`; image.loading='lazy';
   const link=el('a','Open PNG'); link.href=image.src; link.target='_blank'; link.rel='noopener';
@@ -24,7 +26,7 @@ async function search() {
 }
 $('#search').addEventListener('submit',e=>{ e.preventDefault(); busy(e.target,search); });
 async function listDocuments() { const docs=await api('/api/documents'); $('#documents').replaceChildren(new Option('Choose an uploaded paper','')); docs.forEach(d=>$('#documents').add(new Option(d.filename,d.id))); }
-async function openDocument(id) { currentDoc=await api('/api/documents/'+id); $('#review').hidden=false; $('#question').hidden=true; $('#documents').value=id; $('#warnings').replaceChildren(...currentDoc.warnings.map(w=>el('p',w))); renderCandidates(); $('#source-page').replaceChildren(...currentDoc.pages.map((p,i)=>new Option(`Page ${i+1}`,i))); showPage(0); }
+async function openDocument(id) { currentDoc=await api('/api/documents/'+id); setImportTargets([id]); $('#review').hidden=false; $('#question').hidden=true; $('#documents').value=id; $('#warnings').replaceChildren(...currentDoc.warnings.map(w=>el('p',w))); renderCandidates(); $('#source-page').replaceChildren(...currentDoc.pages.map((p,i)=>new Option(`Page ${i+1}`,i))); showPage(0); }
 function renderCandidates() { $('#candidates').replaceChildren(); for(const q of currentDoc.questions) { const button=el('button',`Question ${q.number}${currentDoc.saved_numbers.includes(q.number)?' · saved':''}`); button.type='button'; button.addEventListener('click',()=>selectQuestion(q)); $('#candidates').append(button); } }
 function selectQuestion(q) { $('#crop-preview').hidden=true; currentQuestion=structuredClone(q); $('#question').hidden=false; $('#review-number').textContent=q.number; const labels={agreement:'OCR and PDF text suggest the same topics. This is not a semantic accuracy guarantee.',disagreement:'OCR and PDF text suggest different topics. Check the source image and revise tags.',ocr_only:'Tags use OCR only; there is no independent PDF text to compare. Check the source image.',not_run:'OCR verification has not run for this question.'}; $('#ocr-status').textContent=labels[q.ocr_comparison?.status||'not_run']; $('#tag-evidence').textContent=JSON.stringify(q.topic_evidence||{},null,2); for(const name of ['number','year','level','syllabus','paper','marks','minutes','difficulty']) $('#question').elements[name].value=q[name]??''; for(const name of ['commands','tags']) $('#question').elements[name].value=(q[name]||[]).join(', '); for(const opt of $('#question').elements.topics.options) opt.selected=(q.topics||[]).includes(opt.value); $('#extracted').textContent=q.text||'No extracted text. Enter tags manually.'; renderRegions(); if(q.regions.length) showPage(q.regions[0].page); showLanguageReview(q.language_review); }
 function showPage(n) { $('#source-page').value=n; const p=currentDoc.pages[n]; $('#page-size').textContent=`${p.width} × ${p.height} PDF points`; $('#source-image').src=`/api/documents/${currentDoc.id}/pages/${n}`; }
@@ -33,7 +35,98 @@ function renderRegions() { showLanguageReview(null); $('#regions').replaceChildr
 $('#add-region').addEventListener('click',()=>{ const n=Math.min(currentQuestion.regions.at(-1)?.page+1||0,currentDoc.pages.length-1), p=currentDoc.pages[n]; currentQuestion.regions.push({page:n,rect:[30,35,p.width-30,p.height-30]}); renderRegions(); showPage(n); });
 $('#add-question').addEventListener('click',()=>{ const p=currentDoc.pages[0]; const q={...currentDoc.metadata,number:Math.max(0,...currentDoc.questions.map(q=>q.number),...currentDoc.saved_numbers)+1,regions:[{page:0,rect:[30,35,p.width-30,p.height-30]}],topics:[],commands:[],minutes:5,difficulty:'Unrated'}; currentDoc.questions.push(q); renderCandidates(); selectQuestion(q); });
 $('#documents').addEventListener('change',async e=>{if(e.target.value) try{await openDocument(e.target.value);}catch(error){status(error.message,true);}});
-$('#upload').addEventListener('submit',e=>{e.preventDefault(); busy(e.target,async()=>{ status('Reading PDF and suggesting question groups… OCR may take several minutes for a long paper.'); const result=await api('/api/documents',{method:'POST',body:new FormData(e.target)}); await listDocuments(); await openDocument(result.id); status(`Imported ${result.pages.length} pages; ${result.questions.length} suggested groups. Review before saving.`); });});
+function setImportTargets(ids) {
+ pendingImportIds=[...ids];
+ $('#import-confirmation').hidden=!ids.length;
+ $('#import-targets').textContent=`${ids.length} paper${ids.length===1?'':'s'} selected for import.`;
+ $('#confirm-import').disabled=importing||!ids.length;
+ $('#import-outcome').replaceChildren();
+}
+function setUploadType() {
+ const folder=$('#upload-type').value==='folder';
+ $('#pdf-picker').hidden=folder; $('#folder-picker').hidden=!folder;
+ $('#pdf-files').disabled=folder; $('#pdf-files').required=!folder;
+ $('#pdf-folder').disabled=!folder; $('#pdf-folder').required=folder;
+}
+$('#upload-type').addEventListener('change',setUploadType);
+$('#upload').addEventListener('submit',e=>{
+ e.preventDefault();
+ busy(e.target,async()=>{
+  const input=$('#upload-type').value==='folder'?$('#pdf-folder'):$('#pdf-files');
+  const selected=[...input.files];
+  const files=selected.filter(file=>file.name.toLowerCase().endsWith('.pdf'));
+  if(!files.length) throw new Error('No PDF files found in this selection.');
+  const mode=e.target.elements.ocr_mode.value, autoImport=$('#auto-import').checked, uploaded=[];
+  let automaticallyAdded=0, importFailures=0;
+  importing=true; setImportTargets([]); $('#documents').disabled=true;
+  $('#upload-progress').replaceChildren();
+  if(selected.length>files.length) $('#upload-progress').append(el('p',`Skipped ${selected.length-files.length} non-PDF files.`,'muted'));
+  for(const control of e.target.querySelectorAll('input,select'))control.disabled=true;
+  try {
+   for(const [index,file] of files.entries()) {
+    const name=file.webkitRelativePath||file.name;
+    status(`Reading PDF ${index+1} of ${files.length}: ${name}. OCR may take several minutes.`);
+    const row=el('p',`${name}: extracting…`); $('#upload-progress').append(row);
+    try {
+     if(file.size>40*1024*1024) throw new Error('Exceeds the 40 MB per-file limit.');
+     const data=new FormData(); data.append('file',file,file.name); data.append('ocr_mode',mode); if(autoImport)data.append('auto_import','1');
+     const result=await api('/api/documents',{method:'POST',body:data});
+     uploaded.push(result.id); row.textContent=`${name}: ${result.questions.length} detected question groups.`;
+     if(result.import_result){
+      automaticallyAdded+=result.import_result.imported; importFailures+=result.import_result.failed.length;
+      row.textContent+=` ${result.import_result.imported} automatically saved; ${result.import_result.failed.length} import failures.`;
+      for(const item of result.import_result.failed)$('#upload-progress').append(el('p',`${name}, question ${item.number}: ${item.error}`,'error'));
+     }
+    }catch(error){row.textContent=`${name}: failed — ${error.message}`;row.classList.add('error');}
+   }
+   await listDocuments();
+   if(uploaded.length) await openDocument(uploaded[0]);
+   if(autoImport)await search();
+   status(`${uploaded.length} of ${files.length} PDFs uploaded. `+(autoImport?`${automaticallyAdded} questions automatically saved; ${importFailures} import failures.`:'Use Confirm import to add their questions without individual review.'),uploaded.length===0||importFailures>0);
+  }finally{
+   importing=false; $('#documents').disabled=false;
+   for(const control of e.target.querySelectorAll('input,select'))control.disabled=false;
+   setUploadType(); setImportTargets(uploaded);
+  }
+ });
+});
+$('#confirm-import').addEventListener('click',async()=>{
+ if(importing||!pendingImportIds.length)return;
+ const ids=[...pendingImportIds];importing=true;$('#confirm-import').disabled=true;$('#documents').disabled=true;
+ $('#upload').querySelector('[type=submit]').disabled=true;
+ const rows=[];let added=0,skipped=0,failed=0;
+ try{
+  for(const [index,id] of ids.entries()){
+   status(`Adding questions from paper ${index+1} of ${ids.length}…`);
+   try{
+    const result=await post(`/api/documents/${id}/confirm-import`,{});
+    added+=result.imported;skipped+=result.skipped_numbers.length;failed+=result.failed.length;
+    for(const item of result.failed)rows.push(el('p',`Paper ${index+1}, question ${item.number}: ${item.error}`));
+   }catch(error){failed++;rows.push(el('p',`Paper ${index+1}: ${error.message}`));}
+  }
+  if(currentDoc)await openDocument(currentDoc.id);
+  await search();
+ }catch(error){failed++;rows.push(el('p',error.message));}
+ finally{
+  importing=false;$('#documents').disabled=false;$('#upload').querySelector('[type=submit]').disabled=false;
+  setImportTargets(ids);
+  const summary=`${added} questions added; ${skipped} already saved; ${failed} failures. Imported questions can be edited in the library.`;
+  $('#import-outcome').replaceChildren(el('p',summary),...rows);status(summary,failed>0);
+ }
+});
+$('#autofill-tags').addEventListener('click',async()=>{
+ const button=$('#autofill-tags');button.disabled=true;
+ try{
+  const form=$('#question');
+  const result=await post(`/api/documents/${currentDoc.id}/suggest-tags`,{
+   regions:currentQuestion.regions,paper:form.elements.paper.value,
+   topics:[...form.elements.topics.selectedOptions].map(option=>option.value)
+  });
+  form.elements.commands.value=result.commands.join(', ');
+  form.elements.tags.value=result.tags.join(', ');
+  status('Command terms and tags filled from the current crop text and selected topics. You can edit them before saving.');
+ }catch(error){status(error.message,true);}finally{button.disabled=false;}
+});
 $('#question').addEventListener('submit',e=>{e.preventDefault(); busy(e.target,async()=>{ const value=Object.fromEntries(new FormData(e.target)); value.topics=[...e.target.elements.topics.selectedOptions].map(o=>o.value); for(const name of ['commands','tags']) value[name]=value[name].split(',').map(v=>v.trim()).filter(Boolean); value.document_id=currentDoc.id; value.regions=currentQuestion.regions; const saved=await post('/api/questions',value); currentQuestion={...saved}; const i=currentDoc.questions.findIndex(q=>q.number===saved.number); if(i>=0) currentDoc.questions[i]=saved; else currentDoc.questions.push(saved); if(!currentDoc.saved_numbers.includes(saved.number)) currentDoc.saved_numbers.push(saved.number); renderCandidates(); status(`Question ${saved.number} saved with ${saved.regions.length} page crop(s).`); });});
 $('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,async()=>{ $('#paper-result').replaceChildren(); const value=Object.fromEntries(new FormData(e.target)); value.topics=[...e.target.elements.topics.selectedOptions].map(o=>o.value); const result=await post('/api/papers',value); const link=el('a','Download practice paper PDF'); link.href=`/api/papers/${result.id}/download`; $('#paper-result').append(el('p',`${result.count} question groups · ${result.render_mode||'full'} · Estimated ${result.actual_minutes} / ${result.target_minutes} minutes · ${result.shortfall_minutes} minutes unfilled.`),link); status(`Practice paper generated. ${result.selections?.reduce((n,s)=>n+s.omitted_parts.length,0)||0} parts omitted. ${result.short_fallbacks?.length||0} questions retained whole because no approved dependency map was available.`); });});
 async function init() { const value=await api('/api/catalog'); catalog=value.topics; prerequisitePolicy=value.prerequisite_policy||{}; document.querySelectorAll('.topic-list,.topic-filter').forEach(select=>{ for(const [code,name] of Object.entries(catalog)) select.add(new Option(`${code} · ${name}`,code)); }); await Promise.all([search(),listDocuments()]); }

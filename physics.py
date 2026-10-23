@@ -66,6 +66,19 @@ PATTERNS = {
 }
 
 
+def custom_tags(text, topics):
+    """Editable labels grounded in topic assignments and literal concept matches."""
+    lower = re.sub(r'\s+', ' ', text.lower())
+    themes = {'A': 'mechanics', 'B': 'matter and thermal physics', 'C': 'waves',
+              'D': 'fields', 'E': 'nuclear and quantum physics'}
+    tags = []
+    for code in topics:
+        tags.extend([themes[code[0]], TOPICS[code].lower()])
+        tags.extend(word for word in KEYWORDS[code]
+                    if re.search(r'\b' + re.escape(word) + r'(?:s)?\b', lower))
+    return list(dict.fromkeys(tags))[:50]
+
+
 def suggest(text, paper=None):
     lower = re.sub(r'\s+', ' ', text.lower().replace('−', '-').replace('–', '-'))
     totals = re.findall(r'total[^\n\d]{0,25}(\d+)\s*marks?', lower)
@@ -190,7 +203,8 @@ def suggest(text, paper=None):
         commands.remove('state')
     if paper == 'Paper 1A':
         commands = []  # MCQ prose and options are not imperative command-term prompts.
-    return dict(topics=[code for code, matches in evidence.items() if matches],
+    topics = [code for code, matches in evidence.items() if matches]
+    return dict(topics=topics, tags=custom_tags(text, topics),
                 topic_evidence={code: matches for code, matches in evidence.items() if matches},
                 commands=commands,
                 marks=marks, minutes=round(marks * 1.8, 1) if marks else 5.0,

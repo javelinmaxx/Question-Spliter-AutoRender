@@ -9,7 +9,7 @@ from pathlib import Path
 import fitz
 from flask import Flask, jsonify, render_template, request, send_file
 
-from physics import TOPICS, choose_questions, extract, render_question, validate_regions, suggest
+from physics import TOPICS, choose_questions, extract, render_question, validate_regions, suggest, custom_tags
 from ocr import region_text
 from language_review import review_disagreement, context_hash, status as model_status
 from subquestions import propose_parts, question_hash, validate_layout, validate_graph, approved_map, short_variants, render_variant, choose_short
@@ -183,7 +183,10 @@ def create_app(data_dir=None):
             raise ValueError('Could not read PDF: ' + str(error)) from error
         with db() as conn:
             conn.execute('INSERT INTO documents VALUES (?, ?, ?)', (doc_id, Path(uploaded.filename).name, json.dumps(result)))
-        return jsonify(document(doc_id)), 201
+        response = document(doc_id)
+        if request.form.get('auto_import') == '1':
+            response['import_result'] = import_document_questions(doc_id)
+        return jsonify(response), 201
 
     @app.get('/api/documents/<doc_id>')
     def get_document(doc_id):
@@ -193,6 +196,9 @@ def create_app(data_dir=None):
         reviews = {q['number']: q.get('language_review') for q in result['questions']}
         suggested.update(saved)
         for number, q in suggested.items():
+            defaults = suggest(q.get('text', ''), q.get('paper'))
+            q.setdefault('commands', defaults['commands'])
+            q.setdefault('tags', defaults['tags'])
             q['language_review'] = current_review(result, q, reviews.get(number) or q.get('language_review'))
         result['questions'] = [suggested[n] for n in sorted(suggested)]
         result['saved_numbers'] = list(saved)
@@ -231,23 +237,21 @@ def create_app(data_dir=None):
             pix = pdf[page].get_pixmap(matrix=fitz.Matrix(1.4, 1.4), alpha=False)
         return send_file(BytesIO(pix.tobytes('png')), mimetype='image/png')
 
-    @app.post('/api/questions')
-    def save_question():
-        value = request.get_json()
+    def persist_question(value, imported=False):
         doc = document(value['document_id'])
         number = int(value['number'])
         if not 1 <= number <= 999:
             raise ValueError('Question number must be between 1 and 999.')
         level, syllabus = value.get('level'), value.get('syllabus')
-        if level not in ('HL', 'SL', 'Both') or syllabus not in ('2025', 'Legacy'):
+        if level not in (('HL', 'SL', 'Both', 'Unknown') if imported else ('HL', 'SL', 'Both')) or syllabus not in (('2025', 'Legacy', 'Unknown') if imported else ('2025', 'Legacy')):
             raise ValueError('Select the level and syllabus before saving.')
         paper = value.get('paper')
-        if paper not in ('Paper 1', 'Paper 1A', 'Paper 1B', 'Paper 2'):
+        if paper not in (('Paper 1', 'Paper 1A', 'Paper 1B', 'Paper 2', 'Unknown') if imported else ('Paper 1', 'Paper 1A', 'Paper 1B', 'Paper 2')):
             raise ValueError('Select a valid paper.')
         topics = value.get('topics', [])
         if not isinstance(topics, list) or any(t not in TOPICS for t in topics):
             raise ValueError('Select valid syllabus topics.')
-        if not topics:
+        if not topics and not imported:
             raise ValueError('Select at least one topic.')
         minutes = float(value['minutes'])
         if not 0 < minutes <= 300:
@@ -255,22 +259,22 @@ def create_app(data_dir=None):
         difficulty = value.get('difficulty', 'Unrated')
         if difficulty not in ('Unrated', 'Easy', 'Medium', 'Hard'):
             raise ValueError('Invalid difficulty.')
-        year = int(value['year'])
-        if not 1970 <= year <= 2100:
+        year = None if imported and value.get('year') is None else int(value['year'])
+        if year is not None and not 1970 <= year <= 2100:
             raise ValueError('Enter a valid paper year.')
         marks = int(value['marks']) if value.get('marks') not in (None, '') else None
         if marks is not None and not 1 <= marks <= 200:
             raise ValueError('Marks must be between 1 and 200.')
-        tags = value.get('tags', [])
-        commands = value.get('commands', [])
-        if any(not isinstance(items, list) or len(items) > 50 or any(not isinstance(s, str) or len(s) > 100 for s in items) for items in (tags, commands)):
-            raise ValueError('Tags and command terms must be lists of short text values.')
         with fitz.open(root / 'documents' / (doc['id'] + '.pdf')) as pdf:
             regions = validate_regions(pdf, value['regions'])
             png = render_question(pdf, regions)
             text = (region_text(doc['text_pages'], regions) if 'text_pages' in doc
                     else '\n'.join(pdf[r['page']].get_text(clip=fitz.Rect(r['rect'])) for r in regions))
         suggestions = suggest(text, paper)
+        tags = value.get('tags', custom_tags(text, topics))
+        commands = value.get('commands', suggestions['commands'])
+        if any(not isinstance(items, list) or len(items) > 50 or any(not isinstance(s, str) or len(s) > 100 for s in items) for items in (tags, commands)):
+            raise ValueError('Tags and command terms must be lists of short text values.')
         ocr_text = region_text(doc['text_pages'], regions, 'ocr') if 'text_pages' in doc else ''
         ocr_topics = suggest(ocr_text, paper)['topics'] if ocr_text.strip() else []
         native_present = any(len(doc.get('text_pages', [])[r['page']]['native'].strip()) >= 50 for r in regions) if 'text_pages' in doc else True
@@ -281,7 +285,7 @@ def create_app(data_dir=None):
                      topics=topics, minutes=minutes, difficulty=difficulty, marks=marks,
                      tags=tags, commands=commands, regions=regions, text=text,
                      filename=doc['filename'], topic_evidence=suggestions['topic_evidence'],
-                     ocr_comparison=comparison, review_status='reviewed', language_review=language_result)
+                     ocr_comparison=comparison, review_status='imported' if imported else 'reviewed', language_review=language_result)
         with db() as conn:
             existing = next((q for q in questions() if q['document_id'] == doc['id'] and q['number'] == number), None)
             prior_map = existing.get('subquestions') if existing else None
@@ -289,7 +293,51 @@ def create_app(data_dir=None):
             qid = existing['id'] if existing else uuid.uuid4().hex
             (root / 'images' / (qid + '.png')).write_bytes(png)
             conn.execute('INSERT OR REPLACE INTO questions VALUES (?, ?, ?)', (qid, doc['id'], json.dumps(saved)))
-        return jsonify(id=qid, **saved), 201
+        return dict(id=qid, **saved)
+
+    @app.post('/api/documents/<doc_id>/suggest-tags')
+    def suggest_question_tags(doc_id):
+        doc = document(doc_id)
+        value = request.get_json() or {}
+        paper = value.get('paper', 'Unknown')
+        if paper not in ('Unknown', 'Paper 1', 'Paper 1A', 'Paper 1B', 'Paper 2'):
+            raise ValueError('Choose a valid paper type.')
+        with fitz.open(root / 'documents' / (doc_id + '.pdf')) as pdf:
+            regions = validate_regions(pdf, value['regions'])
+            text = (region_text(doc['text_pages'], regions) if 'text_pages' in doc else
+                    '\n'.join(pdf[r['page']].get_text(clip=fitz.Rect(r['rect'])) for r in regions))
+        suggestions = suggest(text, paper)
+        topics = value.get('topics', suggestions['topics'])
+        if not isinstance(topics, list) or any(code not in TOPICS for code in topics):
+            raise ValueError('Select valid syllabus topics.')
+        return jsonify(commands=suggestions['commands'], tags=custom_tags(text, topics))
+
+    @app.post('/api/questions')
+    def save_question():
+        return jsonify(persist_question(request.get_json())), 201
+
+    def import_document_questions(doc_id):
+        doc = document(doc_id)
+        existing = {q['number'] for q in questions() if q['document_id'] == doc_id}
+        added, skipped, failed = [], [], []
+        for candidate in doc['questions']:
+            number = candidate['number']
+            if number in existing:
+                skipped.append(number)
+                continue
+            try:
+                saved = persist_question(dict(candidate, document_id=doc_id), imported=True)
+            except (ValueError, KeyError, TypeError) as error:
+                failed.append(dict(number=number, error=str(error)))
+                continue
+            existing.add(number)
+            added.append(saved['id'])
+        return dict(document_id=doc_id, imported=len(added), question_ids=added,
+                    skipped_numbers=skipped, failed=failed)
+
+    @app.post('/api/documents/<doc_id>/confirm-import')
+    def confirm_import(doc_id):
+        return jsonify(import_document_questions(doc_id))
 
     @app.get('/api/questions')
     def search():
@@ -385,7 +433,7 @@ def create_app(data_dir=None):
             chosen = [q for q in scoped if q['id'] in ids]
         ids = [q['id'] for q in chosen]
         if not chosen:
-            raise ValueError('No reviewed question variants fit these filters and duration. Add questions, approve dependency maps for Short, or increase the time.')
+            raise ValueError('No question variants fit these filters and duration. Add questions, approve dependency maps for Short, or increase the time.')
         paper_id = uuid.uuid4().hex
         actual = round(sum(q['minutes'] for q in chosen), 1)
         with fitz.open() as pdf:
