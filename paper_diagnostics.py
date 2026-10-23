@@ -5,8 +5,10 @@ import math
 from physics import sl_compatible
 from subquestions import short_variants
 from topic_scope import scope_decision
+from year_filter import matches_year
 
 REASONS = {
+    'year': ('Year is outside the selected range or unknown', 'Widen or clear the year range, or review a question with an unknown year.'),
     'analysis_outdated': ('Question needs review after reanalysis', 'Current rules no longer detect this imported question. Review its boundaries and tags, then save it explicitly before using it in a paper.'),
     'duplicate': ('Identical question already counted', 'Use one copy of an identical question; matching source pixels and text identify exact duplicates.'),
     'level': ('Level does not match', 'Choose the matching level, or correct the question level in its review.'),
@@ -24,7 +26,7 @@ REASONS = {
 }
 
 
-def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode, target, source_ids, document_ids=()):
+def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode, target, source_ids, document_ids=(), year_min=None, year_max=None):
     """Return fitting original parents and a mutually exclusive exclusion breakdown."""
     fitting, excluded, matching_minutes, minimums = [], {}, [], []
     allowed_budget = math.floor(target * 10 + 1e-8) / 10
@@ -42,6 +44,7 @@ def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode,
     for q in bank:
         code = ('level' if q['level'] not in (level, 'Both') else
                 'syllabus' if q['syllabus'] != syllabus else
+                'year' if not matches_year(q.get('year'), year_min, year_max) else
                 'paper' if paper and q['paper'] != paper else
                 'document' if document_ids and q['document_id'] not in document_ids else
                 'sl_content' if level == 'SL' and not sl_compatible(q) else
@@ -83,7 +86,7 @@ def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode,
     report = dict(summary=summary, total_saved=len(bank), uploaded_documents=len(documents),
                   analyzed_not_imported=unsaved, matching_filters=len(minimums), fitting_budget=len(fitting),
                   shortest_valid_minutes=shortest, available_minutes=round(sum(matching_minutes), 2),
-                  requested=dict(level=level, syllabus=syllabus, paper=paper or 'Any', topics=topics, render_mode=mode, minutes=target, document_ids=list(document_ids)),
+                  requested=dict(level=level, syllabus=syllabus, paper=paper or 'Any', topics=topics, render_mode=mode, minutes=target, document_ids=list(document_ids), year_min=year_min, year_max=year_max),
                   bank_levels=dict(Counter(q['level'] for q in bank)), bank_syllabuses=dict(Counter(q['syllabus'] for q in bank)),
                   bank_papers=dict(Counter(q['paper'] for q in bank)), exclusions=list(excluded.values()))
     return fitting, report

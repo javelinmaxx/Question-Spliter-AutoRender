@@ -23,6 +23,7 @@ from paper_selection import question_variants, select_required
 from paper_numbering import erase_source_numbers
 from paper_layout import add_question_pages
 from model_backfill import ModelBackfill
+from year_filter import year_range, matches_year
 from upload_filter import markscheme_name, markscheme_heading
 
 
@@ -490,7 +491,9 @@ def create_app(data_dir=None):
     @app.get('/api/questions')
     def search():
         items = questions()
-        for field in ('level', 'syllabus', 'paper', 'difficulty', 'year'):
+        lower, upper = year_range(request.args)
+        items = [q for q in items if matches_year(q.get('year'), lower, upper)]
+        for field in ('level', 'syllabus', 'paper', 'difficulty'):
             term = request.args.get(field)
             if term:
                 items = [q for q in items if str(q[field]) == term or (field == 'level' and q[field] == 'Both')]
@@ -559,6 +562,7 @@ def create_app(data_dir=None):
         return send_file(BytesIO(png), mimetype='image/png')
 
     def paper_pool(value):
+        lower, upper = year_range(value)
         target = float(value['minutes'])
         mode = value.get('render_mode', 'full')
         if mode not in ('full', 'short'):
@@ -584,7 +588,8 @@ def create_app(data_dir=None):
             raise ValueError('Some selected source papers no longer exist. Refresh the question list.')
         eligible, diagnostics = diagnose_selection(questions(), analyzed, level=level, syllabus=syllabus,
                                                    paper=value.get('paper'), topics=selected_topics, mode=mode,
-                                                   target=target, source_ids=source_ids, document_ids=document_ids)
+                                                   target=target, source_ids=source_ids, document_ids=document_ids,
+                                                   year_min=lower, year_max=upper)
         return eligible, diagnostics
 
     def automatic_choice(eligible, target, topics, mode):
