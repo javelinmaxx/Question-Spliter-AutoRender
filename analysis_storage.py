@@ -11,7 +11,7 @@ from PIL import Image
 def rules_hash():
     root = Path(__file__).parent
     digest = hashlib.sha256()
-    for name in ('physics.py', 'curriculum_prerequisites.json'):
+    for name in ('physics.py', 'curriculum_prerequisites.json', 'assessment_timing.py', 'level_filter.py'):
         digest.update((root / name).read_bytes())
     return digest.hexdigest()
 

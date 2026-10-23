@@ -8,6 +8,7 @@ from io import BytesIO
 import fitz
 from PIL import Image
 from ocr import read_pages, region_text
+from assessment_timing import estimate
 
 TOPICS = {
     'A.0': 'Measurements and uncertainties',
@@ -107,11 +108,11 @@ def custom_tags(text, topics):
     return list(dict.fromkeys(tags))[:50]
 
 
-def suggest(text, paper=None, level=None):
+def suggest(text, paper=None, level=None, syllabus='2025'):
     lower = re.sub(r'\s+', ' ', text.lower().replace('−', '-').replace('–', '-'))
     totals = re.findall(r'total[^\n\d]{0,25}(\d+)\s*marks?', lower)
     marks = int(totals[-1]) if totals else sum(map(int, re.findall(r'\[(\d{1,2})\]', text)))
-    marks = 1 if paper == 'Paper 1A' else (marks or None)
+    marks = 1 if paper in ('Paper 1','Paper 1A') else (marks or None)
     evidence = {code: [w for w in words if re.search(r'\b' + re.escape(w) + r'(?:s)?\b', lower)]
                 for code, words in KEYWORDS.items()}
     for code, pattern in PATTERNS.items():
@@ -237,7 +238,8 @@ def suggest(text, paper=None, level=None):
     return dict(topics=topics, level_conflicts=conflicts, tags=custom_tags(text, topics),
                 topic_evidence={code: matches for code, matches in evidence.items() if matches},
                 commands=commands,
-                marks=marks, minutes=round(marks * 1.8, 1) if marks else 5.0,
+                marks=marks, minutes=estimate(marks,paper,level,syllabus)['minutes'],
+                timing=dict(estimate(marks,paper,level,syllabus),mode='automatic'),
                 difficulty='Unrated')
 
 
@@ -298,8 +300,8 @@ def extract(path, filename, ocr_mode='auto', page_records=None, ocr_cache=None):
                 regions.append(dict(page=n, rect=rect))
             body = region_text(records, regions)
             ocr_text = region_text(records, regions, 'ocr')
-            suggestions = suggest(body, metadata['paper'], metadata['level'])
-            ocr_suggestions = suggest(ocr_text, metadata['paper'], metadata['level']) if ocr_text.strip() else None
+            suggestions = suggest(body, metadata['paper'], metadata['level'],metadata['syllabus'])
+            ocr_suggestions = suggest(ocr_text, metadata['paper'], metadata['level'],metadata['syllabus']) if ocr_text.strip() else None
             sources = ['native' if len(records[r['page']]['native'].strip()) >= 50 else 'ocr' for r in regions]
             comparison = dict(status='not_run', topics=[], commands=[])
             if ocr_suggestions:

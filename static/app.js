@@ -1,5 +1,5 @@
 const $ = s => document.querySelector(s);
-let prerequisitePolicy = {}, hlOnlyTopics = new Set();
+let prerequisitePolicy = {}, hlOnlyTopics = new Set(), timingProfiles=[];
 let catalog = {}, currentDoc = null, currentQuestion = null;
 let previewUrl;
 let pendingImportIds = [], importing = false;
@@ -43,7 +43,7 @@ function enhanceTopicSelect(select) {
  picker.append(toolbar,choices);select.after(picker);select._syncTopics();
 }
 function applyTopicLevel(form) {
- const restricted=['SL','Both'].includes(form.elements.level?.value);
+ const restricted=['SL','SL_from_HL','Both'].includes(form.elements.level?.value);
  const select=form.querySelector('select[name="topics"],select[name="topic"]');
  const removed=[];
  for(const option of select.options){
@@ -67,7 +67,8 @@ async function search() {
  $('#count').textContent=`${questions.length} question${questions.length===1?'':'s'}`; $('#results').replaceChildren();
  if(!questions.length) { $('#results').append(el('div','No questions yet for these filters. Upload papers and use Confirm import, or save questions individually. For unknown metadata, choose All syllabuses.','empty')); return; }
  for(const q of questions) {
-  const card=el('article',undefined,'card'); card.append(el('h3',`Question ${q.number} · ${q.year??'Unknown year'}`),el('p',`${q.level} · ${q.paper} · ${q.marks??'?'} marks · ~${q.minutes} min · ${q.difficulty}`));
+  const card=el('article',undefined,'card'); card.append(el('h3',`Question ${q.number} · ${q.year??'Unknown year'}`),el('p',`${q.source_level||q.level} source · ${q.paper} · ${q.marks??'?'} marks · ~${q.minutes} min · ${q.difficulty}`));
+  if(q.sl_content)card.append(el('p',`SL content: ${q.sl_content.status.replaceAll('_',' ')} · ${q.sl_content.reason}`,'muted'));
   if(q.analysis_outdated)card.append(el('span','Needs review after reanalysis','badge'));
   if(q.possible_duplicate_ids?.length)card.append(el('span','Similar wording exists — compare diagrams','badge'));
   if(q.review_status==='imported') card.append(el('span','Imported · not individually reviewed','badge'));
@@ -87,7 +88,7 @@ async function listDocuments() {
 }
 async function openDocument(id) { currentDoc=await api('/api/documents/'+id); setImportTargets([id]); const analysis=currentDoc.analysis; $('#analysis-status').textContent='Analysis saved on this computer'+(analysis?.completed_at?' · '+new Date(analysis.completed_at).toLocaleString():'')+'. Available after restarting the app.'+(currentDoc.rules_changed?' Analysis rules changed; use Reanalyse saved text to update tags without OCR.':'')+(analysis?.language_review_status==='pending'?' Some optional model checks did not finish; completed results are preserved.':''); $('#review').hidden=false; $('#question').hidden=true; $('#documents').value=id; $('#warnings').replaceChildren(...currentDoc.warnings.map(w=>el('p',w))); renderCandidates(); $('#source-page').replaceChildren(...currentDoc.pages.map((p,i)=>new Option(`Page ${i+1}`,i))); showPage(0); }
 function renderCandidates() { $('#candidates').replaceChildren(); for(const q of currentDoc.questions) { const button=el('button',`Question ${q.number}${currentDoc.saved_numbers.includes(q.number)?' · saved':''}`); button.type='button'; button.addEventListener('click',()=>selectQuestion(q)); $('#candidates').append(button); } }
-function selectQuestion(q) { $('#crop-preview').hidden=true; currentQuestion=structuredClone(q); $('#question').hidden=false; $('#review-number').textContent=q.number; const labels={agreement:'OCR and PDF text suggest the same topics. This is not a semantic accuracy guarantee.',disagreement:'OCR and PDF text suggest different topics. Check the source image and revise tags.',ocr_only:'Tags use OCR only; there is no independent PDF text to compare. Check the source image.',not_run:'OCR verification has not run for this question.'}; $('#ocr-status').textContent=labels[q.ocr_comparison?.status||'not_run']; $('#tag-evidence').textContent=JSON.stringify(q.topic_evidence||{},null,2); for(const name of ['number','year','level','syllabus','paper','marks','minutes','difficulty']) $('#question').elements[name].value=q[name]??''; for(const name of ['commands','tags']) $('#question').elements[name].value=(q[name]||[]).join(', '); for(const opt of $('#question').elements.topics.options) opt.selected=(q.topics||[]).includes(opt.value); applyTopicLevel($('#question')); $('#extracted').textContent=q.text||'No extracted text. Enter tags manually.'; renderRegions(); if(q.regions.length) showPage(q.regions[0].page); showLanguageReview(q.language_review); }
+function selectQuestion(q) { $('#crop-preview').hidden=true; currentQuestion=structuredClone(q); $('#question').hidden=false; $('#review-number').textContent=q.number; const labels={agreement:'OCR and PDF text suggest the same topics. This is not a semantic accuracy guarantee.',disagreement:'OCR and PDF text suggest different topics. Check the source image and revise tags.',ocr_only:'Tags use OCR only; there is no independent PDF text to compare. Check the source image.',not_run:'OCR verification has not run for this question.'}; $('#ocr-status').textContent=labels[q.ocr_comparison?.status||'not_run']; $('#tag-evidence').textContent=JSON.stringify(q.topic_evidence||{},null,2); for(const name of ['number','year','level','syllabus','paper','marks','minutes','difficulty']) $('#question').elements[name].value=q[name]??''; for(const name of ['commands','tags']) $('#question').elements[name].value=(q[name]||[]).join(', '); for(const opt of $('#question').elements.topics.options) opt.selected=(q.topics||[]).includes(opt.value); applyTopicLevel($('#question')); $('#extracted').textContent=q.text||'No extracted text. Enter tags manually.'; renderRegions(); if(q.regions.length) showPage(q.regions[0].page); showLanguageReview(q.language_review); $('#question').elements.sl_suitability.value=q.sl_suitability||'automatic'; updateTimingNote(); }
 function showPage(n) { $('#source-page').value=n; const p=currentDoc.pages[n]; $('#page-size').textContent=`${p.width} × ${p.height} PDF points`; $('#source-image').src=`/api/documents/${currentDoc.id}/pages/${n}`; }
 $('#source-page').addEventListener('change',e=>showPage(Number(e.target.value)));
 function renderRegions() { showLanguageReview(null); $('#regions').replaceChildren(); currentQuestion.regions.forEach((region,i)=>{ const row=el('div',undefined,'region'); const pageLabel=el('label','Page'); const page=el('select'); currentDoc.pages.forEach((p,n)=>page.add(new Option(n+1,n))); page.value=region.page; page.addEventListener('change',()=>{ region.page=Number(page.value); const p=currentDoc.pages[region.page]; region.rect=[30,35,p.width-30,p.height-30]; renderRegions(); showPage(region.page); }); pageLabel.append(page); row.append(pageLabel); ['Left','Top','Right','Bottom'].forEach((title,j)=>{ const label=el('label',title), input=el('input'); input.type='number'; input.step='0.1'; input.value=Math.round(region.rect[j]*10)/10; input.required=true; input.addEventListener('input',()=>region.rect[j]=Number(input.value)); label.append(input); row.append(label); }); const view=el('button','View','secondary'); view.type='button'; view.addEventListener('click',()=>showPage(region.page)); const remove=el('button','Remove','secondary'); remove.type='button'; remove.addEventListener('click',()=>{ currentQuestion.regions.splice(i,1); renderRegions(); }); row.append(view,remove); $('#regions').append(row); }); }
@@ -201,6 +202,20 @@ $('#reanalyse').addEventListener('click',async()=>{
   status(`Reanalysis saved. ${result.questions} groups detected; ${result.updated_question_ids.length} auto-imported questions updated; ${result.new_question_ids.length} newly detected questions added; ${result.duplicate_numbers.length} duplicates already in bank; ${result.outdated_numbers.length} older groups need review; ${result.preserved_reviewed_ids.length} manual reviews preserved; ${result.failed.length} failures. No OCR was run.`,result.failed.length>0);
  }catch(error){status(error.message,true);}finally{button.disabled=false;}
 });
+function ibTiming(){
+ const form=$('#question'),paper=form.elements.paper.value;
+ const level=currentQuestion?.source_level||currentDoc?.metadata?.level||form.elements.level.value;
+ const family=['Paper 1','Paper 1A','Paper 1B'].includes(paper)?'Paper 1':paper;
+ const profile=timingProfiles.find(p=>p.level===level&&p.syllabus===form.elements.syllabus.value&&p.paper===family);
+ const marks=Number(form.elements.marks.value);
+ return profile&&marks>0?{...profile,estimate:Math.round(marks*profile.minutes_per_mark*10)/10}:null;
+}
+function updateTimingNote(){
+ const value=ibTiming();$('#use-ib-time').disabled=!value;
+ $('#timing-note').textContent=value?`IB ${value.level} ${value.paper}: ${value.minutes} minutes / ${value.marks} marks = ${value.minutes_per_mark.toFixed(3)} min/mark. Suggested time: ${value.estimate} minutes. Paper 1A/1B use the combined Paper 1 average. You can override the time.`:'No verified paper/level and mark total: using a fallback estimate. Enter a teacher estimate.';
+}
+$('#use-ib-time').addEventListener('click',()=>{const value=ibTiming();if(value)$('#question').elements.minutes.value=value.estimate;});
+for(const name of ['marks','paper','level','syllabus'])$('#question').elements[name].addEventListener('change',updateTimingNote);
 $('#autofill-tags').addEventListener('click',async()=>{
  const button=$('#autofill-tags');button.disabled=true;
  try{
@@ -289,7 +304,7 @@ $('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,as
   status(`Practice paper generated. ${result.filled_question_ids?.length||0} extra questions added by Fill paper. ${result.selections?.reduce((n,s)=>n+s.omitted_parts.length,0)||0} parts omitted. ${result.short_fallbacks?.length||0} questions retained whole because no approved dependency map was available.`);
  }catch(error){showPaperDiagnostics(error.diagnostics);throw error;}
 });});
-async function init() { const value=await api('/api/catalog'); catalog=value.topics; hlOnlyTopics=new Set(value.hl_only_topics||[]); prerequisitePolicy=value.prerequisite_policy||{}; document.querySelectorAll('.topic-list,.topic-filter').forEach(select=>{ for(const [code,name] of Object.entries(catalog)) select.add(new Option(`${code} · ${name}`,code)); enhanceTopicSelect(select); }); for(const id of ['question','generate','search'])applyTopicLevel($('#'+id)); await Promise.all([search(),listDocuments()]); }
+async function init() { const value=await api('/api/catalog'); catalog=value.topics; timingProfiles=value.timing_profiles||[]; hlOnlyTopics=new Set(value.hl_only_topics||[]); prerequisitePolicy=value.prerequisite_policy||{}; document.querySelectorAll('.topic-list,.topic-filter').forEach(select=>{ for(const [code,name] of Object.entries(catalog)) select.add(new Option(`${code} · ${name}`,code)); enhanceTopicSelect(select); }); for(const id of ['question','generate','search'])applyTopicLevel($('#'+id)); await Promise.all([search(),listDocuments()]); }
 init().catch(e=>status(e.message,true));
 
 function showLanguageReview(result) {

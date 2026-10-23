@@ -49,7 +49,7 @@ def test_import_group_review_png_search_and_restart(bank):
     first = doc['questions'][0]
     assert '(a)' in first['text'] and '(b)' in first['text']
     assert 'Determine the resistance' not in first['text']
-    assert first['marks'] == 7 and first['minutes'] == 12.6
+    assert first['marks'] == 7 and first['minutes'] == 11.7
     assert first['level'] == 'HL' and first['syllabus'] == '2025'
     assert first['topics'] == ['A.1', 'A.2']
     assert client.get('/api/questions').json == []  # Import is not approval.
@@ -61,7 +61,7 @@ def test_import_group_review_png_search_and_restart(bank):
     # A.2 admits its earlier A.1 foundation; A.1 cannot admit later A.2 content.
     assert len(client.get('/api/questions?q=mechanics&topic=A.2&level=HL').json) == 1
     assert client.get('/api/questions?q=mechanics&topic=A.1&level=HL').json == []
-    assert client.get('/api/questions?level=SL').json == []
+    assert len(client.get('/api/questions?level=SL').json) == 1  # Common SL content from an HL paper.
     reopened = create_app(root).test_client()
     assert reopened.get('/api/questions').json[0]['tags'] == ['mechanics']
     reviewed = reopened.get('/api/documents/' + doc['id']).json
@@ -77,7 +77,7 @@ def test_generator_preserves_parent_and_exports_pdf(bank):
     assert response.status_code == 201, response.json
     result = response.json
     assert result['question_ids'] == [saved['id']]
-    assert result['actual_minutes'] == 12.6 and result['shortfall_minutes'] == .4
+    assert result['actual_minutes'] == 11.7 and result['shortfall_minutes'] == 1.3
     exported = client.get(f"/api/papers/{result['id']}/download")
     assert exported.status_code == 200
     with fitz.open(stream=exported.data, filetype='pdf') as pdf:
@@ -91,7 +91,7 @@ def test_generator_rejects_partial_topic_groups_and_wrong_level(bank):
     client, _ = bank
     doc = upload(client)
     save(client, doc)
-    for filters in [dict(level='SL', topics=[]), dict(level='HL', topics=['A.1']), dict(level='HL', topics=[], syllabus='Legacy'), dict(level='HL', topics=[], minutes=5)]:
+    for filters in [dict(level='SL_from_HL', topics=['A.4']), dict(level='HL', topics=['A.1']), dict(level='HL', topics=[], syllabus='Legacy'), dict(level='HL', topics=[], minutes=5)]:
         response = client.post('/api/papers', json={'minutes': 30, **filters})
         assert response.status_code == 400
 

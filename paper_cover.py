@@ -21,7 +21,7 @@ def add_practice_cover(pdf, *, level, syllabus, target, chosen, mode):
     page = pdf.new_page(width=595, height=842)
     paper_types = sorted({q['paper'] for q in chosen})
     paper_label = paper_types[0] if len(paper_types) == 1 else 'Mixed-paper practice'
-    subject = 'Higher level' if level == 'HL' else 'Standard level'
+    subject = {'HL':'Higher level','SL':'Standard level','SL_from_HL':'Standard level - questions from HL papers','Any':'Mixed levels'}[level]
     page.insert_text((56, 83), 'Physics', fontname='hebo', fontsize=14, color=BLACK)
     page.insert_text((56, 101), subject, fontname='hebo', fontsize=12, color=BLACK)
     page.insert_text((56, 119), paper_label, fontname='hebo', fontsize=12, color=BLACK)

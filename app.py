@@ -11,7 +11,7 @@ from pathlib import Path
 import fitz
 from flask import Flask, jsonify, render_template, request, send_file
 
-from physics import TOPICS, choose_questions, extract, render_question, validate_regions, suggest, custom_tags, HL_ONLY_TOPICS, validate_level_topics, sl_compatible
+from physics import TOPICS, choose_questions, extract, render_question, validate_regions, suggest, custom_tags, HL_ONLY_TOPICS, validate_level_topics
 from ocr import region_text
 from language_review import review_disagreement, context_hash, status as model_status
 from subquestions import propose_parts, question_hash, validate_layout, validate_graph, approved_map, short_variants, render_variant, choose_short
@@ -24,6 +24,8 @@ from paper_numbering import erase_source_numbers
 from paper_layout import add_question_pages, PaperLayout, group_questions
 from model_backfill import ModelBackfill
 from year_filter import year_range, matches_year
+from assessment_timing import estimate as time_estimate, refresh as refresh_timing, PROFILES as TIME_PROFILES, SOURCE as TIMING_SOURCE
+from level_filter import normalize_mode, sl_mode, exclusion as level_exclusion, suitability, LABELS as LEVEL_LABELS
 from upload_filter import markscheme_name, markscheme_heading
 
 
@@ -50,17 +52,28 @@ def create_app(data_dir=None):
 
     # Upgrade earlier local banks once; preserve all saved annotations.
     with db() as conn:
+        source_levels = {}
+        for row in conn.execute('SELECT id,data FROM documents').fetchall():
+            value = json.loads(row['data'])
+            source_levels[row['id']] = value.get('metadata', {}).get('level', 'Unknown')
+            for candidate in value.get('questions', []):
+                candidate['source_level'] = source_levels[row['id']]
+                refresh_timing(candidate)
+            conn.execute('UPDATE documents SET data=? WHERE id=?', (json.dumps(value), row['id']))
         for row in conn.execute('SELECT id FROM documents WHERE id NOT IN (SELECT document_id FROM source_fingerprints)').fetchall():
             path = root / 'documents' / (row['id'] + '.pdf')
             if path.is_file():
                 conn.execute('INSERT OR IGNORE INTO source_fingerprints VALUES (?, ?)', (source_hash(path), row['id']))
-        for row in conn.execute('SELECT id, data FROM questions').fetchall():
+        for row in conn.execute('SELECT id, document_id, data FROM questions').fetchall():
             value = json.loads(row['data'])
+            original_level = source_levels.get(row['document_id'])
+            value.setdefault('source_level', original_level if original_level in ('HL','SL') else value.get('level'))
+            refresh_timing(value)
             image = root / 'images' / (row['id'] + '.png')
             if not value.get('content_hash') and image.is_file():
                 value['content_hash'] = question_fingerprint(value['text'], image.read_bytes())
                 value['text_hash'] = text_fingerprint(value['text'])
-                conn.execute('UPDATE questions SET data=? WHERE id=?', (json.dumps(value), row['id']))
+            conn.execute('UPDATE questions SET data=? WHERE id=?', (json.dumps(value), row['id']))
 
     def document(doc_id):
         with db() as conn:
@@ -190,7 +203,9 @@ def create_app(data_dir=None):
 
     @app.get('/api/catalog')
     def catalog():
-        return jsonify(topics=TOPICS, hl_only_topics=sorted(HL_ONLY_TOPICS), prerequisite_policy=POLICY)
+        return jsonify(topics=TOPICS, hl_only_topics=sorted(HL_ONLY_TOPICS), prerequisite_policy=POLICY,
+                       level_modes=LEVEL_LABELS, timing_source=TIMING_SOURCE,
+                       timing_profiles=[dict(syllabus=s,level=l,paper=p,minutes=m,marks=k,minutes_per_mark=m/k) for (s,l,p),(m,k) in TIME_PROFILES.items()])
 
     @app.get('/api/documents')
     def documents():
@@ -403,7 +418,7 @@ def create_app(data_dir=None):
             png = render_question(pdf, regions)
             text = (region_text(doc['text_pages'], regions) if 'text_pages' in doc
                     else '\n'.join(pdf[r['page']].get_text(clip=fitz.Rect(r['rect'])) for r in regions))
-        suggestions = suggest(text, paper, level)
+        suggestions = suggest(text, paper, level,syllabus)
         tags = value.get('tags', custom_tags(text, topics))
         commands = value.get('commands', suggestions['commands'])
         if any(not isinstance(items, list) or len(items) > 50 or any(not isinstance(s, str) or len(s) > 100 for s in items) for items in (tags, commands)):
@@ -419,6 +434,16 @@ def create_app(data_dir=None):
                      tags=tags, commands=commands, regions=regions, text=text,
                      filename=doc['filename'], topic_evidence=suggestions['topic_evidence'],
                      ocr_comparison=comparison, level_conflicts=suggestions['level_conflicts'], review_status='imported' if imported else 'reviewed', language_review=language_result)
+        original_level = doc.get('metadata', {}).get('level')
+        saved['source_level'] = original_level if original_level in ('HL','SL') else level
+        sl_suitability = value.get('sl_suitability', 'automatic')
+        if sl_suitability not in ('automatic','sl_suitable','hl_only','needs_review'):
+            raise ValueError('Choose a valid SL suitability decision.')
+        saved['sl_suitability'] = sl_suitability
+        if sl_suitability == 'sl_suitable' and suitability(saved)['status']=='hl_only':
+            raise ValueError('HL-only content was detected. Review the crops and tags before confirming SL suitability.')
+        baseline = time_estimate(marks,paper,saved['source_level'],syllabus)
+        saved['timing'] = dict(baseline,mode='automatic' if abs(minutes-baseline['minutes'])<.001 else 'manual')
         content_hash = question_fingerprint(text, png)
         saved['content_hash'], saved['text_hash'] = content_hash, text_fingerprint(text)
         duplicate = next((q for q in questions() if q.get('content_hash') == content_hash
@@ -491,16 +516,19 @@ def create_app(data_dir=None):
     @app.get('/api/questions')
     def search():
         items = questions()
+        mode = normalize_mode(request.args.get('level'))
         lower, upper = year_range(request.args)
         items = [q for q in items if matches_year(q.get('year'), lower, upper)]
-        for field in ('level', 'syllabus', 'paper', 'difficulty'):
+        for field in ('syllabus', 'paper', 'difficulty'):
             term = request.args.get(field)
             if term:
                 items = [q for q in items if str(q[field]) == term or (field == 'level' and q[field] == 'Both')]
         topics = [t for t in request.args.getlist('topic') if t]
-        if request.args.get('level') == 'SL':
+        if sl_mode(mode):
             validate_level_topics(topics, 'SL')
-            items = [q for q in items if sl_compatible(q)]
+        items = [q for q in items if level_exclusion(q,mode) is None]
+        for q in items:
+            q['sl_content'] = suitability(q)
         if topics:
             topic_closure(topics)
             items = [variant for q in items if (variant := scoped_question(q, topics)) is not None]
@@ -569,13 +597,13 @@ def create_app(data_dir=None):
             raise ValueError('Render mode must be full or short.')
         if not 1 <= target <= 300:
             raise ValueError('Choose a duration between 1 and 300 minutes.')
-        level, syllabus = value.get('level'), value.get('syllabus', '2025')
-        if level not in ('HL', 'SL') or syllabus not in ('2025', 'Legacy'):
-            raise ValueError('Choose HL or SL and a syllabus.')
+        level, syllabus = normalize_mode(value.get('level')), value.get('syllabus', '2025')
+        if syllabus not in ('2025', 'Legacy'):
+            raise ValueError('Choose a syllabus.')
         selected_topics = value.get('topics', [])
         if not isinstance(selected_topics, list) or any(t not in TOPICS for t in selected_topics):
             raise ValueError('Invalid topics.')
-        validate_level_topics(selected_topics, level)
+        validate_level_topics(selected_topics, 'SL' if sl_mode(level) else 'HL')
         topic_closure(selected_topics)
         with db() as conn:
             analyzed = [dict(id=r['id'], questions=json.loads(r['questions'] or '[]')) for r in

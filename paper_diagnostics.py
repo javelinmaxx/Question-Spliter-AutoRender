@@ -2,12 +2,13 @@
 from collections import Counter
 import math
 
-from physics import sl_compatible
 from subquestions import short_variants
 from topic_scope import scope_decision
 from year_filter import matches_year
+from level_filter import exclusion as level_exclusion
 
 REASONS = {
+    'sl_review': ('SL suitability needs review', 'This HL question has unknown or mixed-depth topics. Review its content and confirm SL suitability in question review before including it for SL.'),
     'year': ('Year is outside the selected range or unknown', 'Widen or clear the year range, or review a question with an unknown year.'),
     'analysis_outdated': ('Question needs review after reanalysis', 'Current rules no longer detect this imported question. Review its boundaries and tags, then save it explicitly before using it in a paper.'),
     'duplicate': ('Identical question already counted', 'Use one copy of an identical question; matching source pixels and text identify exact duplicates.'),
@@ -42,12 +43,10 @@ def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode,
 
     seen_content = set()
     for q in bank:
-        code = ('level' if q['level'] not in (level, 'Both') else
-                'syllabus' if q['syllabus'] != syllabus else
+        code = level_exclusion(q,level) or ('syllabus' if q['syllabus'] != syllabus else
                 'year' if not matches_year(q.get('year'), year_min, year_max) else
                 'paper' if paper and q['paper'] != paper else
                 'document' if document_ids and q['document_id'] not in document_ids else
-                'sl_content' if level == 'SL' and not sl_compatible(q) else
                 'source' if q['document_id'] not in source_ids else
                 'analysis_outdated' if q.get('analysis_outdated') else None)
         if code:

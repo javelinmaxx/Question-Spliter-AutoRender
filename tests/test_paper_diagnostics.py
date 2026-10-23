@@ -38,7 +38,7 @@ def test_empty_bank_and_analyzed_but_unimported_are_distinguished(bank):
 
 
 @pytest.mark.parametrize('filters,code', [
-    (dict(level='SL'),'level'),(dict(syllabus='Legacy'),'syllabus'),(dict(paper='Paper 1A'),'paper')])
+    (dict(syllabus='Legacy'),'syllabus'),(dict(paper='Paper 1A'),'paper')])
 def test_filter_failures_include_counts_actual_metadata_and_examples(bank, filters, code):
     client, _ = bank
     doc = upload(client)
@@ -68,10 +68,10 @@ def test_duration_error_reports_the_shortest_usable_version(bank):
     doc = upload(client)
     save(client,doc);save(client,doc,1)
     result = build(client, minutes=1)
-    assert result.status_code == 400 and 'shortest valid version needs 9 minutes' in result.json['error']
+    assert result.status_code == 400 and 'shortest valid version needs 8.3 minutes' in result.json['error']
     assert result.json['diagnostics']['matching_filters'] == 2
     assert reasons(result)['duration']['count'] == 2
-    assert result.json['diagnostics']['shortest_valid_minutes'] == 9
+    assert result.json['diagnostics']['shortest_valid_minutes'] == 8.3
 
 
 def test_short_diagnostics_use_dependency_safe_variants_not_parent_time(bank):
