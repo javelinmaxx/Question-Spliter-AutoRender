@@ -4,6 +4,8 @@ __pycache__/
 instance/documents
 instance/images
 instance/papers
+instance/ocr-cache
+instance/language-reviews
 instance/bank.sqlite3
 *.pyc
 *.gguf
