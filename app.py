@@ -3,6 +3,7 @@ import json
 import os
 import sqlite3
 import uuid
+from datetime import datetime, timezone
 from io import BytesIO
 from pathlib import Path
 
@@ -174,15 +175,28 @@ def create_app(data_dir=None):
         uploaded.save(path)
         try:
             result = extract(path, uploaded.filename, ocr_mode=request.form.get('ocr_mode', 'auto'), ocr_cache=root / 'ocr-cache')
-            for q in result['questions']:
-                if q.get('ocr_comparison', {}).get('status') == 'disagreement':
-                    q['language_review'] = review_disagreement(*review_inputs(result, q['regions'], q['paper']),
-                                                               TOPICS, cache_dir=root / 'language-reviews')
         except Exception as error:
             path.unlink(missing_ok=True)
             raise ValueError('Could not read PDF: ' + str(error)) from error
+        pending = [q for q in result['questions'] if q.get('ocr_comparison', {}).get('status') == 'disagreement']
+        result['analysis'] = dict(version=1, status='complete', completed_at=datetime.now(timezone.utc).isoformat(),
+                                  ocr_mode=request.form.get('ocr_mode', 'auto'),
+                                  language_review_status='pending' if pending else 'complete')
+        # Commit extracted text, boundaries and tags before potentially slow model calls.
         with db() as conn:
             conn.execute('INSERT INTO documents VALUES (?, ?, ?)', (doc_id, Path(uploaded.filename).name, json.dumps(result)))
+        for index, q in enumerate(pending):
+            args = review_inputs(result, q['regions'], q['paper'])
+            try:
+                q['language_review'] = review_disagreement(*args, TOPICS, cache_dir=root / 'language-reviews')
+            except Exception as error:
+                q['language_review'] = dict(status='needs_review', input_hash=context_hash(*args),
+                                            reason='Optional model review failed: ' + str(error)[:250],
+                                            topics=[], evidence=[])
+            if index == len(pending) - 1:
+                result['analysis']['language_review_status'] = 'complete'
+            with db() as conn:
+                conn.execute('UPDATE documents SET data=? WHERE id=?', (json.dumps(result), doc_id))
         response = document(doc_id)
         if request.form.get('auto_import') == '1':
             response['import_result'] = import_document_questions(doc_id)
@@ -196,9 +210,10 @@ def create_app(data_dir=None):
         reviews = {q['number']: q.get('language_review') for q in result['questions']}
         suggested.update(saved)
         for number, q in suggested.items():
-            defaults = suggest(q.get('text', ''), q.get('paper'))
-            q.setdefault('commands', defaults['commands'])
-            q.setdefault('tags', defaults['tags'])
+            if 'commands' not in q or 'tags' not in q:
+                defaults = suggest(q.get('text', ''), q.get('paper'))
+                q.setdefault('commands', defaults['commands'])
+                q.setdefault('tags', defaults['tags'])
             q['language_review'] = current_review(result, q, reviews.get(number) or q.get('language_review'))
         result['questions'] = [suggested[n] for n in sorted(suggested)]
         result['saved_numbers'] = list(saved)

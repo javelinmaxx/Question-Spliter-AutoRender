@@ -91,7 +91,7 @@ The application imports local PDFs rather than downloading papers. User-supplied
 
 ## Data and tests
 
-SQLite metadata, source PDFs, PNGs and generated papers are stored in ignored `instance/`. Override with `QUESTION_BANK_DATA=/absolute/path` to use another location. Content-hash OCR caches are also stored there and reused across matching uploads. Back up that entire directory together; a code checkout alone does not contain your question bank. Restarting the server preserves saved data.
+SQLite metadata, source PDFs, PNGs and generated papers are stored in ignored `instance/`. Override with `QUESTION_BANK_DATA=/absolute/path` to use another location. Content-hash OCR caches are also stored there and reused across matching uploads. Back up that entire directory together; a code checkout alone does not contain your question bank. Restarting the server preserves saved data. Completed extraction analysis is committed to disk before optional language-model checks, and each model result is saved as it finishes. This includes OCR/native page text, boundaries, suggested topics, command terms and custom tags, even before questions are added to the bank. Saved dependency diagnostics and approved maps also survive restarts. On the next startup, choose the paper under **Resume an import** to load these results without rerunning extraction or inference. A saved-analysis timestamp is shown; interrupted optional checks are identified separately. Unfinished extraction and unsaved manual form edits are not restored.
 
 ```sh
 .venv/bin/python -m pytest -q
