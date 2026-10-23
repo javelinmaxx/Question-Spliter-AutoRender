@@ -21,6 +21,7 @@ from paper_diagnostics import diagnose_selection, finish_diagnostics
 from paper_cover import add_practice_cover, finalize_practice_cover
 from paper_selection import question_variants, select_required
 from paper_numbering import erase_source_numbers
+from paper_layout import add_question_pages
 from upload_filter import markscheme_name, markscheme_heading
 
 
@@ -640,19 +641,10 @@ def create_app(data_dir=None):
                 # Keep every crop of the parent together and in source order.
                 with fitz.open(root / 'documents' / (q['document_id'] + '.pdf')) as source:
                     numbering_results[q['id']] = erase_source_numbers(source, original_questions[q['id']], numbering_cache)
-                    for j, region in enumerate(q['regions']):
-                        rect = fitz.Rect(region['rect'])
-                        # Tile tall crops at a readable scale across consecutive A4 pages.
-                        max_height = 710 * rect.width / 495
-                        top = rect.y0
-                        while top < rect.y1:
-                            clip = fitz.Rect(rect.x0, top, rect.x1, min(rect.y1, top + max_height))
-                            page = pdf.new_page()
-                            label = f'Question {i}' + (' (continued)' if j or top > rect.y0 else '')
-                            page.insert_text((50, 35), label, fontsize=12)
-                            page.show_pdf_page(fitz.Rect(50, 60, 545, 770), source, region['page'], clip=clip)
-                            page.insert_text((50, 805), f"Source: {q['filename'][:55].encode('ascii', 'replace').decode()} | {q['year']} | {q['paper']}", fontsize=8)
-                            top += max_height
+                    rendered = add_question_pages(pdf, source, q, i)
+                    numbering_results[q['id']]['rendered_pages'] = rendered
+                    if not rendered:
+                        raise ValueError(f"Question {q['number']} in {q['filename']} has no visible content after cleanup. Review its crop before generating a paper.")
             finalize_practice_cover(pdf)
             pdf.save(root / 'papers' / (paper_id + '.pdf'))
         completed_diagnostics = finish_diagnostics(diagnostics, chosen, target)
