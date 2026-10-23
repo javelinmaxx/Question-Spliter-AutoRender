@@ -13,13 +13,14 @@
 </section>
 <section id="import" class="tab" hidden>
 <h2>Import a past paper</h2><p>Upload a PDF you have permission to use. Review the suggested boundaries and tags before saving.</p>
-<form id="upload" class="panel filters"><label>Paper PDF · max 40 MB<input name="file" type="file" accept="application/pdf,.pdf" required></label><button type="submit">Extract questions</button></form>
+<form id="upload" class="panel filters"><label>Paper PDF · max 40 MB<input name="file" type="file" accept="application/pdf,.pdf" required></label><label>Text recognition<select name="ocr_mode"><option value="auto">OCR scanned pages automatically</option><option value="verify">OCR every page to cross-check tags</option><option value="off">PDF text only</option></select></label><button type="submit">Extract questions</button></form>
 <label class="document-picker">Resume an import<select id="documents"><option value="">Choose an uploaded paper</option></select></label>
 <div id="review" hidden>
 <div id="warnings" class="notice"></div>
 <div class="review-grid"><aside class="panel"><h3>Question groups</h3><div id="candidates"></div><button id="add-question" type="button" class="secondary">+ Add question manually</button><p class="muted">One group includes the question stem, diagrams and every subquestion. Add continuation page crops in order.</p></aside>
 <form id="question" class="panel" hidden>
 <h3>Review question <span id="review-number"></span></h3>
+<p id="ocr-status" class="notice"></p><details><summary>Suggested topic evidence</summary><pre id="tag-evidence"></pre></details>
 <div class="fields"><label>Question number<input name="number" type="number" min="1" max="999" required></label><label>Year<input name="year" type="number" min="1970" max="2100" required></label><label>Level<select name="level"><option value="Unknown">Choose level</option><option>HL</option><option>SL</option><option>Both</option></select></label><label>Syllabus<select name="syllabus"><option value="2025">First assessment 2025</option><option value="Legacy">Legacy</option><option value="Unknown">Choose syllabus</option></select></label><label>Paper<select name="paper"><option value="Unknown">Choose paper</option><option>Paper 1</option><option>Paper 1A</option><option>Paper 1B</option><option>Paper 2</option></select></label><label>Marks<input name="marks" type="number" min="1" max="200"></label><label>Estimated minutes<input name="minutes" type="number" min="0.1" max="300" step="0.1" required></label><label>Difficulty<select name="difficulty"><option>Unrated</option><option>Easy</option><option>Medium</option><option>Hard</option></select></label></div>
 <p class="muted">Time starts at 1.8 minutes per detected mark, or 5 minutes when marks are unknown. Adjust for the question and student.</p>
 <label>Topics <select name="topics" class="topic-list" multiple size="7" required></select><small>Hold Ctrl / Command to select several topics.</small></label><label>Command terms (comma-separated)<input name="commands"></label><label>Custom tags (comma-separated)<input name="tags" placeholder="e.g. mechanics, revision, calculator"></label>

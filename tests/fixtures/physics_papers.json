@@ -1,0 +1,453 @@
+{
+  "description": "User-supplied diagnostic regression papers. Topic anchors are manually reviewed content expectations, not a held-out accuracy benchmark. Source PDFs and OCR text are not bundled.",
+  "papers": [
+    {
+      "filename": "Physics_paper_1A_TZ3_HL.pdf",
+      "sha256": "431f3df5dbd9b6387e35400954671d0263bf389ffabb6200657001dd88da4a79",
+      "year": 2025,
+      "pages": 22,
+      "questions": 40,
+      "cover_marks": 40,
+      "anchors": [
+        {
+          "number": 1,
+          "required_topics": [
+            "A.1"
+          ],
+          "forbidden_topics": [
+            "B.5"
+          ]
+        },
+        {
+          "number": 7,
+          "required_topics": [
+            "A.4"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 9,
+          "required_topics": [
+            "A.5"
+          ],
+          "forbidden_topics": [
+            "E.5"
+          ]
+        },
+        {
+          "number": 12,
+          "required_topics": [
+            "B.2"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 16,
+          "required_topics": [
+            "B.4"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 21,
+          "required_topics": [
+            "C.3"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 25,
+          "required_topics": [
+            "C.5"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 34,
+          "required_topics": [
+            "E.1"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 37,
+          "required_topics": [
+            "E.3"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 38,
+          "required_topics": [
+            "E.4"
+          ],
+          "forbidden_topics": []
+        }
+      ]
+    },
+    {
+      "filename": "Physics_paper_1A_TZ1_HL.pdf",
+      "sha256": "c857abde44be3393eac02d1287fac688733f630f09e5e3a94a37462818e03888",
+      "year": 2025,
+      "pages": 24,
+      "questions": 40,
+      "cover_marks": 40,
+      "anchors": [
+        {
+          "number": 1,
+          "required_topics": [
+            "A.1"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 8,
+          "required_topics": [
+            "A.5"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 9,
+          "required_topics": [
+            "A.5"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 13,
+          "required_topics": [
+            "B.3"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 15,
+          "required_topics": [
+            "B.4"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 18,
+          "required_topics": [
+            "C.2"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 22,
+          "required_topics": [
+            "C.4"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 28,
+          "required_topics": [
+            "D.3"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 32,
+          "required_topics": [
+            "E.1"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 34,
+          "required_topics": [
+            "E.2"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 38,
+          "required_topics": [
+            "E.4"
+          ],
+          "forbidden_topics": []
+        }
+      ]
+    },
+    {
+      "filename": "Physics HL Paper 1A TZC.pdf",
+      "sha256": "9cfe6b8931355444ce29019ed716a5d0139e6ab2e5cb1130de584863c2297f95",
+      "year": 2026,
+      "pages": 22,
+      "questions": 40,
+      "cover_marks": 40,
+      "anchors": [
+        {
+          "number": 1,
+          "required_topics": [
+            "A.1"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 9,
+          "required_topics": [
+            "A.5"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 10,
+          "required_topics": [
+            "B.1"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 12,
+          "required_topics": [
+            "B.2"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 14,
+          "required_topics": [
+            "B.4"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 16,
+          "required_topics": [
+            "B.5"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 22,
+          "required_topics": [
+            "C.5"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 26,
+          "required_topics": [
+            "D.2"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 29,
+          "required_topics": [
+            "D.3"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 31,
+          "required_topics": [
+            "D.4"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 36,
+          "required_topics": [
+            "E.3"
+          ],
+          "forbidden_topics": [
+            "A.2"
+          ]
+        },
+        {
+          "number": 39,
+          "required_topics": [
+            "E.4"
+          ],
+          "forbidden_topics": []
+        }
+      ]
+    },
+    {
+      "filename": "Physics_paper_2_TZ3_HL.pdf",
+      "sha256": "3943e6237296a7177a1fedab68cdcc717f272f7472d3d19de6547097df9442e9",
+      "year": 2025,
+      "pages": 29,
+      "questions": 10,
+      "cover_marks": 90,
+      "anchors": [
+        {
+          "number": 1,
+          "required_topics": [
+            "E.1"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 4,
+          "required_topics": [
+            "E.3"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 5,
+          "required_topics": [
+            "B.3",
+            "B.4"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 7,
+          "required_topics": [
+            "C.2",
+            "C.3"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 8,
+          "required_topics": [
+            "D.3",
+            "D.4"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 9,
+          "required_topics": [
+            "B.1",
+            "C.2",
+            "C.4"
+          ],
+          "forbidden_topics": [
+            "E.5"
+          ]
+        },
+        {
+          "number": 10,
+          "required_topics": [
+            "A.1",
+            "A.2",
+            "D.1",
+            "E.2"
+          ],
+          "forbidden_topics": []
+        }
+      ]
+    },
+    {
+      "filename": "Physics HL Paper 2 TZC (1).pdf",
+      "sha256": "f1bac7d411edd4f3022779da3588986a512c0841e0c8b986b63444f657003448",
+      "year": 2026,
+      "pages": 23,
+      "questions": 9,
+      "cover_marks": 90,
+      "anchors": [
+        {
+          "number": 1,
+          "required_topics": [
+            "B.5"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 2,
+          "required_topics": [
+            "A.2"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 3,
+          "required_topics": [
+            "B.1",
+            "B.4"
+          ],
+          "forbidden_topics": [
+            "E.5"
+          ]
+        },
+        {
+          "number": 4,
+          "required_topics": [
+            "A.5"
+          ],
+          "forbidden_topics": [
+            "E.2"
+          ]
+        },
+        {
+          "number": 5,
+          "required_topics": [
+            "C.3"
+          ],
+          "forbidden_topics": [
+            "A.4"
+          ]
+        },
+        {
+          "number": 6,
+          "required_topics": [
+            "A.1",
+            "D.3"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 7,
+          "required_topics": [
+            "D.2",
+            "E.1"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 8,
+          "required_topics": [
+            "C.1",
+            "C.2",
+            "C.3"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 9,
+          "required_topics": [
+            "D.1",
+            "E.5"
+          ],
+          "forbidden_topics": [
+            "B.2",
+            "E.1"
+          ]
+        }
+      ]
+    },
+    {
+      "filename": "Physics HL Paper 1B TZC.pdf",
+      "sha256": "90febe5e5db7dfebf7b624776aa42bd67cc4a4f6f3f588edf0855106b5bf1dc6",
+      "year": 2026,
+      "pages": 11,
+      "questions": 2,
+      "cover_marks": 20,
+      "anchors": [
+        {
+          "number": 1,
+          "required_topics": [
+            "A.2"
+          ],
+          "forbidden_topics": []
+        },
+        {
+          "number": 2,
+          "required_topics": [
+            "B.5"
+          ],
+          "forbidden_topics": []
+        }
+      ]
+    }
+  ]
+}

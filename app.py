@@ -9,7 +9,8 @@ from pathlib import Path
 import fitz
 from flask import Flask, jsonify, render_template, request, send_file
 
-from physics import TOPICS, choose_questions, extract, render_question, validate_regions
+from physics import TOPICS, choose_questions, extract, render_question, validate_regions, suggest
+from ocr import region_text
 
 
 def create_app(data_dir=None):
@@ -82,7 +83,7 @@ def create_app(data_dir=None):
         path = root / 'documents' / (doc_id + '.pdf')
         uploaded.save(path)
         try:
-            result = extract(path, uploaded.filename)
+            result = extract(path, uploaded.filename, ocr_mode=request.form.get('ocr_mode', 'auto'), ocr_cache=root / 'ocr-cache')
         except Exception as error:
             path.unlink(missing_ok=True)
             raise ValueError('Could not read PDF: ' + str(error)) from error
@@ -146,11 +147,18 @@ def create_app(data_dir=None):
         with fitz.open(root / 'documents' / (doc['id'] + '.pdf')) as pdf:
             regions = validate_regions(pdf, value['regions'])
             png = render_question(pdf, regions)
-            text = '\n'.join(pdf[r['page']].get_text(clip=fitz.Rect(r['rect'])) for r in regions)
+            text = (region_text(doc['text_pages'], regions) if 'text_pages' in doc
+                    else '\n'.join(pdf[r['page']].get_text(clip=fitz.Rect(r['rect'])) for r in regions))
+        suggestions = suggest(text, paper)
+        ocr_text = region_text(doc['text_pages'], regions, 'ocr') if 'text_pages' in doc else ''
+        ocr_topics = suggest(ocr_text, paper)['topics'] if ocr_text.strip() else []
+        native_present = any(len(doc.get('text_pages', [])[r['page']]['native'].strip()) >= 50 for r in regions) if 'text_pages' in doc else True
+        comparison = dict(status=('agreement' if set(suggestions['topics']) == set(ocr_topics) else 'disagreement') if ocr_text.strip() and native_present else 'ocr_only' if ocr_text.strip() else 'not_run', topics=ocr_topics)
         saved = dict(number=number, year=year, level=level, syllabus=syllabus, paper=paper,
                      topics=topics, minutes=minutes, difficulty=difficulty, marks=marks,
                      tags=tags, commands=commands, regions=regions, text=text,
-                     filename=doc['filename'])
+                     filename=doc['filename'], topic_evidence=suggestions['topic_evidence'],
+                     ocr_comparison=comparison, review_status='reviewed')
         with db() as conn:
             existing = next((q for q in questions() if q['document_id'] == doc['id'] and q['number'] == number), None)
             qid = existing['id'] if existing else uuid.uuid4().hex
