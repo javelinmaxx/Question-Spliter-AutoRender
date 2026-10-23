@@ -43,14 +43,14 @@ SQLite metadata, source PDFs, PNGs and generated papers are stored in ignored `i
 .venv/bin/python -m pytest -q
 ```
 
-Tests use synthetic papers and temporary databases to exercise imports, multi-page grouping, crop validation, PNG rendering, metadata updates, search, persistence, topic/level restrictions, time budgets, scanned-paper manual review and generated PDF content. Six user-supplied papers (2025 and 2026, HL Papers 1A/1B/2) are recorded by content hash in `tests/fixtures/physics_papers.json`. PDFs and OCR text are not bundled. The manifest specifies question counts and 51 manually reviewed required/forbidden topic anchors. These anchors were used during development; they are regression checks, not a held-out accuracy benchmark.
+Tests use synthetic papers and temporary databases to exercise imports, multi-page grouping, crop validation, PNG rendering, metadata updates, search, persistence, topic/level restrictions, time budgets, scanned-paper manual review and generated PDF content. Six user-supplied papers (2025 and 2026, HL Papers 1A/1B/2) are recorded by content hash in `tests/fixtures/physics_papers.json`. The six original PDFs are preserved under `TEST SAMPLES/`; the manifest includes their repository paths. OCR text and caches are generated locally. The manifest specifies question counts and 51 manually reviewed required/forbidden topic anchors. These anchors were used during development; they are regression checks, not a held-out accuracy benchmark.
 
 The application is not affiliated with or endorsed by the International Baccalaureate.
 
 ## Validate the supplied papers
 
 ```sh
-.venv/bin/python tools/validate_papers.py --papers /path/to/supplied/pdfs --output /path/to/fresh/results
+.venv/bin/python tools/validate_papers.py --output /path/to/fresh/results
 ```
 
-The runner reads all pages with OCR, checks file hashes, years, page/question counts and topic anchors, renders every question to a PNG, and runs isolated import/save/search/PDF-generation checks for each paper. It writes `report.md`, `report.json`, crop PNGs and six generated PDFs outside the checkout. Use a fresh output directory for each integration run. OCR results cached in `output/bank/ocr-cache` can be copied to a new output directory to avoid repeating recognition. Scanned-paper mark mismatches are recorded explicitly and do not count as timing verification. Generated papers use a manually checked representative question from each source; the test does not automatically approve the whole question bank.
+The runner uses `TEST SAMPLES/` by default (`--papers /another/path` overrides it), verifies that the six originals match their saved hashes, and reads all pages with OCR. It checks years, page/question counts and topic anchors, renders every question to a PNG, and runs isolated import/save/search/PDF-generation checks for each paper. It writes `report.md`, `report.json`, crop PNGs and six generated PDFs outside the checkout. Use a fresh output directory for each integration run. OCR results cached in `output/bank/ocr-cache` can be copied to a new output directory to avoid repeating recognition. Scanned-paper mark mismatches are recorded explicitly and do not count as timing verification. Generated papers use a manually checked representative question from each source; the test does not automatically approve the whole question bank.

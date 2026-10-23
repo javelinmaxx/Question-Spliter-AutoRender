@@ -1,5 +1,5 @@
 {
-  "description": "User-supplied diagnostic regression papers. Topic anchors are manually reviewed content expectations, not a held-out accuracy benchmark. Source PDFs and OCR text are not bundled.",
+  "description": "User-supplied diagnostic regression papers are preserved in TEST SAMPLES. Topic anchors are manually reviewed content expectations, not a held-out accuracy benchmark. OCR caches and extracted text are generated locally.",
   "papers": [
     {
       "filename": "Physics_paper_1A_TZ3_HL.pdf",
@@ -83,7 +83,8 @@
           ],
           "forbidden_topics": []
         }
-      ]
+      ],
+      "path": "TEST SAMPLES/Physics_paper_1A_TZ3_HL.pdf"
     },
     {
       "filename": "Physics_paper_1A_TZ1_HL.pdf",
@@ -170,7 +171,8 @@
           ],
           "forbidden_topics": []
         }
-      ]
+      ],
+      "path": "TEST SAMPLES/Physics_paper_1A_TZ1_HL.pdf"
     },
     {
       "filename": "Physics HL Paper 1A TZC.pdf",
@@ -266,7 +268,8 @@
           ],
           "forbidden_topics": []
         }
-      ]
+      ],
+      "path": "TEST SAMPLES/Physics HL Paper 1A TZC.pdf"
     },
     {
       "filename": "Physics_paper_2_TZ3_HL.pdf",
@@ -335,7 +338,8 @@
           ],
           "forbidden_topics": []
         }
-      ]
+      ],
+      "path": "TEST SAMPLES/Physics_paper_2_TZ3_HL.pdf"
     },
     {
       "filename": "Physics HL Paper 2 TZC (1).pdf",
@@ -423,7 +427,8 @@
             "E.1"
           ]
         }
-      ]
+      ],
+      "path": "TEST SAMPLES/Physics HL Paper 2 TZC (1).pdf"
     },
     {
       "filename": "Physics HL Paper 1B TZC.pdf",
@@ -447,7 +452,8 @@
           ],
           "forbidden_topics": []
         }
-      ]
+      ],
+      "path": "TEST SAMPLES/Physics HL Paper 1B TZC.pdf"
     }
   ]
 }

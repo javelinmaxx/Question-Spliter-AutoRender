@@ -1,6 +1,7 @@
 """Run local OCR, topic anchors, PNG rendering and PDF generation on supplied papers.
 
-PDFs and recognized text remain outside the source repository. Run from the root:
+Original PDFs are in TEST SAMPLES; recognized text and outputs stay outside it.
+Run from the root:
 python tools/validate_papers.py --papers /path/to/pdfs --output /path/to/results
 """
 import argparse
@@ -126,7 +127,7 @@ def run(papers_dir, output):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--papers', type=Path, required=True)
+    parser.add_argument('--papers', type=Path, default=Path(__file__).resolve().parents[1] / 'TEST SAMPLES')
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     report = run(args.papers.resolve(), args.output.resolve())
