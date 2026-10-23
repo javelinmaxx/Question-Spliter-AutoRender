@@ -18,6 +18,7 @@ from dependency_review import analyze_dependencies
 from topic_scope import scoped_question, topic_closure, POLICY
 from paper_diagnostics import diagnose_selection, finish_diagnostics
 from paper_cover import add_practice_cover, finalize_practice_cover
+from upload_filter import markscheme_name, markscheme_heading
 
 
 def create_app(data_dir=None):
@@ -174,14 +175,28 @@ def create_app(data_dir=None):
         uploaded = request.files.get('file')
         if not uploaded or not uploaded.filename.lower().endswith('.pdf'):
             raise ValueError('Choose a PDF file.')
+        def skipped_markscheme():
+            return jsonify(status='skipped', reason='markscheme', filename=Path(uploaded.filename).name,
+                           message='Ignored markscheme; no questions were imported.'), 200
+        if markscheme_name(uploaded.filename) or markscheme_name(request.form.get('relative_path', '')):
+            return skipped_markscheme()
         doc_id = uuid.uuid4().hex
         path = root / 'documents' / (doc_id + '.pdf')
         uploaded.save(path)
         try:
+            with fitz.open(path) as pdf:
+                is_markscheme = any(markscheme_heading(pdf[i].get_text()) for i in range(min(4, len(pdf))))
+            if is_markscheme:
+                path.unlink(missing_ok=True)
+                return skipped_markscheme()
             result = extract(path, uploaded.filename, ocr_mode=request.form.get('ocr_mode', 'auto'), ocr_cache=root / 'ocr-cache')
         except Exception as error:
             path.unlink(missing_ok=True)
             raise ValueError('Could not read PDF: ' + str(error)) from error
+        if any(markscheme_heading(page.get('text', '')) or markscheme_heading(page.get('native', ''))
+               for page in result.get('text_pages', [])[:4]):
+            path.unlink(missing_ok=True)
+            return skipped_markscheme()
         pending = [q for q in result['questions'] if q.get('ocr_comparison', {}).get('status') == 'disagreement']
         result['analysis'] = dict(version=1, status='complete', completed_at=datetime.now(timezone.utc).isoformat(),
                                   ocr_mode=request.form.get('ocr_mode', 'auto'),

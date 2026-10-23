@@ -93,7 +93,7 @@ $('#upload').addEventListener('submit',e=>{
   const files=selected.filter(file=>file.name.toLowerCase().endsWith('.pdf'));
   if(!files.length) throw new Error(input.id==='pdf-folder'?'No PDFs found. Choose a folder containing PDFs; nested subfolders are included.':'No PDF files found in this selection.');
   const mode=e.target.elements.ocr_mode.value, autoImport=$('#auto-import').checked, uploaded=[];
-  let automaticallyAdded=0, importFailures=0;
+  let automaticallyAdded=0, importFailures=0, skippedMarkschemes=0;
   importing=true; setImportTargets([]); $('#documents').disabled=true;
   $('#upload-progress').replaceChildren();
   if(selected.length>files.length) $('#upload-progress').append(el('p',`Skipped ${selected.length-files.length} non-PDF files.`,'muted'));
@@ -105,8 +105,9 @@ $('#upload').addEventListener('submit',e=>{
     const row=el('p',`${name}: extracting…`); $('#upload-progress').append(row);
     try {
      if(file.size>40*1024*1024) throw new Error('Exceeds the 40 MB per-file limit.');
-     const data=new FormData(); data.append('file',file,file.name); data.append('ocr_mode',mode); if(autoImport)data.append('auto_import','1');
+     const data=new FormData(); data.append('file',file,file.name); data.append('ocr_mode',mode); data.append('relative_path',file.webkitRelativePath||file.name); if(autoImport)data.append('auto_import','1');
      const result=await api('/api/documents',{method:'POST',body:data});
+     if(result.status==='skipped'&&result.reason==='markscheme'){skippedMarkschemes++;row.textContent=`${name}: ${result.message}`;continue;}
      uploaded.push(result.id); row.textContent=`${name}: ${result.questions.length} detected question groups.`;
      if(result.import_result){
       automaticallyAdded+=result.import_result.imported; importFailures+=result.import_result.failed.length;
@@ -118,7 +119,7 @@ $('#upload').addEventListener('submit',e=>{
    await listDocuments();
    if(uploaded.length) await openDocument(uploaded[0]);
    if(autoImport)await search();
-   status(`${uploaded.length} of ${files.length} PDFs uploaded. `+(autoImport?`${automaticallyAdded} questions automatically saved; ${importFailures} import failures.`:'Use Confirm import to add their questions without individual review.'),uploaded.length===0||importFailures>0);
+   status(`${uploaded.length} of ${files.length} PDFs uploaded. ${skippedMarkschemes} markschemes ignored. `+(autoImport?`${automaticallyAdded} questions automatically saved; ${importFailures} import failures.`:uploaded.length?'Use Confirm import to add their questions without individual review.':'No question papers were added.'),(uploaded.length===0&&skippedMarkschemes<files.length)||importFailures>0);
   }finally{
    importing=false; $('#documents').disabled=false;
    for(const control of e.target.querySelectorAll('input,select,#choose-folder'))control.disabled=false;
