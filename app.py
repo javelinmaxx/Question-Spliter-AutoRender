@@ -430,5 +430,35 @@ def create_app(data_dir=None):
     return app
 
 
+def run_local():
+    """Bind before opening a browser, so a port conflict never opens another app."""
+    import sys
+    import threading
+    import webbrowser
+    from werkzeug.serving import make_server
+
+    port = int(os.environ.get('PORT', '5001'))
+    server = make_server('127.0.0.1', port, create_app(), threaded=True)
+    url = f'http://127.0.0.1:{server.server_port}'
+    print(f'Question bank: {url}\nPress Ctrl+C to stop.', flush=True)
+    desktop = sys.platform in ('darwin', 'win32') or bool(os.environ.get('DISPLAY') or os.environ.get('WAYLAND_DISPLAY'))
+    preference = os.environ.get('QUESTION_BANK_OPEN_BROWSER', 'auto').lower()
+
+    def open_browser():
+        try:
+            opened = webbrowser.open(url, new=2)
+        except (webbrowser.Error, OSError):
+            opened = False
+        if not opened:
+            print(f'Open {url} in your browser.', flush=True)
+
+    try:
+        if preference == '1' or (preference == 'auto' and desktop):
+            threading.Thread(target=open_browser, daemon=True).start()
+        server.serve_forever()
+    finally:
+        server.server_close()
+
+
 if __name__ == '__main__':
-    create_app().run(host='127.0.0.1', port=int(os.environ.get('PORT', '5000')), debug=False)
+    run_local()

@@ -36,7 +36,7 @@ python3 -m venv .venv
 .venv/bin/python app.py
 ```
 
-The development server listens on port 5000, on the local machine only. Use `PORT` to change the port. This is a single-user development application without authentication; add authentication and a production server before exposing it publicly.
+The development server listens at **http://127.0.0.1:5001**, on the local machine only, and opens your default browser when a desktop is available. Port 5001 avoids the common macOS AirPlay conflict on port 5000. Use `PORT=5002 python app.py` to choose another port; the browser opens the corresponding address. Set `QUESTION_BANK_OPEN_BROWSER=0` to disable browser launch, or `1` to request it explicitly. Headless sessions print the address without launching a browser. This also applies to the macOS setup script's `--start` option. This is a single-user development application without authentication; add authentication and a production server before exposing it publicly.
 
 ## Workflow
 
