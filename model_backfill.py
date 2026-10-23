@@ -7,6 +7,7 @@ import time
 from datetime import datetime, timezone
 
 from language_review import context_hash, PROMPT_VERSION
+from dependency_review import PROMPT_VERSION as DEPENDENCY_PROMPT_VERSION
 from subquestions import propose_parts, question_hash, validate_layout
 
 
@@ -39,6 +40,11 @@ class ModelBackfill:
     def key(value):
         return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
 
+    @staticmethod
+    def reviewed(review, version, key):
+        return (review.get('prompt_version') == version
+                and bool(review.get('model') or review.get('automatic_context') == key))
+
     def ocr_review(self, doc, question):
         args = self.review_inputs(doc, question['regions'], question['paper'])
         # Adjudication requires two versions with different topic suggestions.
@@ -47,11 +53,11 @@ class ModelBackfill:
         fingerprint = context_hash(*args)
         key = self.key([PROMPT_VERSION, fingerprint])
         previous = question.get('language_review') or {}
-        if previous.get('input_hash') == fingerprint and (previous.get('automatic_context') == key or previous.get('model')):
+        if previous.get('input_hash') == fingerprint and self.reviewed(previous, PROMPT_VERSION, key):
             return False
         for candidate in doc.get('questions', []):
             reusable = candidate.get('language_review') or {}
-            if reusable.get('input_hash') == fingerprint and (reusable.get('automatic_context') == key or reusable.get('model')):
+            if reusable.get('input_hash') == fingerprint and self.reviewed(reusable, PROMPT_VERSION, key):
                 question['language_review'] = dict(reusable)
                 return True
         try:
@@ -61,7 +67,7 @@ class ModelBackfill:
                           reason='Optional model review failed: ' + str(error)[:250])
         if result.get('status') == 'unavailable':
             return False
-        question['language_review'] = dict(result, automatic_context=key,
+        question['language_review'] = dict(result, prompt_version=PROMPT_VERSION, automatic_context=key,
                                            attempted_at=datetime.now(timezone.utc).isoformat())
         return True
 
@@ -81,7 +87,7 @@ class ModelBackfill:
         context = [{k: p[k] for k in ('id', 'regions', 'text')} for p in mapping['parts']]
         key = self.key(context)
         previous = mapping.get('model_review') or {}
-        if mapping.get('analysis_hash') == key and (previous.get('automatic_context') == key or previous.get('model')):
+        if mapping.get('analysis_hash') == key and self.reviewed(previous, DEPENDENCY_PROMPT_VERSION, key):
             return False
         try:
             result = self.dependencies(mapping['parts'])
@@ -90,7 +96,7 @@ class ModelBackfill:
                           reason='Optional dependency review failed: ' + str(error)[:250])
         question['subquestions'] = dict(mapping, status='draft', source_hash=question_hash(question),
             parts=result['parts'], analysis_hash=key,
-            model_review=dict(result, automatic_context=key, attempted_at=datetime.now(timezone.utc).isoformat()))
+            model_review=dict(result, prompt_version=DEPENDENCY_PROMPT_VERSION, automatic_context=key, attempted_at=datetime.now(timezone.utc).isoformat()))
         return True
 
     def run_once(self):
@@ -137,7 +143,7 @@ class ModelBackfill:
                         review = candidate.get('language_review') or {}
                         fingerprint = context_hash(*args)
                         if (review.get('input_hash') != fingerprint or
-                                not (review.get('model') or review.get('automatic_context') == self.key([PROMPT_VERSION, fingerprint]))):
+                                not self.reviewed(review, PROMPT_VERSION, self.key([PROMPT_VERSION, fingerprint]))):
                             pending += 1
                 doc.setdefault('analysis', {})['language_review_status'] = 'pending' if pending else 'complete'
                 conn.execute('UPDATE documents SET data=? WHERE id=? AND data=?', (json.dumps(doc), doc_id, latest))

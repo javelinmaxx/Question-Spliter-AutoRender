@@ -1,0 +1,70 @@
+{
+  "scope": "Two synthetic noisy-text smoke cases, informed by the prompt contrast examples. Not held-out papers or an accuracy benchmark. Actual local Qwen inference; not test doubles.",
+  "created_at": "2026-10-23T15:31:01.042500+00:00",
+  "prompt_version": "physics-ocr-v2-curriculum-4",
+  "cases": [
+    {
+      "name": "doppler",
+      "pdf": "A source of light moves away from a stationary observer. Explain why the observed wavelength increases.",
+      "ocr": "A source of Iight moves away from a stationary observer. Explain why the observed waveIength increases.",
+      "pdf_suggested_topics": [
+        "C.5"
+      ],
+      "ocr_suggested_topics": [
+        "C.2"
+      ],
+      "expected_topics": [
+        "C.5"
+      ],
+      "result": {
+        "input_hash": "9d656164882517bd665a0b393a7c0d265263ee530964fd157788ecf52a78c5d7",
+        "prompt_version": "physics-ocr-v2-curriculum-4",
+        "topics": [
+          "C.5"
+        ],
+        "evidence": [
+          {
+            "topic": "C.5",
+            "source": "pdf",
+            "quote": "A source of light moves away from a stationary observer. Explain why the observed wavelength increases."
+          }
+        ],
+        "status": "resolved",
+        "reason": "The PDF and OCR strings suggest the student should calculate the observed wavelength increases due to the source moving away from the observer.",
+        "confidence": "high",
+        "model": "qwen2.5-1.5b-instruct-q4_k_m.gguf",
+        "model_sha256": "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e",
+        "cached": false
+      },
+      "correct_resolved": true
+    },
+    {
+      "name": "circular",
+      "pdf": "A ball moves in a horizontal circle on a string. Calculate the tension providing the centripetal force.",
+      "ocr": "A baII moves in a horizontal circIe on a string. Calculate the tension providing the centripetaI force.",
+      "pdf_suggested_topics": [
+        "A.2"
+      ],
+      "ocr_suggested_topics": [
+        "D.1"
+      ],
+      "expected_topics": [
+        "A.2"
+      ],
+      "result": {
+        "input_hash": "f455948c54f80db35af419faa0abb43a0f445bb33ab29db729950ed2b4ae014d",
+        "prompt_version": "physics-ocr-v2-curriculum-4",
+        "topics": [],
+        "evidence": [],
+        "status": "needs_review",
+        "reason": "Local language review could not produce a validated result: The model returned an unsupported or duplicate topic."
+      },
+      "correct_resolved": false
+    }
+  ],
+  "summary": {
+    "correct_resolved": 1,
+    "needs_review": 1,
+    "total": 2
+  }
+}
