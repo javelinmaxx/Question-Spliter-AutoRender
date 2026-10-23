@@ -10,21 +10,26 @@ Install [Homebrew](https://brew.sh) and Xcode Command Line Tools (`xcode-select 
 
 ```sh
 ./scripts/setup_macos.sh
-source .venv/physics-env.sh
-python app.py
 ```
 
-The script installs Homebrew Python 3.12 and Tesseract, creates or reuses `.venv`, configures English OCR locally, installs dependencies, and runs the tests. It supports Apple Silicon and Intel Macs, including repository paths containing spaces, and leaves shell profiles unchanged.
+The script installs Homebrew Python 3.12 and Tesseract, creates or reuses `.venv`, configures English OCR locally, installs dependencies, and runs the tests. After successful setup it starts the app and opens your default browser at **http://127.0.0.1:5001** (or your chosen `PORT`). Keep the Terminal open while using the app; press Ctrl+C to stop. It supports Apple Silicon and Intel Macs, including repository paths containing spaces, and leaves shell profiles unchanged.
 
 Optional flags:
 
 ```sh
-./scripts/setup_macos.sh --start                 # Set up, test, and start the app
+./scripts/setup_macos.sh --no-start              # Install and test without starting
 ./scripts/setup_macos.sh --with-model            # Also install the local model runtime
-./scripts/setup_macos.sh --download-model --start # Also download verified weights and start
+./scripts/setup_macos.sh --download-model        # Also download verified weights and start
 ```
 
 Apple Silicon model builds enable Metal; Intel builds use CPU inference. Weights are saved in ignored `instance/models/`. Model downloads require access to Hugging Face and its artifact hosts. Use `source .venv/physics-env.sh` in each new terminal to restore OCR and any configured model path. Existing incompatible virtual environments or custom environment helper files are preserved and reported for you to resolve.
+
+To start an already installed app without running setup again:
+
+```sh
+source .venv/physics-env.sh
+python app.py
+```
 
 ### Manual setup
 
@@ -36,7 +41,7 @@ python3 -m venv .venv
 .venv/bin/python app.py
 ```
 
-The development server listens at **http://127.0.0.1:5001**, on the local machine only, and opens your default browser when a desktop is available. Port 5001 avoids the common macOS AirPlay conflict on port 5000. Use `PORT=5002 python app.py` to choose another port; the browser opens the corresponding address. Set `QUESTION_BANK_OPEN_BROWSER=0` to disable browser launch, or `1` to request it explicitly. Headless sessions print the address without launching a browser. This also applies to the macOS setup script's `--start` option. This is a single-user development application without authentication; add authentication and a production server before exposing it publicly.
+The development server listens at **http://127.0.0.1:5001**, on the local machine only, and opens your default browser when a desktop is available. Port 5001 avoids the common macOS AirPlay conflict on port 5000. Use `PORT=5002 python app.py` to choose another port; the browser opens the corresponding address. Set `QUESTION_BANK_OPEN_BROWSER=0` to disable browser launch, or `1` to request it explicitly. Headless sessions print the address without launching a browser. This also applies when the macOS setup script starts the app. This is a single-user development application without authentication; add authentication and a production server before exposing it publicly.
 
 ## Workflow
 

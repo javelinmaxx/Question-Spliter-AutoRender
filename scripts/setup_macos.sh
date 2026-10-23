@@ -4,15 +4,17 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: ./scripts/setup_macos.sh [--with-model] [--download-model] [--start]
+Usage: ./scripts/setup_macos.sh [--with-model] [--download-model] [--no-start]
 
 Install Homebrew Python 3.12 and English Tesseract OCR, prepare .venv,
-install development dependencies, and run the test suite.
+install development dependencies, run the test suite, and start the app.
+The app opens your default browser after binding its local port.
 
   --with-model      Also build the optional local language-model runtime.
   --download-model  Also download and verify official Qwen 1.5B GGUF weights.
                     Implies --with-model; needs Internet access and disk space.
-  --start           Start the local application after successful setup.
+  --no-start        Install and test only, without starting the application.
+  --start           Start after setup (the default; retained for compatibility).
   -h, --help        Show this help.
 
 Requires macOS, Homebrew (https://brew.sh), and Xcode Command Line Tools.
@@ -24,12 +26,13 @@ fail() { printf 'Setup failed: %s\n' "$*" >&2; exit 1; }
 
 with_model=0
 download_model=0
-start_app=0
+start_app=1
 for argument in "$@"; do
   case "$argument" in
     --with-model) with_model=1 ;;
     --download-model) with_model=1; download_model=1 ;;
     --start) start_app=1 ;;
+    --no-start) start_app=0 ;;
     -h|--help) usage; exit 0 ;;
     *) usage >&2; fail "Unknown option: $argument" ;;
   esac
@@ -128,12 +131,13 @@ fi
   fi
 } > "$helper"
 
-printf '\nSetup complete. From the repository root, run:\n'
+printf '\nSetup complete. To launch again later, run:\n'
 printf '  source .venv/physics-env.sh\n  python app.py\n'
 if [ "$with_model" -eq 1 ] && [ "$download_model" -eq 0 ] && [ -z "$model_path" ]; then
   printf '\nModel runtime installed; weights are not configured. Rerun with --download-model to fetch them.\n'
 fi
 if [ "$start_app" -eq 1 ]; then
+  printf '\nStarting the question bank; keep this Terminal open. Press Ctrl+C to stop.\n'
   if [ -n "$model_path" ]; then export QUESTION_BANK_MODEL_PATH="$model_path"; fi
   exec "$venv_dir/bin/python" "$repo_dir/app.py"
 fi
