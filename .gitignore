@@ -1,7 +1,10 @@
 __pycache__/
 .pytest_cache/
 .venv/
-instance/
+instance/documents
+instance/images
+instance/papers
+instance/bank.sqlite3
 *.pyc
 *.gguf
 *.gguf.part
