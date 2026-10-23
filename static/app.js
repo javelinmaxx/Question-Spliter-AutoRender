@@ -11,6 +11,37 @@ async function api(url, options={}) { const response=await fetch(url, options); 
 function post(url, value) { return api(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(value)}); }
 async function busy(form, work) { const button=form.querySelector('[type=submit]'); button.disabled=true; try { await work(); } catch(error) { status(error.message,true); } finally { button.disabled=false; } }
 document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>{ document.querySelectorAll('.tab').forEach(section=>section.hidden=section.id!==button.dataset.tab); document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b===button)); status(''); if(button.dataset.tab==='library') search().catch(e=>status(e.message,true)); }));
+function enhanceTopicSelect(select) {
+ if(select._syncTopics)return;
+ select.hidden=true;
+ const required=select.required,allTopics=['search','generate'].includes(select.form?.id);select.required=false;
+ const picker=el('div',undefined,'topic-picker'),toolbar=el('div',undefined,'topic-toolbar');
+ const filter=el('input');filter.type='search';filter.placeholder='Find a topic';filter.setAttribute('aria-label','Find a topic');
+ const count=el('span',undefined,'muted'),clear=el('button','Clear topics','secondary');clear.type='button';
+ toolbar.append(filter,count,clear);
+ const choices=el('div',undefined,'topic-choices');choices.setAttribute('role','group');choices.setAttribute('aria-label',select.getAttribute('aria-label')||'Assessed topics');
+ const buttons=[];
+ function changed(){select.dispatchEvent(new Event('input',{bubbles:true}));select.dispatchEvent(new Event('change',{bubbles:true}));}
+ for(const option of select.options){
+  if(!option.value)continue;
+  const button=el('button',option.textContent,'topic-toggle');button.type='button';button.dataset.topic=option.value;
+  button.addEventListener('click',()=>{option.selected=!option.selected;changed();});
+  choices.append(button);buttons.push([option,button]);
+ }
+ select._syncTopics=()=>{
+  const term=filter.value.trim().toLowerCase();let selected=0;
+  for(const [option,button] of buttons){
+   button.textContent=option.textContent;button.disabled=option.disabled;button.setAttribute('aria-pressed',String(option.selected));
+   button.hidden=!!term&&!option.textContent.toLowerCase().includes(term);
+   if(option.selected)selected++;
+  }
+  count.textContent=selected?`${selected} selected`:(required?'Select at least one':allTopics?'All topics':'No topics selected');
+ };
+ filter.addEventListener('input',select._syncTopics);
+ clear.addEventListener('click',()=>{for(const option of select.options)option.selected=false;changed();});
+ select.addEventListener('change',select._syncTopics);
+ picker.append(toolbar,choices);select.after(picker);select._syncTopics();
+}
 function applyTopicLevel(form) {
  const restricted=['SL','Both'].includes(form.elements.level?.value);
  const select=form.querySelector('select[name="topics"],select[name="topic"]');
@@ -20,6 +51,7 @@ function applyTopicLevel(form) {
   if(option.disabled&&option.selected){removed.push(option.value);option.selected=false;}
   if(catalog[option.value])option.textContent=`${option.value} · ${catalog[option.value]}${hlOnlyTopics.has(option.value)?' (HL only)':''}`;
  }
+ select._syncTopics?.();
  if(form.id==='question'){
   const conflicts=[...new Set([...(currentQuestion?.level_conflicts||[]),...removed])];
   $('#level-topic-note').textContent=restricted?'HL-only topics are disabled for SL and Both.'+(conflicts.length?` Detected HL-only content: ${conflicts.join(', ')}. Check the source and level; this question is excluded from SL papers while that conflict remains.`:''):'';
@@ -257,7 +289,7 @@ $('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,as
   status(`Practice paper generated. ${result.filled_question_ids?.length||0} extra questions added by Fill paper. ${result.selections?.reduce((n,s)=>n+s.omitted_parts.length,0)||0} parts omitted. ${result.short_fallbacks?.length||0} questions retained whole because no approved dependency map was available.`);
  }catch(error){showPaperDiagnostics(error.diagnostics);throw error;}
 });});
-async function init() { const value=await api('/api/catalog'); catalog=value.topics; hlOnlyTopics=new Set(value.hl_only_topics||[]); prerequisitePolicy=value.prerequisite_policy||{}; document.querySelectorAll('.topic-list,.topic-filter').forEach(select=>{ for(const [code,name] of Object.entries(catalog)) select.add(new Option(`${code} · ${name}`,code)); }); for(const id of ['question','generate','search'])applyTopicLevel($('#'+id)); await Promise.all([search(),listDocuments()]); }
+async function init() { const value=await api('/api/catalog'); catalog=value.topics; hlOnlyTopics=new Set(value.hl_only_topics||[]); prerequisitePolicy=value.prerequisite_policy||{}; document.querySelectorAll('.topic-list,.topic-filter').forEach(select=>{ for(const [code,name] of Object.entries(catalog)) select.add(new Option(`${code} · ${name}`,code)); enhanceTopicSelect(select); }); for(const id of ['question','generate','search'])applyTopicLevel($('#'+id)); await Promise.all([search(),listDocuments()]); }
 init().catch(e=>status(e.message,true));
 
 function showLanguageReview(result) {
@@ -300,7 +332,7 @@ function renderSubquestions(){
   const blocked=['SL','Both'].includes(sqQuestion.level)?(part.topics||[]).filter(code=>hlOnlyTopics.has(code)):[];
   if(blocked.length){part.topics=part.topics.filter(code=>!hlOnlyTopics.has(code));sqDirty();sqMessage('HL-only topic labels were excluded from this SL draft. Check the source and level before approving.');}
   const card=el('section',undefined,'sq-card');card.append(el('h3',`${part.id} · ${part.label}`));
-  const timeLabel=el('label','Estimated minutes for this part');const time=el('input');time.type='number';time.min=part.id==='stem'?'0':'0.1';time.step='0.1';time.value=part.minutes;time.addEventListener('input',()=>{part.minutes=Number(time.value);sqDirty();});timeLabel.append(time);card.append(timeLabel); const topicLabel=el('label','Assessed topics for this part (select all that apply)'); const topicSelect=el('select'); topicSelect.multiple=true; topicSelect.size=5; for(const [code,name] of Object.entries(catalog)){const option=new Option(`${code} · ${name}${hlOnlyTopics.has(code)?' (HL only)':''}`,code);option.disabled=['SL','Both'].includes(sqQuestion.level)&&hlOnlyTopics.has(code);option.selected=(part.topics||[]).includes(code);topicSelect.add(option);}topicSelect.addEventListener('change',()=>{part.topics=[...topicSelect.selectedOptions].map(o=>o.value);sqDirty();});topicLabel.append(topicSelect);card.append(topicLabel);
+  const timeLabel=el('label','Estimated minutes for this part');const time=el('input');time.type='number';time.min=part.id==='stem'?'0':'0.1';time.step='0.1';time.value=part.minutes;time.addEventListener('input',()=>{part.minutes=Number(time.value);sqDirty();});timeLabel.append(time);card.append(timeLabel); const topicLabel=el('fieldset',undefined,'topic-field');topicLabel.append(el('legend','Assessed topics for this part')); const topicSelect=el('select'); topicSelect.multiple=true; topicSelect.size=5; for(const [code,name] of Object.entries(catalog)){const option=new Option(`${code} · ${name}${hlOnlyTopics.has(code)?' (HL only)':''}`,code);option.disabled=['SL','Both'].includes(sqQuestion.level)&&hlOnlyTopics.has(code);option.selected=(part.topics||[]).includes(code);topicSelect.add(option);}topicSelect.addEventListener('change',()=>{part.topics=[...topicSelect.selectedOptions].map(o=>o.value);sqDirty();});topicLabel.append(topicSelect);enhanceTopicSelect(topicSelect);card.append(topicLabel);
   if(part.id!=='stem'){
    card.append(el('p','Always requires the shared stem. Also requires:','muted'));const dependencies=el('div',undefined,'sq-dependencies');
    for(const other of sqMapping.parts.filter(p=>p.id!=='stem'&&p.id!==part.id)){
