@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Physics Question Bank</title><link rel="stylesheet" href="/static/style.css"><script defer src="/static/app.js"></script></head>
+<body>
+<header><div><span class="eyebrow">IB DIPLOMA PROGRAMME</span><h1>Physics Question Bank</h1><p>From past papers to focused practice.</p></div><span class="badge">2025 syllabus · HL / SL</span></header>
+<nav aria-label="Workspace"><button data-tab="library" class="active">Question library</button><button data-tab="import">Import & review</button><button data-tab="generator">Build a paper</button></nav>
+<main>
+<p id="status" role="status" aria-live="polite"></p>
+<section id="library" class="tab">
+<div class="section-heading"><div><h2>Your question library</h2><p>Reviewed questions, ready for practice.</p></div><span id="count" class="badge">0 questions</span></div>
+<form id="search" class="panel filters"><label>Search<input name="q" placeholder="Command term, tag or question text"></label><label>Level<select name="level"><option value="">All levels</option><option>HL</option><option>SL</option></select></label><label>Syllabus<select name="syllabus"><option value="2025">First assessment 2025</option value="Legacy">Legacy</option><option value="">All syllabuses</option></select></label><label>Topic<select name="topic" class="topic-filter"><option value="">All topics</option></select></label><label>Difficulty<select name="difficulty"><option value="">Any difficulty</option><option>Unrated</option><option>Easy</option><option>Medium</option><option>Hard</option></select></label><label>Year<input name="year" type="number" placeholder="Any year" min="1970" max="2100"></label><label>Paper<select name="paper"><option value="">All papers</option><option>Paper 1</option><option>Paper 1A</option><option>Paper 1B</option><option>Paper 2</option></select></label><button type="submit">Search library</button></form>
+<div id="results" class="cards"></div>
+</section>
+<section id="import" class="tab" hidden>
+<h2>Import a past paper</h2><p>Upload a PDF you have permission to use. Review the suggested boundaries and tags before saving.</p>
+<form id="upload" class="panel filters"><label>Paper PDF · max 40 MB<input name="file" type="file" accept="application/pdf,.pdf" required></label><button type="submit">Extract questions</button></form>
+<label class="document-picker">Resume an import<select id="documents"><option value="">Choose an uploaded paper</option></select></label>
+<div id="review" hidden>
+<div id="warnings" class="notice"></div>
+<div class="review-grid"><aside class="panel"><h3>Question groups</h3><div id="candidates"></div><button id="add-question" type="button" class="secondary">+ Add question manually</button><p class="muted">One group includes the question stem, diagrams and every subquestion. Add continuation page crops in order.</p></aside>
+<form id="question" class="panel" hidden>
+<h3>Review question <span id="review-number"></span></h3>
+<div class="fields"><label>Question number<input name="number" type="number" min="1" max="999" required></label><label>Year<input name="year" type="number" min="1970" max="2100" required></label><label>Level<select name="level"><option value="Unknown">Choose level</option><option>HL</option><option>SL</option><option>Both</option></select></label><label>Syllabus<select name="syllabus"><option value="2025">First assessment 2025</option><option value="Legacy">Legacy</option><option value="Unknown">Choose syllabus</option></select></label><label>Paper<select name="paper"><option value="Unknown">Choose paper</option><option>Paper 1</option><option>Paper 1A</option><option>Paper 1B</option><option>Paper 2</option></select></label><label>Marks<input name="marks" type="number" min="1" max="200"></label><label>Estimated minutes<input name="minutes" type="number" min="0.1" max="300" step="0.1" required></label><label>Difficulty<select name="difficulty"><option>Unrated</option><option>Easy</option><option>Medium</option><option>Hard</option></select></label></div>
+<p class="muted">Time starts at 1.8 minutes per detected mark, or 5 minutes when marks are unknown. Adjust for the question and student.</p>
+<label>Topics <select name="topics" class="topic-list" multiple size="7" required></select><small>Hold Ctrl / Command to select several topics.</small></label><label>Command terms (comma-separated)<input name="commands"></label><label>Custom tags (comma-separated)<input name="tags" placeholder="e.g. mechanics, revision, calculator"></label>
+<h3>Crop boundaries</h3><p class="muted">Coordinates are PDF points, measured from the top left. Select a page below to inspect it. Keep the whole question together.</p><div id="regions"></div><button id="add-region" type="button" class="secondary">+ Add page crop</button>
+<details><summary>Extracted text</summary><pre id="extracted"></pre></details><button id="preview-question" type="button" class="secondary">Preview combined crop</button><div id="crop-preview" hidden><img id="crop-image" alt="Combined question crop preview"></div><button type="submit">Save reviewed question</button><p class="muted">Saving the same question number in this document updates its existing record.</p>
+</form></div>
+<div class="panel page-panel"><div class="filters"><label>Inspect source page<select id="source-page"></select></label><span id="page-size" class="muted"></span></div><img id="source-image" alt="Source paper page"></div>
+</div>
+</section>
+<section id="generator" class="tab" hidden>
+<h2>Build a practice paper</h2><p>Select a level, topics and time budget. Complete question groups stay together, including Paper 2 subquestions.</p>
+<form id="generate" class="panel generator"><div class="fields"><label>Level<select name="level"><option>HL</option><option>SL</option></select></label><label>Syllabus<select name="syllabus"><option value="2025">First assessment 2025</option><option value="Legacy">Legacy</option></select></label><label>Time budget (minutes)<input name="minutes" type="number" min="1" max="300" value="45" required></label><label>Paper type<select name="paper"><option value="">Any paper</option><option>Paper 1</option><option>Paper 1A</option><option>Paper 1B</option><option>Paper 2</option></select></label></div><label>Topics<select name="topics" class="topic-list" multiple size="10"></select></label><p class="muted">Leave topics empty for all topics. For a mixed-topic question, all its topics must be selected. Selection fills the time budget without exceeding the stored estimate; exact matches depend on your library.</p><button type="submit">Generate PDF</button><div id="paper-result" aria-live="polite"></div></form>
+</section>
+</main><footer>Local workspace · Automated suggestions require review · Not affiliated with the International Baccalaureate</footer>
+</body></html>
