@@ -18,10 +18,10 @@ def motion_energy_question():
 
 
 def test_curriculum_prerequisites_are_directional_and_conservative():
-    assert {'D.1', 'A.1', 'A.2', 'A.3'} == topic_closure(['D.1'])
-    assert topic_closure(['A.2']) == {'A.1', 'A.2'}
+    assert {'D.1', 'A.0', 'A.1', 'A.2', 'A.3'} == topic_closure(['D.1'])
+    assert topic_closure(['A.2']) == {'A.0', 'A.1', 'A.2'}
     assert 'D.1' not in topic_closure(['A.2'])
-    assert topic_closure(['C.3']) == {'C.3', 'C.2', 'C.1', 'A.3', 'A.2', 'A.1'}
+    assert topic_closure(['C.3']) == {'C.3', 'C.2', 'C.1', 'A.3', 'A.2', 'A.1', 'A.0'}
     assert 'B.1' not in topic_closure(['C.3'])  # No alphabetical/theme-wide order.
     gravity = dict(id='g', minutes=10, topics=['D.1', 'A.2'], paper='Paper 2', text='gravity and circular motion', regions=[])
     assert scoped_question(gravity, ['D.1']) is not None
@@ -116,7 +116,7 @@ def test_search_png_and_full_topic_paper_use_same_scoped_parts(tmp_path):
     assert original['regions'] == q['regions'] and 'BETA_ENERGY' in original['text']
 
 
-def test_all_24_content_deductions_are_consistent_and_acyclic():
+def test_all_content_deductions_are_consistent_and_acyclic():
     from physics import TOPICS
     assert set(POLICY['requires']) == set(TOPICS) == set(POLICY['topic_analysis'])
     assert 'example_sl_route' not in POLICY
@@ -129,5 +129,5 @@ def test_all_24_content_deductions_are_consistent_and_acyclic():
     assert 'B.4' not in topic_closure(['E.4'])  # A power-plant extension is conditional.
     assert 'D.1' not in topic_closure(['D.2'])  # A gravitational analogy is not a prerequisite.
     assert 'A.5' not in topic_closure(['C.5'])  # Relativistic Doppler is conditional.
-    assert topic_closure(['A.5']) == {'A.5', 'A.1'}
+    assert topic_closure(['A.5']) == {'A.5', 'A.1', 'A.0'}
     assert {'D.2', 'B.5', 'A.3'} <= topic_closure(['D.4'])

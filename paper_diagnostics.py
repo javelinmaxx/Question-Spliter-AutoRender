@@ -7,8 +7,11 @@ from subquestions import short_variants
 from topic_scope import scope_decision
 
 REASONS = {
+    'analysis_outdated': ('Question needs review after reanalysis', 'Current rules no longer detect this imported question. Review its boundaries and tags, then save it explicitly before using it in a paper.'),
+    'duplicate': ('Identical question already counted', 'Use one copy of an identical question; matching source pixels and text identify exact duplicates.'),
     'level': ('Level does not match', 'Choose the matching level, or correct the question level in its review.'),
     'syllabus': ('Syllabus does not match', 'Older papers are tagged Legacy. Select Legacy, or review and remap them before changing their syllabus.'),
+    'document': ('Source paper is not selected', 'Select that source paper or leave the source-paper filter empty.'),
     'paper': ('Paper type does not match', 'Choose Any paper or the paper type available in your bank.'),
     'sl_content': ('HL-only content conflicts with SL', 'Review the flagged content and level. HL-only topics cannot be used in an SL paper.'),
     'source': ('Original source PDF is missing', 'Restore the source PDF from your data backup or upload the paper again.'),
@@ -21,7 +24,7 @@ REASONS = {
 }
 
 
-def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode, target, source_ids):
+def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode, target, source_ids, document_ids=()):
     """Return fitting original parents and a mutually exclusive exclusion breakdown."""
     fitting, excluded, matching_minutes, minimums = [], {}, [], []
     allowed_budget = math.floor(target * 10 + 1e-8) / 10
@@ -35,12 +38,15 @@ def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode,
                                          level=question['level'], syllabus=question['syllabus'], paper=question['paper'],
                                          topics=question['topics'], minutes=question['minutes']))
 
+    seen_content = set()
     for q in bank:
         code = ('level' if q['level'] not in (level, 'Both') else
                 'syllabus' if q['syllabus'] != syllabus else
                 'paper' if paper and q['paper'] != paper else
+                'document' if document_ids and q['document_id'] not in document_ids else
                 'sl_content' if level == 'SL' and not sl_compatible(q) else
-                'source' if q['document_id'] not in source_ids else None)
+                'source' if q['document_id'] not in source_ids else
+                'analysis_outdated' if q.get('analysis_outdated') else None)
         if code:
             exclude(q, code)
             continue
@@ -48,6 +54,11 @@ def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode,
         if scoped is None:
             exclude(q, code)
             continue
+        if q.get('content_hash') and q['content_hash'] in seen_content:
+            exclude(q, 'duplicate')
+            continue
+        if q.get('content_hash'):
+            seen_content.add(q['content_hash'])
         variants = short_variants(q, scoped.get('omitted_parts', []), topics) if mode == 'short' else [scoped]
         matching_minutes.append(variants[0]['minutes'])
         minimum = min(max(.1, math.ceil(v['minutes'] * 10 - 1e-8) / 10) for v in variants)
@@ -72,7 +83,7 @@ def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode,
     report = dict(summary=summary, total_saved=len(bank), uploaded_documents=len(documents),
                   analyzed_not_imported=unsaved, matching_filters=len(minimums), fitting_budget=len(fitting),
                   shortest_valid_minutes=shortest, available_minutes=round(sum(matching_minutes), 2),
-                  requested=dict(level=level, syllabus=syllabus, paper=paper or 'Any', topics=topics, render_mode=mode, minutes=target),
+                  requested=dict(level=level, syllabus=syllabus, paper=paper or 'Any', topics=topics, render_mode=mode, minutes=target, document_ids=list(document_ids)),
                   bank_levels=dict(Counter(q['level'] for q in bank)), bank_syllabuses=dict(Counter(q['syllabus'] for q in bank)),
                   bank_papers=dict(Counter(q['paper'] for q in bank)), exclusions=list(excluded.values()))
     return fitting, report

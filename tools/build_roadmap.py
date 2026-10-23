@@ -66,7 +66,7 @@ def table(page, y, columns, rows, size=9):
 
 def build():
     doc = fitz.open()
-    p, y = heading(doc, 1, 'Physics prerequisite roadmap', 'A content-based analysis of all five themes and 24 subtopics. No example teaching route is used.')
+    p, y = heading(doc, 1, 'Physics prerequisite roadmap', 'A content-based analysis of all five themes, 24 syllabus subtopics and the application skills topic A.0. No example teaching route is used.')
     y = write(p, 44, y, 'How to read the deductions', size=13, font='hebo')
     y = write(p, 44, y + 4, 'Core foundations are inferred from the physics needed to understand a topic. A core permission allows earlier content in a query; it does not mean every individual question requires the whole foundation topic. Conditional links apply only to specific extensions and never expand a topic query automatically.')
     y = write(p, 44, y + 16, 'Foundation -> dependent topic', size=13, font='hebo')
@@ -91,14 +91,14 @@ def build():
         level(code)
     rows = [[str(i), ', '.join(c for c in TOPICS if levels[c] == i)] for i in range(max(levels.values()) + 1)]
     y = table(p, y + 10, [('Layer', 60), ('Topics with this longest prerequisite depth', 447)], rows, size=9)
-    write(p, 44, y + 19, 'Layers are a topological view of the inferred graph, not a prescribed teaching order. Topics in one layer are not prerequisites for one another. Units, algebra, graphs, proportionality and vector skills underpin the map without being separate topic codes.', size=9)
+    write(p, 44, y + 19, 'Layers are a topological view of the inferred graph, not a prescribed teaching order. Topics in one layer are not prerequisites for one another. The application adds A.0 for measurement and uncertainty skills. It is a user-defined skills category, not an official 2025 IB subtopic code.', size=9)
 
     for number, (theme, data) in enumerate(POLICY['themes'].items(), 2):
         p, y = heading(doc, number, theme + '. ' + data['title'], data['summary'])
         for code, analysis in POLICY['topic_analysis'].items():
             if not code.startswith(theme + '.'):
                 continue
-            label = 'HL only' if code in POLICY['level_scope']['HL_only'] else 'SL + additional HL' if code in POLICY['level_scope']['SL_and_additional_HL'] else 'SL / HL common'
+            label = 'SL / HL skills category' if code == 'A.0' else 'HL only' if code in POLICY['level_scope']['HL_only'] else 'SL + additional HL' if code in POLICY['level_scope']['SL_and_additional_HL'] else 'SL / HL common'
             y = write(p, 44, y, code + '  ' + TOPICS[code] + '  [' + label + ']', size=11, font='hebo', color=BLUE)
             y = write(p, 44, y + 2, analysis['summary'], size=9.5)
             core = ', '.join(analysis['core_prerequisites']) or 'No earlier topic; foundational skills only'
@@ -107,7 +107,7 @@ def build():
             y = write(p, 44, y + 2, 'Deduction: ' + analysis['deduction'], size=9)
             y = write(p, 44, y + 2, 'Evidence: TSM printed pp. ' + analysis['printed_pages'] + '. ' + analysis['coverage'], size=8, color=(.33, .38, .42))
             p.draw_line((44, y + 5), (551, y + 5), color=(.8, .85, .9), width=.5)
-            y += 20
+            y += 16
         if y > 798:
             raise ValueError(f'Theme {theme} overflows: {y}')
 
@@ -124,9 +124,9 @@ def build():
         y = write(p, 44, y + 2, body, size=9.3) + 10
     y = write(p, 44, y + 2, 'Source and limits', size=12, font='hebo')
     y = write(p, 44, y + 4, 'IB Physics teacher support material, first assessment 2025; published September 2023, updated July/November 2024. Analysis uses printed pp. 2-17 (PDF pp. 7-22); the sample teaching route is excluded. The uploaded PDF has 116 pages. Full source identity and per-topic rationales are in curriculum_prerequisites.json.', size=8.5)
-    y = write(p, 44, y + 5, 'This is a content-based project synthesis, not an official IB prerequisite specification or an exhaustive syllabus checklist. The support material is brief on some topics; the cards label physics deductions where details are inferred. Core versus conditional is an application judgement that can be revised after teacher review.', size=8.5)
+    y = write(p, 44, y + 5, 'This is a content-based project synthesis, not an official IB prerequisite specification or an exhaustive syllabus checklist. The support material is brief on some topics; the cards label physics deductions where details are inferred. Core versus conditional is an application judgement. A.0 is a user-defined cross-cutting skills category, not an official IB 2025 subtopic code.', size=8.5)
     write(p, 44, y + 5, 'Small-model dependency suggestions require human approval. Current real inference has not demonstrated reliable dependency classification; conservative validation rejects invalid graphs.', size=8.5)
-    doc.set_metadata({'title':'IB DP Physics Content and Prerequisite Roadmap', 'author':'Question Splitter project', 'subject':'All 24 subtopics: content summaries, deduced prerequisites and conditional links'})
+    doc.set_metadata({'title':'IB DP Physics Content and Prerequisite Roadmap', 'author':'Question Splitter project', 'subject':'24 syllabus subtopics plus A.0: content summaries and deduced prerequisites'})
     doc.save(OUTPUT, garbage=4, deflate=True)
     print(OUTPUT)
 

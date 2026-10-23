@@ -4,6 +4,7 @@ import os
 import sqlite3
 import uuid
 from datetime import datetime, timezone
+from analysis_storage import rules_hash, source_hash, text_fingerprint, question_fingerprint
 from io import BytesIO
 from pathlib import Path
 
@@ -18,6 +19,8 @@ from dependency_review import analyze_dependencies
 from topic_scope import scoped_question, topic_closure, POLICY
 from paper_diagnostics import diagnose_selection, finish_diagnostics
 from paper_cover import add_practice_cover, finalize_practice_cover
+from paper_selection import question_variants, select_required
+from paper_numbering import erase_source_numbers
 from upload_filter import markscheme_name, markscheme_heading
 
 
@@ -39,7 +42,22 @@ def create_app(data_dir=None):
         CREATE TABLE IF NOT EXISTS documents (id TEXT PRIMARY KEY, filename TEXT NOT NULL, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS questions (id TEXT PRIMARY KEY, document_id TEXT NOT NULL, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS papers (id TEXT PRIMARY KEY, data TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS source_fingerprints (sha256 TEXT PRIMARY KEY, document_id TEXT NOT NULL);
         ''')
+
+    # Upgrade earlier local banks once; preserve all saved annotations.
+    with db() as conn:
+        for row in conn.execute('SELECT id FROM documents WHERE id NOT IN (SELECT document_id FROM source_fingerprints)').fetchall():
+            path = root / 'documents' / (row['id'] + '.pdf')
+            if path.is_file():
+                conn.execute('INSERT OR IGNORE INTO source_fingerprints VALUES (?, ?)', (source_hash(path), row['id']))
+        for row in conn.execute('SELECT id, data FROM questions').fetchall():
+            value = json.loads(row['data'])
+            image = root / 'images' / (row['id'] + '.png')
+            if not value.get('content_hash') and image.is_file():
+                value['content_hash'] = question_fingerprint(value['text'], image.read_bytes())
+                value['text_hash'] = text_fingerprint(value['text'])
+                conn.execute('UPDATE questions SET data=? WHERE id=?', (json.dumps(value), row['id']))
 
     def document(doc_id):
         with db() as conn:
@@ -189,6 +207,29 @@ def create_app(data_dir=None):
             if is_markscheme:
                 path.unlink(missing_ok=True)
                 return skipped_markscheme()
+            digest = source_hash(path)
+            with db() as conn:
+                prior = conn.execute('SELECT d.id FROM source_fingerprints f JOIN documents d ON d.id=f.document_id WHERE f.sha256=?', (digest,)).fetchone()
+            if prior and not document(prior['id']).get('text_pages'):
+                prior = None  # Upgrade legacy imports that never stored page data.
+            if prior:
+                existing_path = root / 'documents' / (prior['id'] + '.pdf')
+                if existing_path.is_file():
+                    path.unlink()
+                else:
+                    path.replace(existing_path)
+                response = document(prior['id'])
+                if any(markscheme_heading(r.get('text', '')) or markscheme_heading(r.get('native', '')) for r in response.get('text_pages', [])[:4]):
+                    return skipped_markscheme()
+                response['duplicate_document'] = True
+                response['message'] = 'This PDF was already analyzed. Reused the saved page data and analysis.'
+                if request.form.get('auto_import') == '1':
+                    response.setdefault('analysis', {})['auto_import'] = True
+                    with db() as conn:
+                        conn.execute('UPDATE documents SET data=? WHERE id=?',
+                                     (json.dumps({k: v for k, v in response.items() if k not in ('id', 'filename', 'duplicate_document', 'message')}), prior['id']))
+                    response['import_result'] = import_document_questions(prior['id'])
+                return jsonify(response), 200
             result = extract(path, uploaded.filename, ocr_mode=request.form.get('ocr_mode', 'auto'), ocr_cache=root / 'ocr-cache')
         except Exception as error:
             path.unlink(missing_ok=True)
@@ -198,12 +239,13 @@ def create_app(data_dir=None):
             path.unlink(missing_ok=True)
             return skipped_markscheme()
         pending = [q for q in result['questions'] if q.get('ocr_comparison', {}).get('status') == 'disagreement']
-        result['analysis'] = dict(version=1, status='complete', completed_at=datetime.now(timezone.utc).isoformat(),
-                                  ocr_mode=request.form.get('ocr_mode', 'auto'),
+        result['analysis'] = dict(version=1, rules_hash=rules_hash(), source_sha256=digest, status='complete', completed_at=datetime.now(timezone.utc).isoformat(),
+                                  ocr_mode=request.form.get('ocr_mode', 'auto'), auto_import=request.form.get('auto_import') == '1',
                                   language_review_status='pending' if pending else 'complete')
         # Commit extracted text, boundaries and tags before potentially slow model calls.
         with db() as conn:
             conn.execute('INSERT INTO documents VALUES (?, ?, ?)', (doc_id, Path(uploaded.filename).name, json.dumps(result)))
+            conn.execute('INSERT INTO source_fingerprints VALUES (?, ?) ON CONFLICT(sha256) DO UPDATE SET document_id=excluded.document_id', (digest, doc_id))
         for index, q in enumerate(pending):
             args = review_inputs(result, q['regions'], q['paper'])
             try:
@@ -236,7 +278,53 @@ def create_app(data_dir=None):
             q['language_review'] = current_review(result, q, reviews.get(number) or q.get('language_review'))
         result['questions'] = [suggested[n] for n in sorted(suggested)]
         result['saved_numbers'] = list(saved)
+        result['rules_changed'] = result.get('analysis', {}).get('rules_hash') != rules_hash()
         return jsonify(result)
+
+    @app.post('/api/documents/<doc_id>/reanalyse')
+    def reanalyse_document(doc_id):
+        old = document(doc_id)
+        if not old.get('text_pages'):
+            raise ValueError('This import has no saved OCR/page data. Upload it once to store page data before reanalysis.')
+        path = root / 'documents' / (doc_id + '.pdf')
+        mode = old.get('analysis', {}).get('ocr_mode', 'auto')
+        result = extract(path, old['filename'], ocr_mode=mode, page_records=old['text_pages'])
+        previous = {q['number']: q for q in old['questions']}
+        for candidate in result['questions']:
+            prior = previous.get(candidate['number'], {}).get('language_review')
+            candidate['language_review'] = current_review(result, candidate, prior)
+        result['analysis'] = dict(version=1, rules_hash=rules_hash(), source_sha256=source_hash(path), status='complete',
+                                  completed_at=datetime.now(timezone.utc).isoformat(), ocr_mode=mode,
+                                  language_review_status='not_rerun', reused_page_data=True, auto_import=old.get('analysis', {}).get('auto_import', False))
+        with db() as conn:
+            conn.execute('UPDATE documents SET data=? WHERE id=?', (json.dumps(result), doc_id))
+        existing = {q['number']: q for q in questions() if q['document_id'] == doc_id}
+        updated, added, preserved, failed, duplicates = [], [], [], [], []
+        for candidate in result['questions']:
+            saved = existing.get(candidate['number'])
+            if not saved and not result['analysis']['auto_import']:
+                continue
+            if saved and saved.get('review_status') != 'imported':
+                preserved.append(saved['id'])
+                continue
+            try:
+                outcome = persist_question(dict(candidate, document_id=doc_id), imported=True)
+                if outcome.get('duplicate'):
+                    duplicates.append(candidate['number'])
+                else:
+                    (updated if saved else added).append(outcome['id'])
+            except (ValueError, KeyError, TypeError) as error:
+                failed.append(dict(number=candidate['number'], error=str(error)))
+        detected_numbers = {q['number'] for q in result['questions']}
+        outdated = []
+        for number, saved in existing.items():
+            if number not in detected_numbers and saved.get('review_status') == 'imported':
+                saved['analysis_outdated'] = True
+                save_question_data(saved)
+                outdated.append(number)
+        return jsonify(document_id=doc_id, questions=len(result['questions']), updated_question_ids=updated, new_question_ids=added,
+                       duplicate_numbers=duplicates, outdated_numbers=outdated,
+                       preserved_reviewed_ids=preserved, failed=failed, reused_page_data=True)
 
     @app.post('/api/documents/<doc_id>/questions/<int:number>/language-review')
     def resolve_language_disagreement(doc_id, number):
@@ -321,6 +409,17 @@ def create_app(data_dir=None):
                      tags=tags, commands=commands, regions=regions, text=text,
                      filename=doc['filename'], topic_evidence=suggestions['topic_evidence'],
                      ocr_comparison=comparison, level_conflicts=suggestions['level_conflicts'], review_status='imported' if imported else 'reviewed', language_review=language_result)
+        content_hash = question_fingerprint(text, png)
+        saved['content_hash'], saved['text_hash'] = content_hash, text_fingerprint(text)
+        duplicate = next((q for q in questions() if q.get('content_hash') == content_hash
+                          and (q['document_id'], q['number']) != (doc['id'], number)), None)
+        if duplicate:
+            if imported:
+                return dict(duplicate, duplicate=True)
+            raise ValueError(f"This question already exists in the bank: {duplicate['filename']} Q{duplicate['number']}.")
+        saved['possible_duplicate_ids'] = [q['id'] for q in questions()
+                                           if (q['document_id'], q['number']) != (doc['id'], number) and q.get('text_hash') == saved['text_hash'] and q.get('content_hash') != content_hash
+                                           and len(text.strip()) >= 80]
         with db() as conn:
             existing = next((q for q in questions() if q['document_id'] == doc['id'] and q['number'] == number), None)
             prior_map = existing.get('subquestions') if existing else None
@@ -355,7 +454,7 @@ def create_app(data_dir=None):
     def import_document_questions(doc_id):
         doc = document(doc_id)
         existing = {q['number'] for q in questions() if q['document_id'] == doc_id}
-        added, skipped, failed = [], [], []
+        added, skipped, failed, duplicates = [], [], [], []
         for candidate in doc['questions']:
             number = candidate['number']
             if number in existing:
@@ -367,9 +466,13 @@ def create_app(data_dir=None):
                 failed.append(dict(number=number, error=str(error)))
                 continue
             existing.add(number)
-            added.append(saved['id'])
+            if saved.get('duplicate'):
+                skipped.append(number)
+                duplicates.append(dict(number=number, existing_question_id=saved['id'], filename=saved['filename']))
+            else:
+                added.append(saved['id'])
         return dict(document_id=doc_id, imported=len(added), question_ids=added,
-                    skipped_numbers=skipped, failed=failed)
+                    skipped_numbers=skipped, failed=failed, duplicate_questions=duplicates)
 
     @app.post('/api/documents/<doc_id>/confirm-import')
     def confirm_import(doc_id):
@@ -446,9 +549,7 @@ def create_app(data_dir=None):
             png = render_question(pdf, variant['regions'])
         return send_file(BytesIO(png), mimetype='image/png')
 
-    @app.post('/api/papers')
-    def generate():
-        value = request.get_json()
+    def paper_pool(value):
         target = float(value['minutes'])
         mode = value.get('render_mode', 'full')
         if mode not in ('full', 'short'):
@@ -467,25 +568,78 @@ def create_app(data_dir=None):
             analyzed = [dict(id=r['id'], questions=json.loads(r['questions'] or '[]')) for r in
                         conn.execute("SELECT id, json_extract(data, '$.questions') AS questions FROM documents")]
         source_ids = {d['id'] for d in analyzed if (root / 'documents' / (d['id'] + '.pdf')).is_file()}
+        document_ids = value.get('document_ids', [])
+        if not isinstance(document_ids, list) or any(not isinstance(i, str) for i in document_ids):
+            raise ValueError('Source papers must be a list of document IDs.')
+        if set(document_ids) - {d['id'] for d in analyzed}:
+            raise ValueError('Some selected source papers no longer exist. Refresh the question list.')
         eligible, diagnostics = diagnose_selection(questions(), analyzed, level=level, syllabus=syllabus,
                                                    paper=value.get('paper'), topics=selected_topics, mode=mode,
-                                                   target=target, source_ids=source_ids)
+                                                   target=target, source_ids=source_ids, document_ids=document_ids)
+        return eligible, diagnostics
+
+    def automatic_choice(eligible, target, topics, mode):
         if mode == 'short':
-            chosen = choose_short(eligible, target, selected_topics)
+            return choose_short(eligible, target, topics)
+        scoped = [variant for q in eligible if (variant := scoped_question(q, topics)) is not None]
+        ids = choose_questions(scoped, target)
+        return [q for q in scoped if q['id'] in ids]
+
+    @app.post('/api/papers/preview')
+    def preview_paper_selection():
+        eligible, diagnostics = paper_pool(request.get_json())
+        config = diagnostics['requested']
+        candidates = []
+        for q in eligible:
+            variants = question_variants(q, config['topics'], config['render_mode'])
+            candidates.append(dict(id=q['id'], document_id=q['document_id'], number=q['number'],
+                                   filename=q['filename'], topics=scoped_question(q, config['topics'])['topics'],
+                                   preferred_minutes=variants[0]['minutes'], minimum_minutes=min(v['minutes'] for v in variants),
+                                   omitted_parts=variants[0]['omitted_parts']))
+        return jsonify(questions=candidates, diagnostics=diagnostics)
+
+    @app.post('/api/papers')
+    def generate():
+        value = request.get_json()
+        eligible, diagnostics = paper_pool(value)
+        config = diagnostics['requested']
+        target, mode, level, syllabus, selected_topics = (config[key] for key in ('minutes', 'render_mode', 'level', 'syllabus', 'topics'))
+        requested_ids = value.get('question_ids')
+        fill = value.get('fill_paper', False)
+        if not isinstance(fill, bool):
+            raise ValueError('Fill paper must be true or false.')
+        filled_ids = []
+        if requested_ids is not None:
+            if not isinstance(requested_ids, list) or (not requested_ids and not fill) or any(not isinstance(i, str) for i in requested_ids) or len(set(requested_ids)) != len(requested_ids):
+                raise ValueError('Select at least one unique question, or use automatic selection.')
+            by_id = {q['id']: q for q in eligible}
+            if set(requested_ids) - set(by_id):
+                return jsonify(error='Some selected questions no longer fit these filters or duration. Refresh the matching questions.', diagnostics=diagnostics), 400
+            required = [by_id[i] for i in requested_ids]
+            chosen = select_required(required, target, selected_topics, mode)
+            if required and not chosen:
+                minimum = sum(min(v['minutes'] for v in question_variants(q, selected_topics, mode)) for q in required)
+                return jsonify(error=f'The selected {len(required)} questions need at least {minimum:g} estimated minutes; the budget is {target:g}. Increase the budget or deselect questions.', diagnostics=diagnostics), 400
+            if fill:
+                remaining = round(target - sum(q['minutes'] for q in chosen), 6)
+                extras = automatic_choice([q for q in eligible if q['id'] not in set(requested_ids)], remaining, selected_topics, mode)
+                filled_ids = [q['id'] for q in extras]
+                chosen.extend(extras)
         else:
-            scoped = [variant for q in eligible if (variant := scoped_question(q, selected_topics)) is not None]
-            ids = choose_questions(scoped, target)
-            chosen = [q for q in scoped if q['id'] in ids]
+            chosen = automatic_choice(eligible, target, selected_topics, mode)
         ids = [q['id'] for q in chosen]
         if not chosen:
             return jsonify(error=diagnostics['summary'], diagnostics=diagnostics), 400
         paper_id = uuid.uuid4().hex
         actual = round(sum(q['minutes'] for q in chosen), 1)
+        numbering_cache, numbering_results = {}, {}
+        original_questions = {q['id']: q for q in questions()}
         with fitz.open() as pdf:
             add_practice_cover(pdf, level=level, syllabus=syllabus, target=target, chosen=chosen, mode=mode)
             for i, q in enumerate(chosen, 1):
                 # Keep every crop of the parent together and in source order.
                 with fitz.open(root / 'documents' / (q['document_id'] + '.pdf')) as source:
+                    numbering_results[q['id']] = erase_source_numbers(source, original_questions[q['id']], numbering_cache)
                     for j, region in enumerate(q['regions']):
                         rect = fitz.Rect(region['rect'])
                         # Tile tall crops at a readable scale across consecutive A4 pages.
@@ -497,17 +651,23 @@ def create_app(data_dir=None):
                             label = f'Question {i}' + (' (continued)' if j or top > rect.y0 else '')
                             page.insert_text((50, 35), label, fontsize=12)
                             page.show_pdf_page(fitz.Rect(50, 60, 545, 770), source, region['page'], clip=clip)
-                            page.insert_text((50, 805), f"Source: {q['filename'][:55].encode('ascii', 'replace').decode()} | Q{q['number']} | {q['year']} | {q['paper']}", fontsize=8)
+                            page.insert_text((50, 805), f"Source: {q['filename'][:55].encode('ascii', 'replace').decode()} | {q['year']} | {q['paper']}", fontsize=8)
                             top += max_height
             finalize_practice_cover(pdf)
             pdf.save(root / 'papers' / (paper_id + '.pdf'))
+        completed_diagnostics = finish_diagnostics(diagnostics, chosen, target)
+        if requested_ids is not None and not fill and actual < target:
+            completed_diagnostics['summary'] = f'Your selected questions provide {actual:g} estimated minutes, leaving {target - actual:g} minutes. Enable Fill paper to add other matching questions.'
         result = dict(id=paper_id, question_ids=list(ids), target_minutes=target, actual_minutes=actual,
                       shortfall_minutes=round(target - actual, 1), count=len(chosen), render_mode=mode,
-                      diagnostics=finish_diagnostics(diagnostics, chosen, target),
-                      selections=[dict(question_id=q['id'], kept_parts=q['kept_parts'], omitted_parts=q['omitted_parts'],
+                      diagnostics=completed_diagnostics,
+                      selection_mode='manual' if requested_ids is not None else 'automatic',
+                      requested_question_ids=requested_ids or [], filled_question_ids=filled_ids,
+                      numbering=numbering_results,
+                      selections=[dict(question_id=q['id'], number=i, source_number=q['number'], selection_source='filled' if q['id'] in filled_ids else 'teacher' if requested_ids is not None else 'automatic', kept_parts=q['kept_parts'], omitted_parts=q['omitted_parts'],
                                        topic_omitted_parts=q.get('topic_omitted_parts', []),
                                        topics=q['topics'],
-                                       estimated_minutes=round(q['minutes'], 2), render_mode=q['render_mode']) for q in chosen],
+                                       estimated_minutes=round(q['minutes'], 2), render_mode=q['render_mode']) for i, q in enumerate(chosen, 1)],
                       topic_scope=dict(requested=selected_topics, allowed=sorted(topic_closure(selected_topics)), policy_version=POLICY['version']),
                       short_fallbacks=[q['id'] for q in chosen if mode == 'short' and not q['dependency_approved']])
         with db() as conn:

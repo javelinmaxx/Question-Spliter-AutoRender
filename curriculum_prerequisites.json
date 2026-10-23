@@ -1,17 +1,20 @@
 {
   "syllabus": "2025",
-  "version": 3,
+  "version": 4,
   "source": {
     "title": "IB Physics teacher support material, first assessment 2025",
     "edition": "Published September 2023; updated July and November 2024",
     "filename": "physics-teacher-support-material-en_7088ad39-48da-4a2d-b4ab-1c8384cd05a4 (1).pdf",
     "sha256": "6b7cd5879df33208d59d0c83ca0db62a5104bb8026c7a0ff73ef0cc20e7ef0a5",
     "pages": "Printed pp. 2–17 (PDF pp. 7–22)",
-    "scope": "Content-based synthesis of the five themes and 24 subtopics. The example teaching route is not used. Topic coverage comes from the course overview and conceptual examples, supplemented by explicitly identified physics deductions where the support material is brief. This is not an exhaustive syllabus statement or an official IB prerequisite graph."
+    "scope": "Content-based synthesis of the five themes and 24 subtopics. The example teaching route is not used. Topic coverage comes from the course overview and conceptual examples, supplemented by explicitly identified physics deductions where the support material is brief. This is not an exhaustive syllabus statement or an official IB prerequisite graph. A.0 Measurements and uncertainties is a user-requested application category for cross-cutting skills; it is not an official 2025 IB subtopic code."
   },
   "policy": "Content-deduced directional prerequisite permissions. Core edges allow earlier foundations in a target query; they do not assert that every target question needs the entire foundation topic. Conditional links never expand scope automatically. Require a selected target in retained tasks; never infer reverse links, same-theme permissions or a chronological teaching sequence.",
   "requires": {
-    "A.1": [],
+    "A.0": [],
+    "A.1": [
+      "A.0"
+    ],
     "A.2": [
       "A.1"
     ],
@@ -106,10 +109,15 @@
     "gravity": "D.1"
   },
   "edge_evidence": {
+    "A.0": {
+      "classification": "user-requested skills category",
+      "printed_pages": "2, 7, 9–10",
+      "rationale": "A cross-cutting skills foundation. Motion and later topics may include measurement/uncertainty skills; selecting A.0 alone does not imply knowledge of later physics topics."
+    },
     "A.1": {
       "classification": "content-deduced application permission",
       "printed_pages": "2, 5, 13",
-      "rationale": "Entry foundation: algebra, vectors, units and graphs are skills rather than additional syllabus topics."
+      "rationale": "Measurement, units, vectors and graphical skills support quantitative descriptions of motion; the application groups these cross-cutting skills under A.0."
     },
     "A.2": {
       "classification": "content-deduced application permission",
@@ -228,11 +236,22 @@
     }
   },
   "topic_analysis": {
-    "A.1": {
-      "summary": "Position, displacement, velocity and acceleration; motion graphs and constant-acceleration/projectile descriptions.",
+    "A.0": {
+      "summary": "Measurement methods, SI/base/derived units, dimensional checks, instrument readings and resolution; accuracy, precision, random/systematic errors, significant figures and uncertainty propagation.",
       "core_prerequisites": [],
       "conditional_links": [],
-      "deduction": "Entry foundation: algebra, vectors, units and graphs are skills rather than additional syllabus topics.",
+      "deduction": "A cross-cutting skills foundation. Motion and later topics may include measurement/uncertainty skills; selecting A.0 alone does not imply knowledge of later physics topics.",
+      "printed_pages": "2, 7, 9–10",
+      "coverage": "The support material integrates measurement and uncertainty skills throughout physics. A.0 is a user-requested application label, not an official 2025 topic code.",
+      "category_type": "application skills topic"
+    },
+    "A.1": {
+      "summary": "Position, displacement, velocity and acceleration; motion graphs and constant-acceleration/projectile descriptions.",
+      "core_prerequisites": [
+        "A.0"
+      ],
+      "conditional_links": [],
+      "deduction": "Measurement, units, vectors and graphical skills support quantitative descriptions of motion; the application groups these cross-cutting skills under A.0.",
       "printed_pages": "2, 5, 13",
       "coverage": "Overview plus standard kinematics concepts inferred from the topic title."
     },
@@ -514,7 +533,7 @@
   "themes": {
     "A": {
       "title": "Space, time and motion",
-      "summary": "Describe motion, explain it through forces and conservation, and extend to rotating bodies and reference frames."
+      "summary": "Begin with measurement and uncertainty skills, describe motion, explain it through forces and conservation, and extend to rotating bodies and reference frames."
     },
     "B": {
       "title": "The particulate nature of matter",

@@ -41,7 +41,7 @@ def add_practice_cover(pdf, *, level, syllabus, target, chosen, mode):
         'Answer all questions included in this practice paper.',
         'Record your answers clearly on separate paper.' if all_mcq else 'Write your answers on separate paper; show calculations and units where appropriate.',
         'Use the calculator and data booklet arrangements specified by your teacher.',
-        'Source question and subquestion labels have been retained.'
+        'Questions are numbered consecutively; original subquestion labels are retained.'
     ]
     marks = [q.get('marks') for q in chosen]
     if all(isinstance(mark, (int, float)) and mark > 0 for mark in marks):

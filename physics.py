@@ -10,6 +10,7 @@ from PIL import Image
 from ocr import read_pages, region_text
 
 TOPICS = {
+    'A.0': 'Measurements and uncertainties',
     'A.1': 'Kinematics', 'A.2': 'Forces and momentum', 'A.3': 'Work, energy and power',
     'A.4': 'Rigid body mechanics', 'A.5': 'Galilean and special relativity',
     'B.1': 'Thermal energy transfers', 'B.2': 'Greenhouse effect', 'B.3': 'Gas laws',
@@ -39,6 +40,9 @@ def sl_compatible(question):
 
 
 KEYWORDS = {
+    'A.0': ['measure', 'measuring', 'measurement', 'uncertainty', 'uncertainties', 'significant figures', 'random error', 'systematic error',
+            'zero error', 'error bars', 'instrument resolution', 'percentage error', 'fractional error',
+            'absolute error', 'relative error', 'dimensional analysis', 'si unit', 'accuracy', 'precision'],
     'A.1': ['velocity', 'displacement', 'acceleration', 'projectile'],
     'A.2': ['momentum', 'newton', 'friction', 'impulse'],
     'A.3': ['kinetic energy', 'power', 'efficiency', 'work done'],
@@ -65,6 +69,11 @@ COMMANDS = ['calculate', 'define', 'describe', 'determine', 'discuss', 'draw', '
             'sketch', 'state', 'suggest', 'compare', 'deduce', 'distinguish']
 
 PATTERNS = {
+    'A.0': (r'\b(?:significant (?:figures?|digits?)|least count|best[ -]fit line|line of best fit|'
+            r'(?:base|derived) units?|(?:reading|calibration|resolution) of (?:a |an |the )?(?:ruler|meter|metre|ammeter|voltmeter|micrometer|instrument)|'
+            r'(?:measures?|measured|measuring) .{0,70}(?:ruler|caliper|calliper|micrometer|stopwatch)|'
+            r'(?:convert|conversion) .{0,50}(?:units?|centimetres?|millimetres?|kilometres?|meters?|metres?))\b|'
+            r'\d+(?:[.,]\d+)?\s*(?:±|\+\s*/\s*-)\s*\d+(?:[.,]\d+)?'),
     'A.2': r'\b(force|collision|collides|collide|tension|weight|drag|buoyancy|upthrust)\b',
     'A.4': r'\b(angular (?:velocity|acceleration|momentum)|rotational|flywheel|rotates|rotating|rolls without slipping)\b',
     'A.5': r'\b(relativistic|space.time|proper time|proper lifetime|length contraction|inertial reference)\b',
@@ -92,7 +101,7 @@ def custom_tags(text, topics):
               'D': 'fields', 'E': 'nuclear and quantum physics'}
     tags = []
     for code in topics:
-        tags.extend([themes[code[0]], TOPICS[code].lower()])
+        tags.extend(['experimental skills' if code == 'A.0' else themes[code[0]], TOPICS[code].lower()])
         tags.extend(word for word in KEYWORDS[code]
                     if re.search(r'\b' + re.escape(word) + r'(?:s)?\b', lower))
     return list(dict.fromkeys(tags))[:50]

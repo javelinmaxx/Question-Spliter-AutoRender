@@ -3,6 +3,7 @@ let prerequisitePolicy = {}, hlOnlyTopics = new Set();
 let catalog = {}, currentDoc = null, currentQuestion = null;
 let previewUrl;
 let pendingImportIds = [], importing = false;
+let pickerQuestions=[], teacherSelection=new Set(), pickerSignature=null;
 document.addEventListener('DOMContentLoaded',()=>$('#preview-question').addEventListener('click',async()=>{ const button=$('#preview-question'); button.disabled=true; try { const response=await fetch(`/api/documents/${currentDoc.id}/preview`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({regions:currentQuestion.regions})}); if(!response.ok) throw new Error((await response.json()).error); if(previewUrl) URL.revokeObjectURL(previewUrl); previewUrl=URL.createObjectURL(await response.blob()); $('#crop-image').src=previewUrl; $('#crop-preview').hidden=false; } catch(error){status(error.message,true);} finally{button.disabled=false;} }));
 function status(message, error=false) { $('#status').textContent=message; $('#status').classList.toggle('error',error); }
 function el(tag, text, className) { const node=document.createElement(tag); if(text!==undefined) node.textContent=text; if(className) node.className=className; return node; }
@@ -35,6 +36,8 @@ async function search() {
  if(!questions.length) { $('#results').append(el('div','No questions yet for these filters. Upload papers and use Confirm import, or save questions individually. For unknown metadata, choose All syllabuses.','empty')); return; }
  for(const q of questions) {
   const card=el('article',undefined,'card'); card.append(el('h3',`Question ${q.number} · ${q.year??'Unknown year'}`),el('p',`${q.level} · ${q.paper} · ${q.marks??'?'} marks · ~${q.minutes} min · ${q.difficulty}`));
+  if(q.analysis_outdated)card.append(el('span','Needs review after reanalysis','badge'));
+  if(q.possible_duplicate_ids?.length)card.append(el('span','Similar wording exists — compare diagrams','badge'));
   if(q.review_status==='imported') card.append(el('span','Imported · not individually reviewed','badge'));
   const tags=el('div',undefined,'tags'); for(const t of [...q.topics.map(t=>`${t} ${catalog[t]||''}`),...q.commands,...q.tags]) tags.append(el('span',t)); card.append(tags);
   const image=el('img'); const scope=new URLSearchParams(); for(const topic of new FormData($('#search')).getAll('topic').filter(Boolean))scope.append('topic',topic); image.src=`/api/questions/${q.id}/image?${scope}`; image.alt=`Cropped question ${q.number}`; image.loading='lazy';
@@ -44,8 +47,13 @@ async function search() {
  }
 }
 $('#search').addEventListener('submit',e=>{ e.preventDefault(); busy(e.target,search); });
-async function listDocuments() { const docs=await api('/api/documents'); $('#documents').replaceChildren(new Option('Choose an uploaded paper','')); docs.forEach(d=>$('#documents').add(new Option(d.filename,d.id))); }
-async function openDocument(id) { currentDoc=await api('/api/documents/'+id); setImportTargets([id]); const analysis=currentDoc.analysis; $('#analysis-status').textContent='Analysis saved on this computer'+(analysis?.completed_at?' · '+new Date(analysis.completed_at).toLocaleString():'')+'. Available after restarting the app.'+(analysis?.language_review_status==='pending'?' Some optional model checks did not finish; completed results are preserved.':''); $('#review').hidden=false; $('#question').hidden=true; $('#documents').value=id; $('#warnings').replaceChildren(...currentDoc.warnings.map(w=>el('p',w))); renderCandidates(); $('#source-page').replaceChildren(...currentDoc.pages.map((p,i)=>new Option(`Page ${i+1}`,i))); showPage(0); }
+async function listDocuments() {
+ const docs=await api('/api/documents');$('#documents').replaceChildren(new Option('Choose an uploaded paper',''));
+ const source=$('#source-documents'), selected=new Set([...source.selectedOptions].map(option=>option.value));source.replaceChildren();
+ for(const doc of docs){$('#documents').add(new Option(doc.filename,doc.id));const option=new Option(doc.filename,doc.id);option.selected=selected.has(doc.id);source.add(option);}
+ pickerSignature=null;
+}
+async function openDocument(id) { currentDoc=await api('/api/documents/'+id); setImportTargets([id]); const analysis=currentDoc.analysis; $('#analysis-status').textContent='Analysis saved on this computer'+(analysis?.completed_at?' · '+new Date(analysis.completed_at).toLocaleString():'')+'. Available after restarting the app.'+(currentDoc.rules_changed?' Analysis rules changed; use Reanalyse saved text to update tags without OCR.':'')+(analysis?.language_review_status==='pending'?' Some optional model checks did not finish; completed results are preserved.':''); $('#review').hidden=false; $('#question').hidden=true; $('#documents').value=id; $('#warnings').replaceChildren(...currentDoc.warnings.map(w=>el('p',w))); renderCandidates(); $('#source-page').replaceChildren(...currentDoc.pages.map((p,i)=>new Option(`Page ${i+1}`,i))); showPage(0); }
 function renderCandidates() { $('#candidates').replaceChildren(); for(const q of currentDoc.questions) { const button=el('button',`Question ${q.number}${currentDoc.saved_numbers.includes(q.number)?' · saved':''}`); button.type='button'; button.addEventListener('click',()=>selectQuestion(q)); $('#candidates').append(button); } }
 function selectQuestion(q) { $('#crop-preview').hidden=true; currentQuestion=structuredClone(q); $('#question').hidden=false; $('#review-number').textContent=q.number; const labels={agreement:'OCR and PDF text suggest the same topics. This is not a semantic accuracy guarantee.',disagreement:'OCR and PDF text suggest different topics. Check the source image and revise tags.',ocr_only:'Tags use OCR only; there is no independent PDF text to compare. Check the source image.',not_run:'OCR verification has not run for this question.'}; $('#ocr-status').textContent=labels[q.ocr_comparison?.status||'not_run']; $('#tag-evidence').textContent=JSON.stringify(q.topic_evidence||{},null,2); for(const name of ['number','year','level','syllabus','paper','marks','minutes','difficulty']) $('#question').elements[name].value=q[name]??''; for(const name of ['commands','tags']) $('#question').elements[name].value=(q[name]||[]).join(', '); for(const opt of $('#question').elements.topics.options) opt.selected=(q.topics||[]).includes(opt.value); applyTopicLevel($('#question')); $('#extracted').textContent=q.text||'No extracted text. Enter tags manually.'; renderRegions(); if(q.regions.length) showPage(q.regions[0].page); showLanguageReview(q.language_review); }
 function showPage(n) { $('#source-page').value=n; const p=currentDoc.pages[n]; $('#page-size').textContent=`${p.width} × ${p.height} PDF points`; $('#source-image').src=`/api/documents/${currentDoc.id}/pages/${n}`; }
@@ -108,10 +116,11 @@ $('#upload').addEventListener('submit',e=>{
      const data=new FormData(); data.append('file',file,file.name); data.append('ocr_mode',mode); data.append('relative_path',file.webkitRelativePath||file.name); if(autoImport)data.append('auto_import','1');
      const result=await api('/api/documents',{method:'POST',body:data});
      if(result.status==='skipped'&&result.reason==='markscheme'){skippedMarkschemes++;row.textContent=`${name}: ${result.message}`;continue;}
-     uploaded.push(result.id); row.textContent=`${name}: ${result.questions.length} detected question groups.`;
+     if(!uploaded.includes(result.id))uploaded.push(result.id); row.textContent=`${name}: ${result.questions.length} detected question groups.`;
+     if(result.duplicate_document)row.textContent+=' Reused saved analysis for this duplicate PDF.';
      if(result.import_result){
       automaticallyAdded+=result.import_result.imported; importFailures+=result.import_result.failed.length;
-      row.textContent+=` ${result.import_result.imported} automatically saved; ${result.import_result.failed.length} import failures.`;
+      row.textContent+=` ${result.import_result.imported} automatically saved; ${result.import_result.skipped_numbers.length} already in the bank; ${result.import_result.failed.length} import failures.`;
       for(const item of result.import_result.failed)$('#upload-progress').append(el('p',`${name}, question ${item.number}: ${item.error}`,'error'));
      }
     }catch(error){row.textContent=`${name}: failed — ${error.message}`;row.classList.add('error');}
@@ -151,6 +160,15 @@ $('#confirm-import').addEventListener('click',async()=>{
   $('#import-outcome').replaceChildren(el('p',summary),...rows);status(summary,failed>0);
  }
 });
+$('#reanalyse').addEventListener('click',async()=>{
+ if(!currentDoc)return;const button=$('#reanalyse');button.disabled=true;
+ try{
+  const id=currentDoc.id;status('Reanalysing saved OCR/native page data. OCR will not run.');
+  const result=await post(`/api/documents/${id}/reanalyse`,{});
+  await listDocuments();await openDocument(id);await search();
+  status(`Reanalysis saved. ${result.questions} groups detected; ${result.updated_question_ids.length} auto-imported questions updated; ${result.new_question_ids.length} newly detected questions added; ${result.duplicate_numbers.length} duplicates already in bank; ${result.outdated_numbers.length} older groups need review; ${result.preserved_reviewed_ids.length} manual reviews preserved; ${result.failed.length} failures. No OCR was run.`,result.failed.length>0);
+ }catch(error){status(error.message,true);}finally{button.disabled=false;}
+});
 $('#autofill-tags').addEventListener('click',async()=>{
  const button=$('#autofill-tags');button.disabled=true;
  try{
@@ -165,6 +183,40 @@ $('#autofill-tags').addEventListener('click',async()=>{
  }catch(error){status(error.message,true);}finally{button.disabled=false;}
 });
 $('#question').addEventListener('submit',e=>{e.preventDefault(); busy(e.target,async()=>{ const value=Object.fromEntries(new FormData(e.target)); value.topics=[...e.target.elements.topics.selectedOptions].map(o=>o.value); for(const name of ['commands','tags']) value[name]=value[name].split(',').map(v=>v.trim()).filter(Boolean); value.document_id=currentDoc.id; value.regions=currentQuestion.regions; const saved=await post('/api/questions',value); currentQuestion={...saved}; const i=currentDoc.questions.findIndex(q=>q.number===saved.number); if(i>=0) currentDoc.questions[i]=saved; else currentDoc.questions.push(saved); if(!currentDoc.saved_numbers.includes(saved.number)) currentDoc.saved_numbers.push(saved.number); renderCandidates(); status(`Question ${saved.number} saved with ${saved.regions.length} page crop(s).`); });});
+function paperOptions(){
+ const form=$('#generate'),value=Object.fromEntries(new FormData(form));
+ value.topics=[...form.elements.topics.selectedOptions].map(option=>option.value);
+ value.document_ids=[...$('#source-documents').selectedOptions].map(option=>option.value);
+ return value;
+}
+function pickerSummary(){
+ const chosen=pickerQuestions.filter(q=>teacherSelection.has(q.id));
+ const preferred=chosen.reduce((sum,q)=>sum+q.preferred_minutes,0),minimum=chosen.reduce((sum,q)=>sum+q.minimum_minutes,0);
+ $('#picker-status').textContent=`${chosen.length} selected · ${minimum.toFixed(1)}–${preferred.toFixed(1)} estimated minutes · budget ${$('#generate').elements.minutes.value} minutes.`+(pickerSignature?'':' Filters changed; refresh the question list.');
+}
+$('#manual-selection').addEventListener('change',()=>{$('#question-picker').hidden=!$('#manual-selection').checked;pickerSummary();});
+$('#generate').addEventListener('input',event=>{if(event.target.matches('[name]')){pickerSignature=null;pickerSummary();}});
+$('#preview-questions').addEventListener('click',async()=>{
+ const button=$('#preview-questions');button.disabled=true;
+ try{
+  const options=paperOptions(),signature=JSON.stringify(options);const result=await post('/api/papers/preview',options);
+  if(signature!==JSON.stringify(paperOptions()))throw new Error('Filters changed during loading. Refresh the question list.');
+  pickerQuestions=result.questions;teacherSelection=new Set([...teacherSelection].filter(id=>pickerQuestions.some(q=>q.id===id)));
+  pickerSignature=signature;$('#manual-selection').checked=true;$('#question-picker').hidden=false;$('#paper-candidates').replaceChildren();
+  for(const q of pickerQuestions){
+   const card=el('article',undefined,'card'),label=el('label',undefined,'check'),check=el('input');check.type='checkbox';check.checked=teacherSelection.has(q.id);check.dataset.questionId=q.id;
+   check.addEventListener('change',()=>{check.checked?teacherSelection.add(q.id):teacherSelection.delete(q.id);pickerSummary();});
+   label.append(check,el('span',`Source Q${q.number} · ${q.filename}`));card.append(label,el('p',`${q.minimum_minutes.toFixed(1)}–${q.preferred_minutes.toFixed(1)} minutes · ${q.topics.map(t=>`${t} ${catalog[t]}`).join(', ')}`,'muted'));
+   const params=new URLSearchParams({mode:options.render_mode});for(const topic of options.topics)params.append('topic',topic);
+   const details=el('details'),summary=el('summary','Preview question'),image=el('img');image.src=`/api/questions/${q.id}/image?${params}`;image.alt=`Source question ${q.number}`;image.loading='lazy';details.append(summary,image);card.append(details);$('#paper-candidates').append(card);
+  }
+  pickerSummary();$('#paper-result').replaceChildren();showPaperDiagnostics(result.diagnostics);
+  status(`${pickerQuestions.length} matching question groups. Select the questions to include. Short mode may choose smaller safe variants to fit the budget.`);
+ }catch(error){status(error.message,true);}finally{button.disabled=false;}
+});
+function chooseAllQuestions(selected){teacherSelection=new Set(selected?pickerQuestions.map(q=>q.id):[]);for(const check of $('#paper-candidates').querySelectorAll('input[type=checkbox]'))check.checked=selected;pickerSummary();}
+$('#select-all-questions').addEventListener('click',()=>chooseAllQuestions(true));
+$('#clear-selected-questions').addEventListener('click',()=>chooseAllQuestions(false));
 function showPaperDiagnostics(report){
  if(!report)return;
  const box=el('section',undefined,'notice');box.append(el('h3','Question availability'),el('p',report.summary));
@@ -191,13 +243,18 @@ function showPaperDiagnostics(report){
  $('#paper-result').append(box);
 }
 $('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,async()=>{
- $('#paper-result').replaceChildren();const value=Object.fromEntries(new FormData(e.target));
- value.topics=[...e.target.elements.topics.selectedOptions].map(o=>o.value);
+ $('#paper-result').replaceChildren();const value=paperOptions();
+ if($('#manual-selection').checked){
+  if(pickerSignature!==JSON.stringify(value))throw new Error('Refresh the filtered question list after changing filters or analysis.');
+  value.question_ids=pickerQuestions.filter(q=>teacherSelection.has(q.id)).map(q=>q.id);
+  value.fill_paper=$('#fill-paper').checked;
+ }
  try{
   const result=await post('/api/papers',value);const link=el('a','Download practice paper PDF');link.href=`/api/papers/${result.id}/download`;
   $('#paper-result').append(el('p',`${result.count} question groups · ${result.render_mode||'full'} · Estimated ${result.actual_minutes} / ${result.target_minutes} minutes · ${result.shortfall_minutes} minutes unfilled.`),link);
   showPaperDiagnostics(result.diagnostics);
-  status(`Practice paper generated. ${result.selections?.reduce((n,s)=>n+s.omitted_parts.length,0)||0} parts omitted. ${result.short_fallbacks?.length||0} questions retained whole because no approved dependency map was available.`);
+  const numberingWarnings=Object.values(result.numbering||{}).flatMap(info=>info.warnings||[]);if(numberingWarnings.length)$('#paper-result').append(el('p',numberingWarnings.join(' '),'notice'));
+  status(`Practice paper generated. ${result.filled_question_ids?.length||0} extra questions added by Fill paper. ${result.selections?.reduce((n,s)=>n+s.omitted_parts.length,0)||0} parts omitted. ${result.short_fallbacks?.length||0} questions retained whole because no approved dependency map was available.`);
  }catch(error){showPaperDiagnostics(error.diagnostics);throw error;}
 });});
 async function init() { const value=await api('/api/catalog'); catalog=value.topics; hlOnlyTopics=new Set(value.hl_only_topics||[]); prerequisitePolicy=value.prerequisite_policy||{}; document.querySelectorAll('.topic-list,.topic-filter').forEach(select=>{ for(const [code,name] of Object.entries(catalog)) select.add(new Option(`${code} · ${name}`,code)); }); for(const id of ['question','generate','search'])applyTopicLevel($('#'+id)); await Promise.all([search(),listDocuments()]); }

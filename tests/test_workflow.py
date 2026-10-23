@@ -152,5 +152,5 @@ def test_subset_selection_is_not_greedy_or_over_budget():
 def test_ui_and_catalog(bank):
     client, _ = bank
     assert client.get('/').status_code == 200
-    assert len(client.get('/api/catalog').json['topics']) == 24
+    assert len(client.get('/api/catalog').json['topics']) == 25
     assert client.get('/static/app.js').status_code == 200
