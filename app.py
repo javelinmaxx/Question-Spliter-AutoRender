@@ -22,6 +22,7 @@ from paper_cover import add_practice_cover, finalize_practice_cover
 from paper_selection import question_variants, select_required
 from paper_numbering import erase_source_numbers
 from paper_layout import add_question_pages
+from model_backfill import ModelBackfill
 from upload_filter import markscheme_name, markscheme_heading
 
 
@@ -158,7 +159,11 @@ def create_app(data_dir=None):
 
     @app.get('/api/model/status')
     def language_model_status():
-        return jsonify(model_status())
+        return jsonify(**model_status(), backfill=backfill.status())
+
+    @app.before_request
+    def resume_optional_model_checks():
+        backfill.kick()
 
     @app.errorhandler(ValueError)
     @app.errorhandler(KeyError)
@@ -174,6 +179,8 @@ def create_app(data_dir=None):
     def secure(response):
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; object-src 'none'; frame-ancestors 'none'"
+        if request.method == 'POST' and response.status_code < 400:
+            backfill.kick(force=True)
         return response
 
     @app.get('/')
@@ -276,7 +283,8 @@ def create_app(data_dir=None):
                 defaults = suggest(q.get('text', ''), q.get('paper'))
                 q.setdefault('commands', defaults['commands'])
                 q.setdefault('tags', defaults['tags'])
-            q['language_review'] = current_review(result, q, reviews.get(number) or q.get('language_review'))
+            q['language_review'] = (current_review(result, q, q.get('language_review'))
+                                    or current_review(result, q, reviews.get(number)))
         result['questions'] = [suggested[n] for n in sorted(suggested)]
         result['saved_numbers'] = list(saved)
         result['rules_changed'] = result.get('analysis', {}).get('rules_hash') != rules_hash()
@@ -673,6 +681,11 @@ def create_app(data_dir=None):
                 raise ValueError('Paper not found.')
         return send_file(root / 'papers' / (paper_id + '.pdf'), as_attachment=True, download_name='physics-practice-paper.pdf')
 
+    backfill = ModelBackfill(root, lambda: model_status(), review_inputs,
+        lambda *args: review_disagreement(*args, TOPICS, cache_dir=root / 'language-reviews'),
+        lambda parts: analyze_dependencies(parts))
+    app.extensions['model_backfill'] = backfill
+    backfill.kick()
     return app
 
 

@@ -62,6 +62,9 @@ Generated papers align each crop at the top of the page, trim empty margins, and
 
 ## Saved OCR data, reanalysis and duplicates
 
+When Qwen is configured, the app automatically checks saved imports for missing model reviews at startup and periodically while the app is in use. It reviews unresolved PDF/OCR topic disagreements and drafts dependency/topic maps for saved bank questions with identifiable subquestions. This runs in the background using saved text, without repeating OCR. Each result is saved immediately and reused after restart; failed or uncertain attempts remain for manual review instead of being retried continuously. Existing model reviews, teacher tags/crops and approved dependency maps are preserved. Proposals still require review before applying tags or approving a dependency map. The Qwen status line shows background activity; reopen a question to view completed proposals.
+
+
 Each paper analysis stores its OCR/native text, line positions and page geometry in the local database; OCR caches are retained in `instance/ocr-cache/`. Rule fingerprints indicate when saved analysis was produced by older rules. Under **Resume an import**, open a paper and click **Reanalyse saved text (no OCR)**. This reruns splitting and tagging against the saved page records without calling OCR or the language model. Valid previous model proposals are retained only when their source hash still matches.
 
 Reanalysis updates auto-imported bank entries while preserving manually reviewed crops, tags, time and difficulty. If the original upload opted into Auto-import, newly detected groups are added too. Imported groups that current rules no longer detect are retained but marked for review and excluded from generation until explicitly reviewed and saved. Old imports with no stored page data need one upload to upgrade. Back up the entire data directory, including the original PDFs needed for rendering.

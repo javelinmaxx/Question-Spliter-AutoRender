@@ -330,3 +330,17 @@ function showTopicScope(form, target){
 }
 $('#search').addEventListener('change',()=>showTopicScope($('#search'),'#search-scope'));
 $('#generate').addEventListener('change',()=>showTopicScope($('#generate'),'#generate-scope'));
+
+async function refreshModelStatus() {
+ try {
+  const model=await api('/api/model/status'), target=$('#model-status');
+  target.hidden=!model.available;
+  if(model.available){
+   const job=model.backfill||{};
+   target.textContent=job.running?`Qwen is checking saved analyses in the background (${job.updated||0} updated).`:'Qwen is available. Missing model checks resume automatically; reopen a question to see saved proposals.';
+   if(job.errors)target.textContent+=` ${job.errors} checks could not finish; review those questions manually.`;
+  }
+ } catch(error) { $('#model-status').textContent='Could not check local model status.'; }
+}
+refreshModelStatus();
+setInterval(refreshModelStatus,15000);
