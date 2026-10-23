@@ -21,7 +21,7 @@ from paper_diagnostics import diagnose_selection, finish_diagnostics
 from paper_cover import add_practice_cover, finalize_practice_cover
 from paper_selection import question_variants, select_required
 from paper_numbering import erase_source_numbers
-from paper_layout import add_question_pages
+from paper_layout import add_question_pages, PaperLayout, group_questions
 from model_backfill import ModelBackfill
 from year_filter import year_range, matches_year
 from upload_filter import markscheme_name, markscheme_heading
@@ -641,6 +641,7 @@ def create_app(data_dir=None):
                 chosen.extend(extras)
         else:
             chosen = automatic_choice(eligible, target, selected_topics, mode)
+        chosen = group_questions(chosen)
         ids = [q['id'] for q in chosen]
         if not chosen:
             return jsonify(error=diagnostics['summary'], diagnostics=diagnostics), 400
@@ -650,11 +651,12 @@ def create_app(data_dir=None):
         original_questions = {q['id']: q for q in questions()}
         with fitz.open() as pdf:
             add_practice_cover(pdf, level=level, syllabus=syllabus, target=target, chosen=chosen, mode=mode)
+            layout = PaperLayout(pdf)
             for i, q in enumerate(chosen, 1):
                 # Keep every crop of the parent together and in source order.
                 with fitz.open(root / 'documents' / (q['document_id'] + '.pdf')) as source:
                     numbering_results[q['id']] = erase_source_numbers(source, original_questions[q['id']], numbering_cache)
-                    rendered = add_question_pages(pdf, source, q, i)
+                    rendered = add_question_pages(pdf, source, q, i, layout=layout)
                     numbering_results[q['id']]['rendered_pages'] = rendered
                     if not rendered:
                         raise ValueError(f"Question {q['number']} in {q['filename']} has no visible content after cleanup. Review its crop before generating a paper.")

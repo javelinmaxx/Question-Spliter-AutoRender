@@ -5,6 +5,15 @@ import fitz
 from PIL import Image
 
 
+def paper_family(question):
+    return 'Paper 1' if question.get('paper') in ('Paper 1', 'Paper 1A', 'Paper 1B') else question.get('paper', 'Unknown')
+
+
+def group_questions(questions):
+    """Stable grouping: preserve teacher/fill order inside each paper family."""
+    return sorted(questions, key=lambda q: {'Paper 1': 0, 'Paper 2': 1}.get(paper_family(q), 2))
+
+
 def content_bounds(page, rect):
     # Inspect pixels so scanned diagrams count even when no text was recognized.
     pix = page.get_pixmap(clip=rect, matrix=fitz.Matrix(1, 1), alpha=False)
@@ -21,7 +30,7 @@ def content_bounds(page, rect):
                      rect.x1, min(rect.y1, rect.y0 + box[3] * scale_y + 3))
 
 
-def question_clips(source, regions):
+def question_clips(source, regions, max_output_height=710):
     """Suppress empty regions/tiles, keeping source and subquestion order."""
     for region in regions:
         page = source[region['page']]
@@ -39,7 +48,7 @@ def question_clips(source, regions):
         rect = content_bounds(page, area)
         if rect is None:
             continue
-        max_height = 710 * rect.width / 495
+        max_height = max_output_height * rect.width / 495
         top = rect.y0
         while top < rect.y1:
             tile = fitz.Rect(rect.x0, top, rect.x1, min(rect.y1, top + max_height))
@@ -49,16 +58,67 @@ def question_clips(source, regions):
             top += max_height
 
 
-def add_question_pages(pdf, source, question, number):
-    count = 0
-    for page_number, clip in question_clips(source, question['regions']):
-        page = pdf.new_page()
-        label = f'Question {number}' + (' (continued)' if count else '')
-        page.insert_text((50, 35), label, fontsize=12)
-        # show_pdf_page centres by default. A box with the crop's actual aspect
-        # ratio makes its top coincide with y=60 for short and tall crops alike.
-        height = min(710, clip.height * 495 / clip.width)
-        page.show_pdf_page(fitz.Rect(50, 60, 545, 60 + height), source, page_number, clip=clip)
-        page.insert_text((50, 805), f"Source: {question['filename'][:55].encode('ascii', 'replace').decode()} | {question['year']} | {question['paper']}", fontsize=8)
-        count += 1
-    return count
+class PaperLayout:
+    """Flow complete question groups into remaining space at a readable scale."""
+    TOP, BOTTOM = 35, 780
+    HEADING, REFERENCE, QUESTION_GAP, CROP_GAP = 25, 14, 18, 6
+
+    def __init__(self, pdf):
+        self.pdf = pdf
+        self.page_index = None  # The cover is never a question-content page.
+        self.cursor = self.TOP
+        self.family = None
+
+    def new_page(self):
+        self.pdf.new_page()
+        self.page_index = len(self.pdf) - 1
+        self.cursor = self.TOP
+
+    def reference(self, question):
+        text = f"Source: {question['filename'][:55].encode('ascii', 'replace').decode()} | {question['year']} | {question['paper']}"
+        self.pdf[self.page_index].insert_text((50, self.cursor + 10), text, fontsize=8)
+        self.cursor += self.REFERENCE
+
+    def add_question(self, source, question, number):
+        capacity = self.BOTTOM - self.TOP - self.HEADING - self.REFERENCE
+        clips = list(question_clips(source, question['regions'], capacity))
+        if not clips:
+            return 0
+        heights = [clip.height * 495 / clip.width for _, clip in clips]
+        total = self.HEADING + sum(heights) + self.CROP_GAP * (len(clips) - 1) + self.REFERENCE
+        # If a whole parent will fit on a fresh page, do not split it simply
+        # because another question has already used some of the current page.
+        # Larger parents also start fresh, keeping their continuations together.
+        family = paper_family(question)
+        if self.page_index is None or self.family != family or self.cursor + total > self.BOTTOM:
+            self.new_page()
+        self.family = family
+        used_pages = set()
+        continued = False
+        needs_heading = True
+        for (page_number, clip), height in zip(clips, heights):
+            overhead = self.HEADING if needs_heading else self.CROP_GAP
+            if self.cursor + overhead + height + self.REFERENCE > self.BOTTOM + .01:
+                if not needs_heading:
+                    self.reference(question)
+                self.new_page()
+                continued, needs_heading = True, True
+            page = self.pdf[self.page_index]
+            if needs_heading:
+                label = f'Question {number}' + (' (continued)' if continued else '')
+                page.insert_text((50, self.cursor), label, fontsize=12)
+                self.cursor += self.HEADING
+                needs_heading = False
+            else:
+                self.cursor += self.CROP_GAP
+            page.show_pdf_page(fitz.Rect(50, self.cursor, 545, self.cursor + height),
+                               source, page_number, clip=clip)
+            self.cursor += height
+            used_pages.add(self.page_index)
+        self.reference(question)
+        self.cursor += self.QUESTION_GAP
+        return len(used_pages)
+
+
+def add_question_pages(pdf, source, question, number, layout=None):
+    return (layout if layout is not None else PaperLayout(pdf)).add_question(source, question, number)
