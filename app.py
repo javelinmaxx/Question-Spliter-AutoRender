@@ -10,7 +10,7 @@ from pathlib import Path
 import fitz
 from flask import Flask, jsonify, render_template, request, send_file
 
-from physics import TOPICS, choose_questions, extract, render_question, validate_regions, suggest, custom_tags
+from physics import TOPICS, choose_questions, extract, render_question, validate_regions, suggest, custom_tags, HL_ONLY_TOPICS, validate_level_topics, sl_compatible
 from ocr import region_text
 from language_review import review_disagreement, context_hash, status as model_status
 from subquestions import propose_parts, question_hash, validate_layout, validate_graph, approved_map, short_variants, render_variant, choose_short
@@ -111,6 +111,8 @@ def create_app(data_dir=None):
         _, mapping = part_layout(q, value['parts'])
         validate_layout(q, mapping['parts'])
         validate_graph(mapping['parts'])
+        for part in mapping['parts']:
+            validate_level_topics(part.get('topics', []), q['level'])
         if mapping.get('analysis_hash') != layout_hash(mapping['parts']):
             mapping['model_review'] = None
         q['subquestions'] = dict(mapping, status='approved', approval_source='manual_review', source_hash=question_hash(q))
@@ -158,7 +160,7 @@ def create_app(data_dir=None):
 
     @app.get('/api/catalog')
     def catalog():
-        return jsonify(topics=TOPICS, prerequisite_policy=POLICY)
+        return jsonify(topics=TOPICS, hl_only_topics=sorted(HL_ONLY_TOPICS), prerequisite_policy=POLICY)
 
     @app.get('/api/documents')
     def documents():
@@ -266,6 +268,7 @@ def create_app(data_dir=None):
         topics = value.get('topics', [])
         if not isinstance(topics, list) or any(t not in TOPICS for t in topics):
             raise ValueError('Select valid syllabus topics.')
+        validate_level_topics(topics, level)
         if not topics and not imported:
             raise ValueError('Select at least one topic.')
         minutes = float(value['minutes'])
@@ -285,7 +288,7 @@ def create_app(data_dir=None):
             png = render_question(pdf, regions)
             text = (region_text(doc['text_pages'], regions) if 'text_pages' in doc
                     else '\n'.join(pdf[r['page']].get_text(clip=fitz.Rect(r['rect'])) for r in regions))
-        suggestions = suggest(text, paper)
+        suggestions = suggest(text, paper, level)
         tags = value.get('tags', custom_tags(text, topics))
         commands = value.get('commands', suggestions['commands'])
         if any(not isinstance(items, list) or len(items) > 50 or any(not isinstance(s, str) or len(s) > 100 for s in items) for items in (tags, commands)):
@@ -300,7 +303,7 @@ def create_app(data_dir=None):
                      topics=topics, minutes=minutes, difficulty=difficulty, marks=marks,
                      tags=tags, commands=commands, regions=regions, text=text,
                      filename=doc['filename'], topic_evidence=suggestions['topic_evidence'],
-                     ocr_comparison=comparison, review_status='imported' if imported else 'reviewed', language_review=language_result)
+                     ocr_comparison=comparison, level_conflicts=suggestions['level_conflicts'], review_status='imported' if imported else 'reviewed', language_review=language_result)
         with db() as conn:
             existing = next((q for q in questions() if q['document_id'] == doc['id'] and q['number'] == number), None)
             prior_map = existing.get('subquestions') if existing else None
@@ -325,6 +328,7 @@ def create_app(data_dir=None):
         topics = value.get('topics', suggestions['topics'])
         if not isinstance(topics, list) or any(code not in TOPICS for code in topics):
             raise ValueError('Select valid syllabus topics.')
+        validate_level_topics(topics, value.get('level', doc['metadata'].get('level')))
         return jsonify(commands=suggestions['commands'], tags=custom_tags(text, topics))
 
     @app.post('/api/questions')
@@ -362,6 +366,9 @@ def create_app(data_dir=None):
             if term:
                 items = [q for q in items if str(q[field]) == term or (field == 'level' and q[field] == 'Both')]
         topics = [t for t in request.args.getlist('topic') if t]
+        if request.args.get('level') == 'SL':
+            validate_level_topics(topics, 'SL')
+            items = [q for q in items if sl_compatible(q)]
         if topics:
             topic_closure(topics)
             items = [variant for q in items if (variant := scoped_question(q, topics)) is not None]
@@ -437,9 +444,11 @@ def create_app(data_dir=None):
         selected_topics = value.get('topics', [])
         if not isinstance(selected_topics, list) or any(t not in TOPICS for t in selected_topics):
             raise ValueError('Invalid topics.')
+        validate_level_topics(selected_topics, level)
         topic_closure(selected_topics)
         eligible = [q for q in questions() if q['level'] in (level, 'Both') and q['syllabus'] == syllabus
-                    and (not value.get('paper') or q['paper'] == value['paper'])]
+                    and (not value.get('paper') or q['paper'] == value['paper'])
+                    and (level != 'SL' or sl_compatible(q))]
         if mode == 'short':
             chosen = choose_short(eligible, target, selected_topics)
         else:

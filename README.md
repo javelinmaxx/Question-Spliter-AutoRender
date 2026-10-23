@@ -67,6 +67,14 @@ The API exposes `GET /api/questions/<id>/subquestions`, `POST .../subquestions/a
 
 Dependency and rendering tests exercise directionality, transitive prerequisites, cycles, exact crop coverage, stale approvals, independent-first pruning, duration limits, persistence and actual PDF content. Language-model response tests use deterministic stand-ins. Actual CPU inference was also attempted: the small model produced invalid dependency proposals, which were rejected. It has not demonstrated reliable semantic dependency classification; human review remains necessary.
 
+## SL and HL topic availability
+
+For SL and questions marked Both, **A.4 Rigid body mechanics, A.5 Galilean and special relativity, B.4 Thermodynamics, D.4 Induction and E.2 Quantum physics** are disabled in topic selectors. Switching from HL clears those selections. The same rule applies to review, search, dependency-part tags and the paper builder, and API requests cannot bypass it.
+
+SL automatic analysis excludes these labels from selectable suggestions while preserving detected conflicts and the original source evidence. Auto-import still saves the record, but flagged content is excluded from SL papers. Full and Short SL generation also exclude older SL/Both records with HL-only parent or part tags, even without a topic filter. Review the source and correct the level/content before using such questions for SL.
+
+Topics with both SL and additional HL content (including gravity, waves and atomic/nuclear structure) remain selectable. Topic-level checks do not classify every additional-HL concept within those shared topics; source review is still needed. Availability comes from the same versioned curriculum policy used by the roadmap.
+
 ## Content-based prerequisite roadmap and topic scope
 
 [IB Physics Prerequisite Roadmap.pdf](<IB Physics Prerequisite Roadmap.pdf>) is saved in the repository root. It summarizes all five themes and 24 subtopics, deduces core prerequisites and separates conditional extensions. It does **not** use the IB example teaching route. Rebuild it with `python tools/build_roadmap.py`; PyMuPDF is already a project dependency.

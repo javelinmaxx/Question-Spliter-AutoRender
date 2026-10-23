@@ -59,7 +59,7 @@ def propose_parts(question, records):
                           requires=['stem', *[p['id'] for p in parts if p['id'] != 'stem']]))
     for part in parts:
         part['text'] = region_text(records, part['regions'])
-        part['topics'] = suggest(part['text'], question['paper'])['topics']
+        part['topics'] = suggest(part['text'], question['paper'], question.get('level'))['topics']
     return dict(version=VERSION, source_hash=question_hash(question), status='draft', parts=parts,
                 model_review=None, reason='Review every boundary and dependency. Unknown dependencies initially retain all earlier parts.')
 

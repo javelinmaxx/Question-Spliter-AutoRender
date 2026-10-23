@@ -1,6 +1,8 @@
 """Local, reviewable PDF extraction and IB Physics metadata suggestions."""
 import re
 import math
+import json
+from pathlib import Path
 from io import BytesIO
 
 import fitz
@@ -19,6 +21,23 @@ TOPICS = {
     'E.1': 'Structure of the atom', 'E.2': 'Quantum physics', 'E.3': 'Radioactive decay',
     'E.4': 'Fission', 'E.5': 'Fusion and stars',
 }
+# Single source of truth shared with the roadmap and browser catalog.
+HL_ONLY_TOPICS = frozenset(json.loads((Path(__file__).parent / 'curriculum_prerequisites.json').read_text())['level_scope']['HL_only'])
+
+
+def validate_level_topics(topics, level):
+    blocked = sorted(set(topics) & HL_ONLY_TOPICS) if level in ('SL', 'Both') else []
+    if blocked:
+        raise ValueError('HL-only topics are unavailable for SL or Both: ' + ', '.join(blocked))
+
+
+def sl_compatible(question):
+    topics = set(question.get('topics', [])) | set(question.get('level_conflicts', []))
+    for part in (question.get('subquestions') or {}).get('parts', []):
+        topics.update(part.get('topics', []))
+    return not topics.intersection(HL_ONLY_TOPICS)
+
+
 KEYWORDS = {
     'A.1': ['velocity', 'displacement', 'acceleration', 'projectile'],
     'A.2': ['momentum', 'newton', 'friction', 'impulse'],
@@ -79,7 +98,7 @@ def custom_tags(text, topics):
     return list(dict.fromkeys(tags))[:50]
 
 
-def suggest(text, paper=None):
+def suggest(text, paper=None, level=None):
     lower = re.sub(r'\s+', ' ', text.lower().replace('−', '-').replace('–', '-'))
     totals = re.findall(r'total[^\n\d]{0,25}(\d+)\s*marks?', lower)
     marks = int(totals[-1]) if totals else sum(map(int, re.findall(r'\[(\d{1,2})\]', text)))
@@ -203,8 +222,10 @@ def suggest(text, paper=None):
         commands.remove('state')
     if paper == 'Paper 1A':
         commands = []  # MCQ prose and options are not imperative command-term prompts.
-    topics = [code for code, matches in evidence.items() if matches]
-    return dict(topics=topics, tags=custom_tags(text, topics),
+    detected = [code for code, matches in evidence.items() if matches]
+    conflicts = sorted(set(detected) & HL_ONLY_TOPICS) if level in ('SL', 'Both') else []
+    topics = [code for code in detected if code not in conflicts]
+    return dict(topics=topics, level_conflicts=conflicts, tags=custom_tags(text, topics),
                 topic_evidence={code: matches for code, matches in evidence.items() if matches},
                 commands=commands,
                 marks=marks, minutes=round(marks * 1.8, 1) if marks else 5.0,
@@ -268,8 +289,8 @@ def extract(path, filename, ocr_mode='auto', page_records=None, ocr_cache=None):
                 regions.append(dict(page=n, rect=rect))
             body = region_text(records, regions)
             ocr_text = region_text(records, regions, 'ocr')
-            suggestions = suggest(body, metadata['paper'])
-            ocr_suggestions = suggest(ocr_text, metadata['paper']) if ocr_text.strip() else None
+            suggestions = suggest(body, metadata['paper'], metadata['level'])
+            ocr_suggestions = suggest(ocr_text, metadata['paper'], metadata['level']) if ocr_text.strip() else None
             sources = ['native' if len(records[r['page']]['native'].strip()) >= 50 else 'ocr' for r in regions]
             comparison = dict(status='not_run', topics=[], commands=[])
             if ocr_suggestions:
