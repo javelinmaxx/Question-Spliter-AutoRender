@@ -47,6 +47,36 @@ Tests use synthetic papers and temporary databases to exercise imports, multi-pa
 
 The application is not affiliated with or endorsed by the International Baccalaureate.
 
+## Lightweight language-model review
+
+Disagreements between PDF and OCR topic suggestions can be adjudicated by a local **Qwen2.5 1.5B Instruct, Q4_K_M** model using `llama-cpp-python`. This is an optional CPU inference dependency; the standard splitter does not require model weights. Paper text is not sent to an external inference service.
+
+```sh
+# Linux build tools: GCC/G++, with CMake provided by the package build if needed.
+CC=gcc CXX=g++ CMAKE_BUILD_PARALLEL_LEVEL=2 \
+  CMAKE_ARGS='-DGGML_NATIVE=OFF -DGGML_BLAS=OFF -DLLAMA_CURL=OFF' \
+  .venv/bin/python -m pip install -r requirements-model.txt
+.venv/bin/python tools/download_model.py --destination /workspace/models/qwen-physics
+QUESTION_BANK_MODEL_PATH=/workspace/models/qwen-physics/qwen2.5-1.5b-instruct-q4_k_m.gguf \
+  .venv/bin/python app.py
+```
+
+The downloader reads the official Qwen repository metadata over verified HTTPS, resolves an immutable revision, and checks the artifact's declared size and SHA-256 before publishing the file. A matching `.gguf.json` checksum manifest is required beside the model file. Loading rechecks its checksum. Downloads need access to `huggingface.co` and any artifact storage destination to which it redirects; a proxy denial must be resolved in environment network settings. Existing files are preserved on checksum conflicts.
+
+Select **OCR every page to cross-check tags** when importing. If the local model is configured, only questions with differing PDF/OCR topics receive automatic model review. Existing imports have a **Review disagreement with language model** button. The model receives the full two text versions and the candidate topic names; schema-constrained JSON must contain a high-confidence decision and exact source quotations for each topic. Unsupported labels, invented citations, incomplete output, uncertain decisions, absent OCR, and over-budget parent questions leave manual review necessary. Quotes are checked against source text; they do not prove the model's physics judgment is correct.
+
+A resolved model output is a **proposal**. Apply its topics to the review form and save only after checking the source. It never silently replaces saved tags. Source edits invalidate the proposal. Both original text versions, the original disagreement, model identity, cited evidence and qualitative confidence remain available. Model confidence is not a calibrated probability. Responses are cached against source content, model checksum and prompt version.
+
+To evaluate actual inference against the four previously flagged cases, first generate the real-paper validation outputs and then run:
+
+```sh
+QUESTION_BANK_MODEL_PATH=/workspace/models/qwen-physics/qwen2.5-1.5b-instruct-q4_k_m.gguf \
+  .venv/bin/python tools/review_disagreements.py \
+  --validation /path/to/validation-results --output /tmp/language-review/report.json
+```
+
+The command exits nonzero while any case remains unresolved. In the current cloud instance the runtime was installed, but the model download was blocked by the network proxy. Actual model inference and accuracy on the four cases have **not** been validated. Unit/integration tests use clearly identified deterministic model stand-ins; they validate response handling, grounding, uncertainty, stale-proposal rejection and persistence, not model intelligence.
+
 ## Validate the supplied papers
 
 ```sh

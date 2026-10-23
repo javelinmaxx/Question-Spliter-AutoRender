@@ -11,6 +11,7 @@ from flask import Flask, jsonify, render_template, request, send_file
 
 from physics import TOPICS, choose_questions, extract, render_question, validate_regions, suggest
 from ocr import region_text
+from language_review import review_disagreement, context_hash, status as model_status
 
 
 def create_app(data_dir=None):
@@ -44,6 +45,25 @@ def create_app(data_dir=None):
         with db() as conn:
             return [dict(id=r['id'], document_id=r['document_id'], **json.loads(r['data']))
                     for r in conn.execute('SELECT * FROM questions ORDER BY rowid DESC')]
+
+    def review_inputs(doc, regions, paper):
+        if 'text_pages' in doc:
+            native = region_text(doc['text_pages'], regions, 'native')
+            ocr = region_text(doc['text_pages'], regions, 'ocr')
+        else:
+            native, ocr = '', ''
+        pdf_topics, ocr_topics = suggest(native, paper)['topics'], suggest(ocr, paper)['topics']
+        return native, ocr, paper, pdf_topics, ocr_topics
+
+    def current_review(doc, q, review):
+        if not review:
+            return None
+        args = review_inputs(doc, q['regions'], q['paper'])
+        return review if review.get('input_hash') == context_hash(*args) else None
+
+    @app.get('/api/model/status')
+    def language_model_status():
+        return jsonify(model_status())
 
     @app.errorhandler(ValueError)
     @app.errorhandler(KeyError)
@@ -84,6 +104,10 @@ def create_app(data_dir=None):
         uploaded.save(path)
         try:
             result = extract(path, uploaded.filename, ocr_mode=request.form.get('ocr_mode', 'auto'), ocr_cache=root / 'ocr-cache')
+            for q in result['questions']:
+                if q.get('ocr_comparison', {}).get('status') == 'disagreement':
+                    q['language_review'] = review_disagreement(*review_inputs(result, q['regions'], q['paper']),
+                                                               TOPICS, cache_dir=root / 'language-reviews')
         except Exception as error:
             path.unlink(missing_ok=True)
             raise ValueError('Could not read PDF: ' + str(error)) from error
@@ -96,9 +120,36 @@ def create_app(data_dir=None):
         result = document(doc_id)
         saved = {q['number']: q for q in questions() if q['document_id'] == doc_id}
         suggested = {q['number']: q for q in result['questions']}
+        reviews = {q['number']: q.get('language_review') for q in result['questions']}
         suggested.update(saved)
+        for number, q in suggested.items():
+            q['language_review'] = current_review(result, q, reviews.get(number) or q.get('language_review'))
         result['questions'] = [suggested[n] for n in sorted(suggested)]
         result['saved_numbers'] = list(saved)
+        return jsonify(result)
+
+    @app.post('/api/documents/<doc_id>/questions/<int:number>/language-review')
+    def resolve_language_disagreement(doc_id, number):
+        doc = document(doc_id)
+        candidate = next((q for q in doc['questions'] if q['number'] == number), None)
+        if candidate is None:
+            candidate = next((q for q in questions() if q['document_id'] == doc_id and q['number'] == number), None)
+            if candidate is None:
+                raise ValueError('Save the question before requesting language review.')
+            doc['questions'].append(candidate)
+        value = request.get_json() or {}
+        paper = value.get('paper', candidate['paper'])
+        if paper not in ('Paper 1', 'Paper 1A', 'Paper 1B', 'Paper 2'):
+            raise ValueError('Choose a paper type before language review.')
+        with fitz.open(root / 'documents' / (doc_id + '.pdf')) as pdf:
+            regions = validate_regions(pdf, value.get('regions', candidate['regions']))
+        result = review_disagreement(*review_inputs(doc, regions, paper), TOPICS,
+                                     cache_dir=root / 'language-reviews')
+        candidate['language_review'] = result
+        with db() as conn:
+            conn.execute('UPDATE documents SET data=? WHERE id=?',
+                         (json.dumps({k: v for k, v in doc.items() if k not in ('id', 'filename')}), doc_id))
+        # Proposals do not change saved tags. Explicit review/save keeps the user in control.
         return jsonify(result)
 
     @app.get('/api/documents/<doc_id>/pages/<int:page>')
@@ -154,11 +205,13 @@ def create_app(data_dir=None):
         ocr_topics = suggest(ocr_text, paper)['topics'] if ocr_text.strip() else []
         native_present = any(len(doc.get('text_pages', [])[r['page']]['native'].strip()) >= 50 for r in regions) if 'text_pages' in doc else True
         comparison = dict(status=('agreement' if set(suggestions['topics']) == set(ocr_topics) else 'disagreement') if ocr_text.strip() and native_present else 'ocr_only' if ocr_text.strip() else 'not_run', topics=ocr_topics)
+        prior = next((q.get('language_review') for q in doc['questions'] if q['number'] == number), None)
+        language_result = current_review(doc, dict(regions=regions, paper=paper), prior)
         saved = dict(number=number, year=year, level=level, syllabus=syllabus, paper=paper,
                      topics=topics, minutes=minutes, difficulty=difficulty, marks=marks,
                      tags=tags, commands=commands, regions=regions, text=text,
                      filename=doc['filename'], topic_evidence=suggestions['topic_evidence'],
-                     ocr_comparison=comparison, review_status='reviewed')
+                     ocr_comparison=comparison, review_status='reviewed', language_review=language_result)
         with db() as conn:
             existing = next((q for q in questions() if q['document_id'] == doc['id'] and q['number'] == number), None)
             qid = existing['id'] if existing else uuid.uuid4().hex

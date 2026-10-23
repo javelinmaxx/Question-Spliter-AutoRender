@@ -1,5 +1,9 @@
 # Uploaded-paper OCR validation
 
+The original PDFs are now preserved in `TEST SAMPLES/` for repeatable runs.
+
+Local language-model review is implemented for the four disagreements below. The CPU runtime was installed, but downloading the model weights was blocked by the cloud proxy. An actual inference run has not occurred: **0 resolved, 4 still require review**. Deterministic integration tests validate the review flow and citation checks; they are not measurements of language-model accuracy. See the README for activation and the real-case evaluation command.
+
 | Paper | Year | Pages | Groups | Topic anchors | OCR marks / cover | Structural / topic checks |
 | --- | --- | --- | --- | --- | --- | --- |
 | Physics_paper_1A_TZ3_HL.pdf | 2025 | 22 | 40 | 10 | 40 / 40 | PASS |
