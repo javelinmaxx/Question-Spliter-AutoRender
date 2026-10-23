@@ -1,0 +1,63 @@
+{
+  "model": {
+    "available": true,
+    "model": "qwen2.5-1.5b-instruct-q4_k_m.gguf",
+    "reason": "Local model is configured; weights are verified when loaded."
+  },
+  "cases": [
+    {
+      "source_case": "431f3df5dbd9",
+      "question": 8,
+      "review": {
+        "input_hash": "4c3402cf7a1db8c072b22af28f15b6e804b98bf8dd6d0abc90c5f8f922764e42",
+        "prompt_version": "physics-ocr-v1",
+        "topics": [],
+        "evidence": [],
+        "status": "needs_review",
+        "reason": "Local language review could not produce a validated result: The model quote was not found in the cited source."
+      }
+    },
+    {
+      "source_case": "431f3df5dbd9",
+      "question": 25,
+      "review": {
+        "input_hash": "e6d64d98dc2c8cdff887145d1db303715c53afa0ca97fdd7867bff35ae1eb07a",
+        "prompt_version": "physics-ocr-v1",
+        "topics": [],
+        "evidence": [],
+        "status": "needs_review",
+        "reason": "The OCR text is ambiguous and does not provide a clear answer to the question. The graph is not provided, making it impossible to determine the correct answer based on the given information.",
+        "confidence": "low",
+        "model": "qwen2.5-1.5b-instruct-q4_k_m.gguf",
+        "model_sha256": "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e",
+        "cached": false
+      }
+    },
+    {
+      "source_case": "c857abde44be",
+      "question": 3,
+      "review": {
+        "input_hash": "c3b70b1622a89b7ed763cbc059693174e8bcaa3b22d62c90c6f6dec2a87088c2",
+        "prompt_version": "physics-ocr-v1",
+        "topics": [],
+        "evidence": [],
+        "status": "needs_review",
+        "reason": "Local language review could not produce a validated result: The model quote was not found in the cited source."
+      }
+    },
+    {
+      "source_case": "c857abde44be",
+      "question": 23,
+      "review": {
+        "input_hash": "0c8059a1b204f2026488e3a5ea4edfeed23f850b8e7d0940cac34df054fadae0",
+        "prompt_version": "physics-ocr-v1",
+        "topics": [],
+        "evidence": [],
+        "status": "needs_review",
+        "reason": "Local language review could not produce a validated result: The model quote was not found in the cited source."
+      }
+    }
+  ],
+  "resolved": 0,
+  "remaining": 4
+}

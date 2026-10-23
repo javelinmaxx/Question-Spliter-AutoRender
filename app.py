@@ -12,6 +12,9 @@ from flask import Flask, jsonify, render_template, request, send_file
 from physics import TOPICS, choose_questions, extract, render_question, validate_regions, suggest
 from ocr import region_text
 from language_review import review_disagreement, context_hash, status as model_status
+from subquestions import propose_parts, question_hash, validate_layout, validate_graph, approved_map, short_variants, render_variant, choose_short
+from dependency_review import analyze_dependencies
+from topic_scope import scoped_question, topic_closure, POLICY
 
 
 def create_app(data_dir=None):
@@ -45,6 +48,73 @@ def create_app(data_dir=None):
         with db() as conn:
             return [dict(id=r['id'], document_id=r['document_id'], **json.loads(r['data']))
                     for r in conn.execute('SELECT * FROM questions ORDER BY rowid DESC')]
+
+    def question_by_id(qid):
+        q = next((q for q in questions() if q['id'] == qid), None)
+        if q is None:
+            raise ValueError('Question not found.')
+        return q
+
+    def save_question_data(q):
+        with db() as conn:
+            conn.execute('UPDATE questions SET data=? WHERE id=?',
+                         (json.dumps({k: v for k, v in q.items() if k not in ('id', 'document_id')}), q['id']))
+
+    def part_layout(q, supplied=None):
+        doc = document(q['document_id'])
+        if 'text_pages' not in doc:
+            raise ValueError('Re-import this PDF with OCR before creating a subquestion layout.')
+        mapping = q.get('subquestions')
+        if not mapping or mapping.get('source_hash') != question_hash(q):
+            mapping = propose_parts(q, doc['text_pages'])
+        if not mapping:
+            if supplied is None:
+                raise ValueError('Could not safely identify at least two lettered subquestion groups. This question will remain whole.')
+            mapping = dict(version=1, status='draft', source_hash=question_hash(q), parts=[], model_review=None)
+        if supplied is not None:
+            validate_layout(q, supplied)
+            validate_graph(supplied)
+            mapping = dict(mapping, parts=[dict(id=p['id'], label=p['label'], regions=p['regions'],
+                                               requires=p['requires'], minutes=float(p['minutes']),
+                                               topics=p.get('topics', []),
+                                               text=region_text(doc['text_pages'], p['regions'])) for p in supplied])
+        return doc, mapping
+
+    def layout_hash(parts):
+        import hashlib
+        return hashlib.sha256(json.dumps([{k: p[k] for k in ('id', 'regions', 'text')} for p in parts], sort_keys=True).encode()).hexdigest()
+
+    @app.get('/api/questions/<qid>/subquestions')
+    def get_subquestions(qid):
+        q = question_by_id(qid)
+        doc, mapping = part_layout(q)
+        return jsonify(mapping=mapping, question=q, pages=doc['pages'])
+
+    @app.post('/api/questions/<qid>/subquestions/analyze')
+    def analyze_subquestions(qid):
+        q = question_by_id(qid)
+        _, mapping = part_layout(q, (request.get_json() or {}).get('parts'))
+        validate_layout(q, mapping['parts'])
+        result = analyze_dependencies(mapping['parts'])
+        q['subquestions'] = dict(mapping, status='draft', source_hash=question_hash(q), parts=result['parts'],
+                                 model_review=result, analysis_hash=layout_hash(result['parts']))
+        save_question_data(q)
+        return jsonify(q['subquestions'])
+
+    @app.post('/api/questions/<qid>/subquestions/approve')
+    def approve_subquestions(qid):
+        value = request.get_json() or {}
+        if value.get('confirmed') is not True:
+            raise ValueError('Confirm that shared context, boundaries, timing and dependencies have been reviewed.')
+        q = question_by_id(qid)
+        _, mapping = part_layout(q, value['parts'])
+        validate_layout(q, mapping['parts'])
+        validate_graph(mapping['parts'])
+        if mapping.get('analysis_hash') != layout_hash(mapping['parts']):
+            mapping['model_review'] = None
+        q['subquestions'] = dict(mapping, status='approved', approval_source='manual_review', source_hash=question_hash(q))
+        save_question_data(q)
+        return jsonify(q['subquestions'])
 
     def review_inputs(doc, regions, paper):
         if 'text_pages' in doc:
@@ -87,7 +157,7 @@ def create_app(data_dir=None):
 
     @app.get('/api/catalog')
     def catalog():
-        return jsonify(topics=TOPICS)
+        return jsonify(topics=TOPICS, prerequisite_policy=POLICY)
 
     @app.get('/api/documents')
     def documents():
@@ -214,6 +284,8 @@ def create_app(data_dir=None):
                      ocr_comparison=comparison, review_status='reviewed', language_review=language_result)
         with db() as conn:
             existing = next((q for q in questions() if q['document_id'] == doc['id'] and q['number'] == number), None)
+            prior_map = existing.get('subquestions') if existing else None
+            saved['subquestions'] = prior_map if prior_map and prior_map.get('source_hash') == question_hash(saved) else None
             qid = existing['id'] if existing else uuid.uuid4().hex
             (root / 'images' / (qid + '.png')).write_bytes(png)
             conn.execute('INSERT OR REPLACE INTO questions VALUES (?, ?, ?)', (qid, doc['id'], json.dumps(saved)))
@@ -226,9 +298,10 @@ def create_app(data_dir=None):
             term = request.args.get(field)
             if term:
                 items = [q for q in items if str(q[field]) == term or (field == 'level' and q[field] == 'Both')]
-        topic = request.args.get('topic')
-        if topic:
-            items = [q for q in items if topic in q['topics']]
+        topics = [t for t in request.args.getlist('topic') if t]
+        if topics:
+            topic_closure(topics)
+            items = [variant for q in items if (variant := scoped_question(q, topics)) is not None]
         query = request.args.get('q', '').strip().lower()
         if query:
             items = [q for q in items if query in ' '.join([q['text'], *q['tags'], *q['commands'], *q['topics'], q['filename']]).lower()]
@@ -244,14 +317,55 @@ def create_app(data_dir=None):
 
     @app.get('/api/questions/<qid>/image')
     def image(qid):
-        if not any(q['id'] == qid for q in questions()):
-            raise ValueError('Question not found.')
+        q = question_by_id(qid)
+        mode = request.args.get('mode', 'full')
+        if mode not in ('full', 'short'):
+            raise ValueError('Render mode must be full or short.')
+        topics = [t for t in request.args.getlist('topic') if t]
+        scoped = scoped_question(q, topics)
+        if scoped is None:
+            raise ValueError('This question requires content outside the requested topic scope.')
+        if mode == 'short' or scoped.get('omitted_parts'):
+            variant = short_variants(q, scoped.get('omitted_parts', []), topics)[0] if mode == 'short' else scoped
+            with fitz.open(root / 'documents' / (q['document_id'] + '.pdf')) as pdf:
+                png = render_question(pdf, variant['regions'])
+            return send_file(BytesIO(png), mimetype='image/png')
         return send_file(root / 'images' / (qid + '.png'), mimetype='image/png')
+
+    @app.post('/api/questions/<qid>/render')
+    def render_subquestions(qid):
+        q = question_by_id(qid)
+        value = request.get_json() or {}
+        mode = value.get('mode', 'full')
+        if mode not in ('full', 'short'):
+            raise ValueError('Render mode must be full or short.')
+        if mode == 'full' and value.get('omitted_parts'):
+            raise ValueError('Full mode preserves every part. Choose Short to omit parts.')
+        omitted = value.get('omitted_parts')
+        if omitted is not None and (not isinstance(omitted, list) or any(not isinstance(p, str) for p in omitted)):
+            raise ValueError('Omitted parts must be a list of part IDs.')
+        topics = value.get('topics', [])
+        topic_closure(topics)
+        scoped = scoped_question(q, topics)
+        if scoped is None:
+            raise ValueError('This question needs content outside the selected topic scope.')
+        forced = scoped.get('omitted_parts', [])
+        variant = (render_variant(q, set(omitted) | set(forced)) if omitted is not None else short_variants(q, forced, topics)[0]) if mode == 'short' else scoped
+        if topics and approved_map(q):
+            parts = q['subquestions']['parts']
+            if not any(p['id'] in variant['kept_parts'] and set(p.get('topics', [])) & set(topics) for p in parts):
+                raise ValueError('Keep at least one part that assesses a selected target topic.')
+        with fitz.open(root / 'documents' / (q['document_id'] + '.pdf')) as pdf:
+            png = render_question(pdf, variant['regions'])
+        return send_file(BytesIO(png), mimetype='image/png')
 
     @app.post('/api/papers')
     def generate():
         value = request.get_json()
         target = float(value['minutes'])
+        mode = value.get('render_mode', 'full')
+        if mode not in ('full', 'short'):
+            raise ValueError('Render mode must be full or short.')
         if not 1 <= target <= 300:
             raise ValueError('Choose a duration between 1 and 300 minutes.')
         level, syllabus = value.get('level'), value.get('syllabus', '2025')
@@ -260,19 +374,23 @@ def create_app(data_dir=None):
         selected_topics = value.get('topics', [])
         if not isinstance(selected_topics, list) or any(t not in TOPICS for t in selected_topics):
             raise ValueError('Invalid topics.')
-        # A mixed-topic parent qualifies only if all its topics were requested.
+        topic_closure(selected_topics)
         eligible = [q for q in questions() if q['level'] in (level, 'Both') and q['syllabus'] == syllabus
-                    and (not selected_topics or set(q['topics']).issubset(selected_topics))
                     and (not value.get('paper') or q['paper'] == value['paper'])]
-        ids = choose_questions(eligible, target)
-        chosen = [q for q in eligible if q['id'] in ids]
+        if mode == 'short':
+            chosen = choose_short(eligible, target, selected_topics)
+        else:
+            scoped = [variant for q in eligible if (variant := scoped_question(q, selected_topics)) is not None]
+            ids = choose_questions(scoped, target)
+            chosen = [q for q in scoped if q['id'] in ids]
+        ids = [q['id'] for q in chosen]
         if not chosen:
-            raise ValueError('No complete reviewed questions fit these filters and duration. Add questions or increase the time.')
+            raise ValueError('No reviewed question variants fit these filters and duration. Add questions, approve dependency maps for Short, or increase the time.')
         paper_id = uuid.uuid4().hex
         actual = round(sum(q['minutes'] for q in chosen), 1)
         with fitz.open() as pdf:
             cover = pdf.new_page()
-            cover.insert_textbox(fitz.Rect(50, 80, 545, 750), f'IB DP Physics - {level}\nPractice paper\nSyllabus: {syllabus}\nRequested time: {target:g} minutes\nEstimated time: {actual:g} minutes\n{len(chosen)} complete questions\n\nTime estimates are approximate.\nGenerated practice material, not an official IB examination.', fontsize=18)
+            cover.insert_textbox(fitz.Rect(50, 80, 545, 750), f'IB DP Physics - {level}\nPractice paper\nSyllabus: {syllabus}\nRequested time: {target:g} minutes\nEstimated time: {actual:g} minutes\n{len(chosen)} question groups\nRendering: {mode.title()}\n\nTime estimates are approximate.\nGenerated practice material, not an official IB examination.', fontsize=18)
             for i, q in enumerate(chosen, 1):
                 # Keep every crop of the parent together and in source order.
                 with fitz.open(root / 'documents' / (q['document_id'] + '.pdf')) as source:
@@ -291,7 +409,13 @@ def create_app(data_dir=None):
                             top += max_height
             pdf.save(root / 'papers' / (paper_id + '.pdf'))
         result = dict(id=paper_id, question_ids=list(ids), target_minutes=target, actual_minutes=actual,
-                      shortfall_minutes=round(target - actual, 1), count=len(chosen))
+                      shortfall_minutes=round(target - actual, 1), count=len(chosen), render_mode=mode,
+                      selections=[dict(question_id=q['id'], kept_parts=q['kept_parts'], omitted_parts=q['omitted_parts'],
+                                       topic_omitted_parts=q.get('topic_omitted_parts', []),
+                                       topics=q['topics'],
+                                       estimated_minutes=round(q['minutes'], 2), render_mode=q['render_mode']) for q in chosen],
+                      topic_scope=dict(requested=selected_topics, allowed=sorted(topic_closure(selected_topics)), policy_version=POLICY['version']),
+                      short_fallbacks=[q['id'] for q in chosen if mode == 'short' and not q['dependency_approved']])
         with db() as conn:
             conn.execute('INSERT INTO papers VALUES (?, ?)', (paper_id, json.dumps(result)))
         return jsonify(result), 201

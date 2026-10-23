@@ -2,7 +2,7 @@
 
 The original PDFs are now preserved in `TEST SAMPLES/` for repeatable runs.
 
-Local language-model review is implemented for the four disagreements below. The CPU runtime was installed, but downloading the model weights was blocked by the cloud proxy. An actual inference run has not occurred: **0 resolved, 4 still require review**. Deterministic integration tests validate the review flow and citation checks; they are not measurements of language-model accuracy. See the README for activation and the real-case evaluation command.
+Local language-model review is implemented for the four disagreements below. Verified model weights and the CPU runtime were subsequently installed and actual inference was run: **0 resolved, 4 still require review**. Three outputs failed exact-source quotation validation; one abstained with low confidence. The later run is preserved in `TEST SAMPLES/results/language-review-live.json`; the original `language-review.json` remains a historical baseline. Deterministic integration tests validate the review flow and citation checks; they are not measurements of language-model accuracy. See the README for activation and the real-case evaluation command.
 
 | Paper | Year | Pages | Groups | Topic anchors | OCR marks / cover | Structural / topic checks |
 | --- | --- | --- | --- | --- | --- | --- |

@@ -1,0 +1,556 @@
+{
+  "syllabus": "2025",
+  "version": 3,
+  "source": {
+    "title": "IB Physics teacher support material, first assessment 2025",
+    "edition": "Published September 2023; updated July and November 2024",
+    "filename": "physics-teacher-support-material-en_7088ad39-48da-4a2d-b4ab-1c8384cd05a4 (1).pdf",
+    "sha256": "6b7cd5879df33208d59d0c83ca0db62a5104bb8026c7a0ff73ef0cc20e7ef0a5",
+    "pages": "Printed pp. 2–17 (PDF pp. 7–22)",
+    "scope": "Content-based synthesis of the five themes and 24 subtopics. The example teaching route is not used. Topic coverage comes from the course overview and conceptual examples, supplemented by explicitly identified physics deductions where the support material is brief. This is not an exhaustive syllabus statement or an official IB prerequisite graph."
+  },
+  "policy": "Content-deduced directional prerequisite permissions. Core edges allow earlier foundations in a target query; they do not assert that every target question needs the entire foundation topic. Conditional links never expand scope automatically. Require a selected target in retained tasks; never infer reverse links, same-theme permissions or a chronological teaching sequence.",
+  "requires": {
+    "A.1": [],
+    "A.2": [
+      "A.1"
+    ],
+    "A.3": [
+      "A.2"
+    ],
+    "A.4": [
+      "A.2",
+      "A.3"
+    ],
+    "A.5": [
+      "A.1"
+    ],
+    "B.1": [
+      "A.2",
+      "A.3"
+    ],
+    "B.2": [
+      "B.1"
+    ],
+    "B.3": [
+      "B.1",
+      "A.2"
+    ],
+    "B.4": [
+      "B.3",
+      "A.3"
+    ],
+    "B.5": [
+      "A.3"
+    ],
+    "C.1": [
+      "A.2",
+      "A.3"
+    ],
+    "C.2": [
+      "C.1"
+    ],
+    "C.3": [
+      "C.2"
+    ],
+    "C.4": [
+      "C.1",
+      "C.3"
+    ],
+    "C.5": [
+      "C.2",
+      "A.1"
+    ],
+    "D.1": [
+      "A.2",
+      "A.3"
+    ],
+    "D.2": [
+      "A.2",
+      "A.3"
+    ],
+    "D.3": [
+      "D.2",
+      "A.2",
+      "A.3"
+    ],
+    "D.4": [
+      "D.2",
+      "B.5",
+      "A.3"
+    ],
+    "E.1": [
+      "D.2",
+      "C.2",
+      "A.3"
+    ],
+    "E.2": [
+      "E.1",
+      "C.2",
+      "A.2"
+    ],
+    "E.3": [
+      "E.1",
+      "A.3"
+    ],
+    "E.4": [
+      "E.3"
+    ],
+    "E.5": [
+      "E.3",
+      "B.1"
+    ]
+  },
+  "concepts": {
+    "circular_motion": "A.2",
+    "gravity": "D.1"
+  },
+  "edge_evidence": {
+    "A.1": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "2, 5, 13",
+      "rationale": "Entry foundation: algebra, vectors, units and graphs are skills rather than additional syllabus topics."
+    },
+    "A.2": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "3, 6, 17",
+      "rationale": "Acceleration and velocity underpin dynamics. Energy analysis of elastic/inelastic collisions is a conditional extension, avoiding an A.2/A.3 cycle."
+    },
+    "A.3": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "3, 6, 17",
+      "rationale": "Work requires force and displacement; mechanical energy builds on motion and dynamics."
+    },
+    "A.4": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "3, 6, 13, 17",
+      "rationale": "Linear equations and Newton laws supply rotational analogies; energy and momentum supply conservation methods."
+    },
+    "A.5": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "2, 5",
+      "rationale": "Comparing motion across frames requires velocity, displacement and time. Nuclear mass-energy use does not require the entire relativity topic."
+    },
+    "B.1": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "3–6, 9–10",
+      "rationale": "Particle motion/forces and kinetic/potential energy explain microscopic storage and macroscopic transfer."
+    },
+    "B.2": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "4–5, 17",
+      "rationale": "Thermal transfer/radiation are core. Molecular resonance is an explanatory extension, not a prerequisite for every energy-balance problem."
+    },
+    "B.3": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "4–6, 9–10",
+      "rationale": "Thermal variables combine with force/momentum and particle motion to connect microscopic and bulk behaviour."
+    },
+    "B.4": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "4, 6, 17",
+      "rationale": "Gas states and energy accounting underpin cyclic engines. Entropy is a standard second-law concept, not independently detailed here."
+    },
+    "B.5": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "4–6",
+      "rationale": "Work/energy and rate concepts define voltage and power. Microscopic temperature-resistance models may add thermal content."
+    },
+    "C.1": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "4–6, 17",
+      "rationale": "Dynamics defines the restoring acceleration; energy accounts for oscillation and damping."
+    },
+    "C.2": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "4–5",
+      "rationale": "The source explicitly builds the wave model on oscillation. Electromagnetic waves need not import a full fields course."
+    },
+    "C.3": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "2, 12, 14–15",
+      "rationale": "Wavelength, phase and propagation from the wave model underpin overlapping waves and propagation at boundaries."
+    },
+    "C.4": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "4–6",
+      "rationale": "Superposition creates standing patterns; oscillator response explains resonance."
+    },
+    "C.5": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "2",
+      "rationale": "Wave quantities and relative velocity are core. Special-relativistic treatment is conditional and must be separately in scope."
+    },
+    "D.1": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "4, 6, 11, 17",
+      "rationale": "Gravity acts as a force; circular motion uses dynamics; potential and escape use work-energy."
+    },
+    "D.2": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "4, 6, 17",
+      "rationale": "Force and work-energy supply definitions. Gravity analogy and current-generated field/circuit applications are conditional."
+    },
+    "D.3": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "5–6, 11–12, 17",
+      "rationale": "Field forces and Newtonian trajectories combine; electric acceleration uses energy. Circuit/beam-source apparatus is conditional."
+    },
+    "D.4": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "4, 17",
+      "rationale": "Magnetic field/flux, circuit quantities and work-energy are foundations; Lenz direction enforces conservation."
+    },
+    "E.1": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "4–5, 12, 17",
+      "rationale": "Scattering/closest approach use field forces and energy; spectra connect photon energy with wave frequency."
+    },
+    "E.2": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "4, 6, 17",
+      "rationale": "Atomic/photon energy and wave quantities combine with momentum. Stopping-potential circuits and diffraction evidence are conditional."
+    },
+    "E.3": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "4, 7, 17",
+      "rationale": "Atomic nuclear structure and conservation/energy underpin nuclear change; the whole A.5 course is not necessary for a supplied mass-energy relation."
+    },
+    "E.4": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "4, 17",
+      "rationale": "Binding-energy and nuclear-reaction ideas are core. Thermal plant operation and engine efficiency are conditional."
+    },
+    "E.5": {
+      "classification": "content-deduced application permission",
+      "printed_pages": "4, 10, 17",
+      "rationale": "Nuclear energetics and thermal radiation are core. Gravitational equilibrium, gas models, Doppler and comparison with fission are conditional."
+    }
+  },
+  "topic_analysis": {
+    "A.1": {
+      "summary": "Position, displacement, velocity and acceleration; motion graphs and constant-acceleration/projectile descriptions.",
+      "core_prerequisites": [],
+      "conditional_links": [],
+      "deduction": "Entry foundation: algebra, vectors, units and graphs are skills rather than additional syllabus topics.",
+      "printed_pages": "2, 5, 13",
+      "coverage": "Overview plus standard kinematics concepts inferred from the topic title."
+    },
+    "A.2": {
+      "summary": "Newton laws, free-body diagrams, equilibrium, momentum and impulse; collisions and centripetal force for circular motion.",
+      "core_prerequisites": [
+        "A.1"
+      ],
+      "conditional_links": [
+        "A.3"
+      ],
+      "deduction": "Acceleration and velocity underpin dynamics. Energy analysis of elastic/inelastic collisions is a conditional extension, avoiding an A.2/A.3 cycle.",
+      "printed_pages": "3, 6, 17",
+      "coverage": "Explicit conceptual overview; impulse is a standard momentum concept."
+    },
+    "A.3": {
+      "summary": "Work by a force, kinetic and potential energy, conservation, power and efficiency.",
+      "core_prerequisites": [
+        "A.2"
+      ],
+      "conditional_links": [],
+      "deduction": "Work requires force and displacement; mechanical energy builds on motion and dynamics.",
+      "printed_pages": "3, 6, 17",
+      "coverage": "Explicit work-energy overview; power/efficiency deduced from topic scope."
+    },
+    "A.4": {
+      "summary": "Rotational kinematics and dynamics of extended bodies; torque, rotational inertia, rotational energy and angular momentum.",
+      "core_prerequisites": [
+        "A.2",
+        "A.3"
+      ],
+      "conditional_links": [],
+      "deduction": "Linear equations and Newton laws supply rotational analogies; energy and momentum supply conservation methods.",
+      "printed_pages": "3, 6, 13, 17",
+      "coverage": "Rotational analogies/energy are explicit; torque/inertia are standard deductions."
+    },
+    "A.5": {
+      "summary": "Reference frames, Galilean comparisons and special-relativistic space-time; time dilation and length contraction.",
+      "core_prerequisites": [
+        "A.1"
+      ],
+      "conditional_links": [],
+      "deduction": "Comparing motion across frames requires velocity, displacement and time. Nuclear mass-energy use does not require the entire relativity topic.",
+      "printed_pages": "2, 5",
+      "coverage": "Time dilation/length contraction explicit; frame comparisons inferred from title."
+    },
+    "B.1": {
+      "summary": "Particle models, temperature and internal energy; heat capacity, latent heat, conduction, convection and radiation.",
+      "core_prerequisites": [
+        "A.2",
+        "A.3"
+      ],
+      "conditional_links": [],
+      "deduction": "Particle motion/forces and kinetic/potential energy explain microscopic storage and macroscopic transfer.",
+      "printed_pages": "3–6, 9–10",
+      "coverage": "Explicit conceptual overview and prior-knowledge example."
+    },
+    "B.2": {
+      "summary": "Earth energy balance, absorption and emission of radiation, greenhouse gases and warming.",
+      "core_prerequisites": [
+        "B.1"
+      ],
+      "conditional_links": [
+        "C.1",
+        "C.4"
+      ],
+      "deduction": "Thermal transfer/radiation are core. Molecular resonance is an explanatory extension, not a prerequisite for every energy-balance problem.",
+      "printed_pages": "4–5, 17",
+      "coverage": "Explicit greenhouse/energy-budget description; resonance treated conditionally."
+    },
+    "B.3": {
+      "summary": "Ideal-gas model and gas laws; pressure from particle collisions, absolute temperature and molecular kinetic/internal energy.",
+      "core_prerequisites": [
+        "B.1",
+        "A.2"
+      ],
+      "conditional_links": [],
+      "deduction": "Thermal variables combine with force/momentum and particle motion to connect microscopic and bulk behaviour.",
+      "printed_pages": "4–6, 9–10",
+      "coverage": "Explicit gas model and kinetic-theory discussion."
+    },
+    "B.4": {
+      "summary": "First and second laws, heat/work/internal energy, gas cycles, heat engines and Carnot efficiency.",
+      "core_prerequisites": [
+        "B.3",
+        "A.3"
+      ],
+      "conditional_links": [],
+      "deduction": "Gas states and energy accounting underpin cyclic engines. Entropy is a standard second-law concept, not independently detailed here.",
+      "printed_pages": "4, 6, 17",
+      "coverage": "Laws, cycles and efficiency explicit; entropy detail not established by this source."
+    },
+    "B.5": {
+      "summary": "Charge flow and electric current, potential difference as energy per charge, resistance, circuits and electrical power.",
+      "core_prerequisites": [
+        "A.3"
+      ],
+      "conditional_links": [
+        "B.1"
+      ],
+      "deduction": "Work/energy and rate concepts define voltage and power. Microscopic temperature-resistance models may add thermal content.",
+      "printed_pages": "4–6",
+      "coverage": "Explicit charge flow/resistance/voltage; circuit relations inferred from title."
+    },
+    "C.1": {
+      "summary": "Restoring-force oscillations, displacement and acceleration, kinetic/potential energy exchange and damping.",
+      "core_prerequisites": [
+        "A.2",
+        "A.3"
+      ],
+      "conditional_links": [],
+      "deduction": "Dynamics defines the restoring acceleration; energy accounts for oscillation and damping.",
+      "printed_pages": "4–6, 17",
+      "coverage": "Explicit oscillation, restoring-force and energy description."
+    },
+    "C.2": {
+      "summary": "Progressive-wave model; amplitude, wavelength, frequency and speed; mechanical, sound and electromagnetic waves and energy transfer.",
+      "core_prerequisites": [
+        "C.1"
+      ],
+      "conditional_links": [],
+      "deduction": "The source explicitly builds the wave model on oscillation. Electromagnetic waves need not import a full fields course.",
+      "printed_pages": "4–5",
+      "coverage": "Oscillation foundation and wave types explicit; basic wave quantities inferred."
+    },
+    "C.3": {
+      "summary": "Superposition and interference; wave behaviours including reflection, refraction and diffraction.",
+      "core_prerequisites": [
+        "C.2"
+      ],
+      "conditional_links": [],
+      "deduction": "Wavelength, phase and propagation from the wave model underpin overlapping waves and propagation at boundaries.",
+      "printed_pages": "2, 12, 14–15",
+      "coverage": "Superposition/interference explicit; other standard wave phenomena are physics deductions."
+    },
+    "C.4": {
+      "summary": "Standing-wave formation and patterns, harmonics, resonance, driving and damping; vibrating strings and air columns.",
+      "core_prerequisites": [
+        "C.1",
+        "C.3"
+      ],
+      "conditional_links": [],
+      "deduction": "Superposition creates standing patterns; oscillator response explains resonance.",
+      "printed_pages": "4–6",
+      "coverage": "Standing waves, driving/damping and musical systems explicit; harmonics inferred."
+    },
+    "C.5": {
+      "summary": "Observed frequency/wavelength changes from source-observer relative motion; sound/light Doppler interpretation and redshift.",
+      "core_prerequisites": [
+        "C.2",
+        "A.1"
+      ],
+      "conditional_links": [
+        "A.5"
+      ],
+      "deduction": "Wave quantities and relative velocity are core. Special-relativistic treatment is conditional and must be separately in scope.",
+      "printed_pages": "2",
+      "coverage": "Topic name supports a physics deduction; detailed Doppler coverage is not provided in this overview."
+    },
+    "D.1": {
+      "summary": "Universal gravitation, field strength and field maps, orbital/circular motion and Kepler relations; potential, energy and escape.",
+      "core_prerequisites": [
+        "A.2",
+        "A.3"
+      ],
+      "conditional_links": [],
+      "deduction": "Gravity acts as a force; circular motion uses dynamics; potential and escape use work-energy.",
+      "printed_pages": "4, 6, 11, 17",
+      "coverage": "Explicit overview and progression-of-learning example; some content is additional HL."
+    },
+    "D.2": {
+      "summary": "Electric and magnetic field models; Coulomb forces and field lines; electrical potential energy and potential gradients.",
+      "core_prerequisites": [
+        "A.2",
+        "A.3"
+      ],
+      "conditional_links": [
+        "D.1",
+        "B.5"
+      ],
+      "deduction": "Force and work-energy supply definitions. Gravity analogy and current-generated field/circuit applications are conditional.",
+      "printed_pages": "4, 6, 17",
+      "coverage": "Explicit force/field/potential descriptions; topic combines SL and additional HL."
+    },
+    "D.3": {
+      "summary": "Charged-particle trajectories in electric/magnetic fields, circular/parabolic paths, combined fields and specific-charge measurements.",
+      "core_prerequisites": [
+        "D.2",
+        "A.2",
+        "A.3"
+      ],
+      "conditional_links": [
+        "B.5"
+      ],
+      "deduction": "Field forces and Newtonian trajectories combine; electric acceleration uses energy. Circuit/beam-source apparatus is conditional.",
+      "printed_pages": "5–6, 11–12, 17",
+      "coverage": "Explicit conceptual overview and assessment-learning example."
+    },
+    "D.4": {
+      "summary": "Changing magnetic flux and induced emf/current; Faraday/Lenz reasoning, electricity generation and energy conservation.",
+      "core_prerequisites": [
+        "D.2",
+        "B.5",
+        "A.3"
+      ],
+      "conditional_links": [],
+      "deduction": "Magnetic field/flux, circuit quantities and work-energy are foundations; Lenz direction enforces conservation.",
+      "printed_pages": "4, 17",
+      "coverage": "Lenz/generation explicit; flux and Faraday relation are standard induction deductions."
+    },
+    "E.1": {
+      "summary": "Rutherford nuclear atom, electrons/protons/neutrons; Bohr quantized levels and absorption/emission spectra.",
+      "core_prerequisites": [
+        "D.2",
+        "C.2",
+        "A.3"
+      ],
+      "conditional_links": [],
+      "deduction": "Scattering/closest approach use field forces and energy; spectra connect photon energy with wave frequency.",
+      "printed_pages": "4–5, 12, 17",
+      "coverage": "Explicit overview and atom-model example; mixed SL/additional HL depth."
+    },
+    "E.2": {
+      "summary": "Photoelectric energy balance, wave-particle duality, de Broglie matter waves and Compton scattering.",
+      "core_prerequisites": [
+        "E.1",
+        "C.2",
+        "A.2"
+      ],
+      "conditional_links": [
+        "B.5",
+        "C.3"
+      ],
+      "deduction": "Atomic/photon energy and wave quantities combine with momentum. Stopping-potential circuits and diffraction evidence are conditional.",
+      "printed_pages": "4, 6, 17",
+      "coverage": "Photoelectric/de Broglie/Compton explicit; experimental prerequisites deduced."
+    },
+    "E.3": {
+      "summary": "Nuclear composition/stability, short-range nuclear force, radioactive transformations, decay/half-life and binding-energy mass changes.",
+      "core_prerequisites": [
+        "E.1",
+        "A.3"
+      ],
+      "conditional_links": [],
+      "deduction": "Atomic nuclear structure and conservation/energy underpin nuclear change; the whole A.5 course is not necessary for a supplied mass-energy relation.",
+      "printed_pages": "4, 7, 17",
+      "coverage": "Nuclear forces/binding energy explicit; decay/half-life are standard deductions from title."
+    },
+    "E.4": {
+      "summary": "Fission of heavy nuclei, chain reactions, nuclear energy release and nuclear-power generation.",
+      "core_prerequisites": [
+        "E.3"
+      ],
+      "conditional_links": [
+        "B.1",
+        "B.4"
+      ],
+      "deduction": "Binding-energy and nuclear-reaction ideas are core. Thermal plant operation and engine efficiency are conditional.",
+      "printed_pages": "4, 17",
+      "coverage": "Fission/power and mass-energy explicit; chain reactions inferred from content scope."
+    },
+    "E.5": {
+      "summary": "Fusion as a stellar energy source, stellar observations/spectra and thermal radiation; temperature, luminosity and stellar models.",
+      "core_prerequisites": [
+        "E.3",
+        "B.1"
+      ],
+      "conditional_links": [
+        "D.1",
+        "B.3",
+        "C.5",
+        "E.4"
+      ],
+      "deduction": "Nuclear energetics and thermal radiation are core. Gravitational equilibrium, gas models, Doppler and comparison with fission are conditional.",
+      "printed_pages": "4, 10, 17",
+      "coverage": "Fusion/stars, spectra, brightness, temperature and radius explicit. This is not an exhaustive astrophysics syllabus."
+    }
+  },
+  "themes": {
+    "A": {
+      "title": "Space, time and motion",
+      "summary": "Describe motion, explain it through forces and conservation, and extend to rotating bodies and reference frames."
+    },
+    "B": {
+      "title": "The particulate nature of matter",
+      "summary": "Use microscopic particles and energy transfer to explain thermal behaviour, gases, atmosphere and circuits."
+    },
+    "C": {
+      "title": "Wave behaviour",
+      "summary": "Build from oscillators to propagation, superposition, resonance and motion-dependent observations."
+    },
+    "D": {
+      "title": "Fields",
+      "summary": "Model interactions at a distance and apply force/energy reasoning to masses, charges and induction."
+    },
+    "E": {
+      "title": "Nuclear and quantum physics",
+      "summary": "Connect atomic/nuclear structure, quantization, radiation and nuclear energy with microscopic evidence and stellar observations."
+    }
+  },
+  "level_scope": {
+    "HL_only": [
+      "A.4",
+      "A.5",
+      "B.4",
+      "D.4",
+      "E.2"
+    ],
+    "SL_and_additional_HL": [
+      "C.1",
+      "C.3",
+      "C.5",
+      "D.1",
+      "D.2",
+      "E.1",
+      "E.3"
+    ],
+    "source_printed_page": "2",
+    "note": "Topic-level prerequisites do not certify level suitability or authorize additional HL content in an SL question."
+  }
+}

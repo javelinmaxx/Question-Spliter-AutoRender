@@ -70,6 +70,23 @@ def verified_model():
     return model, expected
 
 
+def local_json_review(system, payload, schema, max_tokens=1000):
+    """Shared local inference transport; callers validate task-specific semantics."""
+    availability = status()
+    if not availability['available']:
+        raise RuntimeError(availability['reason'])
+    with _lock:
+        model, digest = verified_model()
+        messages = [dict(role='system', content=system), dict(role='user', content=json.dumps(payload))]
+        if len(model.tokenize(json.dumps(messages).encode())) + max_tokens + 100 > 4096:
+            raise ValueError('The complete dependency context exceeds the local model token budget.')
+        result = model.create_chat_completion(messages=messages, temperature=0, max_tokens=max_tokens,
+                                             response_format=dict(type='json_object', schema=schema))
+        if result['choices'][0].get('finish_reason') != 'stop':
+            raise ValueError('The language-model dependency response was incomplete.')
+        return json.loads(result['choices'][0]['message']['content']), dict(model=Path(os.environ['QUESTION_BANK_MODEL_PATH']).name, model_sha256=digest)
+
+
 def response_schema(codes):
     return {
         'type': 'object', 'additionalProperties': False,

@@ -1,0 +1,174 @@
+{
+  "input_parts": [
+    {
+      "id": "stem",
+      "label": "Shared stem",
+      "text": "A student performs measurements on a car.",
+      "requires": [],
+      "topics": [],
+      "minutes": 1,
+      "regions": []
+    },
+    {
+      "id": "a",
+      "label": "(a)",
+      "text": "Calculate the average speed of a car travelling 120 m in 6 s.",
+      "requires": [
+        "stem"
+      ],
+      "topics": [
+        "A.1"
+      ],
+      "minutes": 3,
+      "regions": []
+    },
+    {
+      "id": "b",
+      "label": "(b)",
+      "text": "Using your answer in (a), calculate the kinetic energy of the car of mass 2 kg.",
+      "requires": [
+        "stem",
+        "a"
+      ],
+      "topics": [
+        "A.1",
+        "A.3"
+      ],
+      "minutes": 3,
+      "regions": []
+    },
+    {
+      "id": "c",
+      "label": "(c)",
+      "text": "State the SI unit of electric current.",
+      "requires": [
+        "stem",
+        "a",
+        "b"
+      ],
+      "topics": [
+        "B.5"
+      ],
+      "minutes": 2,
+      "regions": []
+    }
+  ],
+  "raw": {
+    "response": {
+      "stem_topics": [
+        "A.4",
+        "B.4",
+        "C.2",
+        "D.2"
+      ],
+      "parts": [
+        {
+          "id": "a",
+          "requires": [
+            "b"
+          ],
+          "topics": [
+            "A.4",
+            "B.4",
+            "C.2",
+            "D.2"
+          ],
+          "confidence": "high",
+          "quote": "Calculate the average speed of a car travelling 120 m in 6 s.",
+          "reason": "The average speed is needed to calculate the kinetic energy."
+        },
+        {
+          "id": "b",
+          "requires": [
+            "a"
+          ],
+          "topics": [
+            "A.4",
+            "B.4",
+            "C.2",
+            "D.2"
+          ],
+          "confidence": "high",
+          "quote": "Using your answer in (a), calculate the kinetic energy of the car of mass 2 kg.",
+          "reason": "The average speed is needed to calculate the kinetic energy."
+        },
+        {
+          "id": "c",
+          "requires": [],
+          "topics": [
+            "A.4",
+            "B.4",
+            "C.2",
+            "D.2"
+          ],
+          "confidence": "high",
+          "quote": "State the SI unit of electric current.",
+          "reason": "The SI unit of electric current is not dependent on any other part."
+        }
+      ]
+    },
+    "identity": {
+      "model": "qwen2.5-1.5b-instruct-q4_k_m.gguf",
+      "model_sha256": "6a1a2eb6d15622bf3c96857206351ba97e1af16c30d7a74ee38970e434e9407e"
+    }
+  },
+  "result": {
+    "status": "needs_review",
+    "parts": [
+      {
+        "id": "stem",
+        "label": "Shared stem",
+        "text": "A student performs measurements on a car.",
+        "requires": [],
+        "topics": [],
+        "minutes": 1,
+        "regions": []
+      },
+      {
+        "id": "a",
+        "label": "(a)",
+        "text": "Calculate the average speed of a car travelling 120 m in 6 s.",
+        "requires": [
+          "stem"
+        ],
+        "topics": [
+          "A.1"
+        ],
+        "minutes": 3,
+        "regions": []
+      },
+      {
+        "id": "b",
+        "label": "(b)",
+        "text": "Using your answer in (a), calculate the kinetic energy of the car of mass 2 kg.",
+        "requires": [
+          "stem",
+          "a"
+        ],
+        "topics": [
+          "A.1",
+          "A.3"
+        ],
+        "minutes": 3,
+        "regions": []
+      },
+      {
+        "id": "c",
+        "label": "(c)",
+        "text": "State the SI unit of electric current.",
+        "requires": [
+          "stem",
+          "a",
+          "b"
+        ],
+        "topics": [
+          "B.5"
+        ],
+        "minutes": 2,
+        "regions": []
+      }
+    ],
+    "evidence": [],
+    "reason": "Dependency analysis is unavailable or invalid: Circular subquestion dependencies are not allowed."
+  }
+}

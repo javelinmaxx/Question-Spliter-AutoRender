@@ -58,7 +58,9 @@ def test_import_group_review_png_search_and_restart(bank):
     saved = save(client, doc, tags=['mechanics'], difficulty='Hard')
     image = Image.open(BytesIO(client.get(f"/api/questions/{saved['id']}/image").data))
     assert image.width == 1400 and image.height > 1000
-    assert len(client.get('/api/questions?q=mechanics&topic=A.1&level=HL').json) == 1
+    # A.2 admits its earlier A.1 foundation; A.1 cannot admit later A.2 content.
+    assert len(client.get('/api/questions?q=mechanics&topic=A.2&level=HL').json) == 1
+    assert client.get('/api/questions?q=mechanics&topic=A.1&level=HL').json == []
     assert client.get('/api/questions?level=SL').json == []
     reopened = create_app(root).test_client()
     assert reopened.get('/api/questions').json[0]['tags'] == ['mechanics']

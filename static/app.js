@@ -1,4 +1,5 @@
 const $ = s => document.querySelector(s);
+let prerequisitePolicy = {};
 let catalog = {}, currentDoc = null, currentQuestion = null;
 let previewUrl;
 document.addEventListener('DOMContentLoaded',()=>$('#preview-question').addEventListener('click',async()=>{ const button=$('#preview-question'); button.disabled=true; try { const response=await fetch(`/api/documents/${currentDoc.id}/preview`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({regions:currentQuestion.regions})}); if(!response.ok) throw new Error((await response.json()).error); if(previewUrl) URL.revokeObjectURL(previewUrl); previewUrl=URL.createObjectURL(await response.blob()); $('#crop-image').src=previewUrl; $('#crop-preview').hidden=false; } catch(error){status(error.message,true);} finally{button.disabled=false;} }));
@@ -15,10 +16,10 @@ async function search() {
  for(const q of questions) {
   const card=el('article',undefined,'card'); card.append(el('h3',`Question ${q.number} · ${q.year}`),el('p',`${q.level} · ${q.paper} · ${q.marks??'?'} marks · ~${q.minutes} min · ${q.difficulty}`));
   const tags=el('div',undefined,'tags'); for(const t of [...q.topics.map(t=>`${t} ${catalog[t]||''}`),...q.commands,...q.tags]) tags.append(el('span',t)); card.append(tags);
-  const image=el('img'); image.src=`/api/questions/${q.id}/image`; image.alt=`Cropped question ${q.number}`; image.loading='lazy';
+  const image=el('img'); const scope=new URLSearchParams(); for(const topic of new FormData($('#search')).getAll('topic').filter(Boolean))scope.append('topic',topic); image.src=`/api/questions/${q.id}/image?${scope}`; image.alt=`Cropped question ${q.number}`; image.loading='lazy';
   const link=el('a','Open PNG'); link.href=image.src; link.target='_blank'; link.rel='noopener';
-  const edit=el('button','Edit review','secondary'); edit.type='button'; edit.addEventListener('click',async()=>{ try { await openDocument(q.document_id); document.querySelector('[data-tab="import"]').click(); selectQuestion(q); }catch(e){status(e.message,true);} });
-  card.append(image,el('p',q.filename,'muted'),link,el('p'),edit); $('#results').append(card);
+  if(q.topic_omitted_parts?.length)card.append(el('p',`Topic view: omitted ${q.topic_omitted_parts.join(', ')}. Original question is preserved.`,'muted')); const edit=el('button','Edit review','secondary'); edit.type='button'; edit.addEventListener('click',async()=>{ try { await openDocument(q.document_id); document.querySelector('[data-tab="import"]').click(); selectQuestion(currentDoc.questions.find(original=>original.id===q.id)||currentDoc.questions.find(original=>original.number===q.number)); }catch(e){status(e.message,true);} });
+  const partsButton=el('button','Dependencies & Short','secondary'); partsButton.type='button'; partsButton.addEventListener('click',()=>openSubquestions(q.id)); card.append(image,el('p',q.filename,'muted'),link,el('p'),edit,el('p'),partsButton); $('#results').append(card);
  }
 }
 $('#search').addEventListener('submit',e=>{ e.preventDefault(); busy(e.target,search); });
@@ -34,8 +35,8 @@ $('#add-question').addEventListener('click',()=>{ const p=currentDoc.pages[0]; c
 $('#documents').addEventListener('change',async e=>{if(e.target.value) try{await openDocument(e.target.value);}catch(error){status(error.message,true);}});
 $('#upload').addEventListener('submit',e=>{e.preventDefault(); busy(e.target,async()=>{ status('Reading PDF and suggesting question groups… OCR may take several minutes for a long paper.'); const result=await api('/api/documents',{method:'POST',body:new FormData(e.target)}); await listDocuments(); await openDocument(result.id); status(`Imported ${result.pages.length} pages; ${result.questions.length} suggested groups. Review before saving.`); });});
 $('#question').addEventListener('submit',e=>{e.preventDefault(); busy(e.target,async()=>{ const value=Object.fromEntries(new FormData(e.target)); value.topics=[...e.target.elements.topics.selectedOptions].map(o=>o.value); for(const name of ['commands','tags']) value[name]=value[name].split(',').map(v=>v.trim()).filter(Boolean); value.document_id=currentDoc.id; value.regions=currentQuestion.regions; const saved=await post('/api/questions',value); currentQuestion={...saved}; const i=currentDoc.questions.findIndex(q=>q.number===saved.number); if(i>=0) currentDoc.questions[i]=saved; else currentDoc.questions.push(saved); if(!currentDoc.saved_numbers.includes(saved.number)) currentDoc.saved_numbers.push(saved.number); renderCandidates(); status(`Question ${saved.number} saved with ${saved.regions.length} page crop(s).`); });});
-$('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,async()=>{ $('#paper-result').replaceChildren(); const value=Object.fromEntries(new FormData(e.target)); value.topics=[...e.target.elements.topics.selectedOptions].map(o=>o.value); const result=await post('/api/papers',value); const link=el('a','Download practice paper PDF'); link.href=`/api/papers/${result.id}/download`; $('#paper-result').append(el('p',`${result.count} complete question groups · Estimated ${result.actual_minutes} / ${result.target_minutes} minutes · ${result.shortfall_minutes} minutes unfilled.`),link); status('Practice paper generated. All crops for each selected question remain consecutive.'); });});
-async function init() { const value=await api('/api/catalog'); catalog=value.topics; document.querySelectorAll('.topic-list,.topic-filter').forEach(select=>{ for(const [code,name] of Object.entries(catalog)) select.add(new Option(`${code} · ${name}`,code)); }); await Promise.all([search(),listDocuments()]); }
+$('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,async()=>{ $('#paper-result').replaceChildren(); const value=Object.fromEntries(new FormData(e.target)); value.topics=[...e.target.elements.topics.selectedOptions].map(o=>o.value); const result=await post('/api/papers',value); const link=el('a','Download practice paper PDF'); link.href=`/api/papers/${result.id}/download`; $('#paper-result').append(el('p',`${result.count} question groups · ${result.render_mode||'full'} · Estimated ${result.actual_minutes} / ${result.target_minutes} minutes · ${result.shortfall_minutes} minutes unfilled.`),link); status(`Practice paper generated. ${result.selections?.reduce((n,s)=>n+s.omitted_parts.length,0)||0} parts omitted. ${result.short_fallbacks?.length||0} questions retained whole because no approved dependency map was available.`); });});
+async function init() { const value=await api('/api/catalog'); catalog=value.topics; prerequisitePolicy=value.prerequisite_policy||{}; document.querySelectorAll('.topic-list,.topic-filter').forEach(select=>{ for(const [code,name] of Object.entries(catalog)) select.add(new Option(`${code} · ${name}`,code)); }); await Promise.all([search(),listDocuments()]); }
 init().catch(e=>status(e.message,true));
 
 function showLanguageReview(result) {
@@ -61,3 +62,48 @@ $('#apply-language-topics').addEventListener('click',()=>{
  status('Model topics applied to this draft. Save after checking the source.');
 });
 $('#question').addEventListener('input',e=>{if(e.target.closest('.region')||e.target.name==='paper')showLanguageReview(null);});
+
+let sqQuestion=null, sqMapping=null, sqOmitted=new Set(), sqCustom=false, sqPreviewUrl;
+function sqMessage(message){$('#sq-status').textContent=message;}
+function sqDirty(){if(sqMapping)sqMapping.status='draft';$('#sq-confirm').checked=false;$('#sq-preview').disabled=true;$('#sq-preview-box').hidden=true;}
+async function openSubquestions(id){
+ try{const value=await api(`/api/questions/${id}/subquestions`);sqQuestion=value.question;sqMapping=value.mapping;sqOmitted=new Set();sqCustom=false;
+ $('#sq-parent').textContent=`${sqQuestion.filename} · Question ${sqQuestion.number} · ${sqQuestion.minutes} minutes total`;
+ $('#sq-source').href=`/api/questions/${id}/image`;renderSubquestions();$('#subquestion-dialog').showModal();
+ }catch(error){status(error.message,true);}
+}
+function renderSubquestions(){
+ $('#sq-parts').replaceChildren();$('#sq-confirm').checked=false;$('#sq-preview').disabled=sqMapping.status!=='approved';$('#sq-preview-box').hidden=true;
+ const model=sqMapping.model_review;sqMessage(`${sqMapping.status==='approved'?'Approved map.':'Draft map — Full is preserved until approval.'} ${model?.reason||sqMapping.reason||''}`);
+ for(const part of sqMapping.parts){
+  const card=el('section',undefined,'sq-card');card.append(el('h3',`${part.id} · ${part.label}`));
+  const timeLabel=el('label','Estimated minutes for this part');const time=el('input');time.type='number';time.min=part.id==='stem'?'0':'0.1';time.step='0.1';time.value=part.minutes;time.addEventListener('input',()=>{part.minutes=Number(time.value);sqDirty();});timeLabel.append(time);card.append(timeLabel); const topicLabel=el('label','Assessed topics for this part (select all that apply)'); const topicSelect=el('select'); topicSelect.multiple=true; topicSelect.size=5; for(const [code,name] of Object.entries(catalog)){const option=new Option(`${code} · ${name}`,code);option.selected=(part.topics||[]).includes(code);topicSelect.add(option);}topicSelect.addEventListener('change',()=>{part.topics=[...topicSelect.selectedOptions].map(o=>o.value);sqDirty();});topicLabel.append(topicSelect);card.append(topicLabel);
+  if(part.id!=='stem'){
+   card.append(el('p','Always requires the shared stem. Also requires:','muted'));const dependencies=el('div',undefined,'sq-dependencies');
+   for(const other of sqMapping.parts.filter(p=>p.id!=='stem'&&p.id!==part.id)){
+    const label=el('label',undefined,'check'),check=el('input');check.type='checkbox';check.checked=part.requires.includes(other.id);check.addEventListener('change',()=>{part.requires=check.checked?[...part.requires,other.id]:part.requires.filter(id=>id!==other.id);sqDirty();});label.append(check,el('span',other.label));dependencies.append(label);
+   }card.append(dependencies);
+   const omitLabel=el('label',undefined,'check'),omit=el('input');omit.type='checkbox';omit.checked=sqOmitted.has(part.id);omit.addEventListener('change',()=>{sqCustom=true;omit.checked?sqOmitted.add(part.id):sqOmitted.delete(part.id);});omitLabel.append(omit,el('span','Omit from custom Short preview (prerequisites are enforced)'));card.append(omitLabel);
+  }else card.append(el('p','Always retained. If there is no separate stem crop, the question heading stays and shared context inside another part must be listed as a prerequisite.','muted'));
+  for(const [index,region] of part.regions.entries()){
+   const row=el('div',undefined,'sq-crop');for(const [label,key] of [['Page',-1],['Left',0],['Top',1],['Right',2],['Bottom',3]]){
+    const field=el('label',label),input=el('input');input.type='number';input.step=key===-1?'1':'0.1';input.value=key===-1?region.page+1:region.rect[key];input.addEventListener('input',()=>{if(key===-1)region.page=Number(input.value)-1;else region.rect[key]=Number(input.value);sqDirty();});field.append(input);row.append(field);
+   }const remove=el('button','Remove crop','secondary');remove.type='button';remove.addEventListener('click',()=>{part.regions.splice(index,1);sqDirty();renderSubquestions();});row.append(remove);card.append(row);
+  }
+  const add=el('button','Add crop','secondary');add.type='button';add.addEventListener('click',()=>{part.regions.push(structuredClone(sqQuestion.regions[0]));sqDirty();renderSubquestions();});card.append(add);
+  const details=el('details'),summary=el('summary','Part text and model evidence'),text=el('pre',part.text||'(No separate stem text)');details.append(summary,text);const evidence=model?.evidence?.find(e=>e.id===part.id);if(evidence)details.append(el('p',`${evidence.confidence} confidence: ${evidence.reason}`),el('blockquote',evidence.quote));card.append(details);$('#sq-parts').append(card);
+ }
+}
+$('#sq-close').addEventListener('click',()=>$('#subquestion-dialog').close());
+$('#sq-model').addEventListener('click',async()=>{const button=$('#sq-model');button.disabled=true;try{sqMessage('Checking the full parent context with the local language model…');sqMapping=await post(`/api/questions/${sqQuestion.id}/subquestions/analyze`,{parts:sqMapping.parts});renderSubquestions();}catch(error){sqMessage(error.message);}finally{button.disabled=false;}});
+$('#sq-approve').addEventListener('click',async()=>{const button=$('#sq-approve');button.disabled=true;try{sqMapping=await post(`/api/questions/${sqQuestion.id}/subquestions/approve`,{parts:sqMapping.parts,confirmed:$('#sq-confirm').checked});renderSubquestions();sqMessage('Approved. Short may omit optional parts; any retained part always brings its prerequisites and shared stem.');await search();}catch(error){sqMessage(error.message);}finally{button.disabled=false;}});
+$('#sq-preview').addEventListener('click',async()=>{const button=$('#sq-preview');button.disabled=true;try{const payload={mode:'short'};if(sqCustom)payload.omitted_parts=[...sqOmitted];const response=await fetch(`/api/questions/${sqQuestion.id}/render`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!response.ok)throw new Error((await response.json()).error);if(sqPreviewUrl)URL.revokeObjectURL(sqPreviewUrl);sqPreviewUrl=URL.createObjectURL(await response.blob());$('#sq-preview-image').src=sqPreviewUrl;$('#sq-preview-box').hidden=false;}catch(error){sqMessage(error.message);}finally{button.disabled=sqMapping.status!=='approved';}});
+
+function showTopicScope(form, target){
+ const name=form.id==='search'?'topic':'topics';const selected=new FormData(form).getAll(name).filter(Boolean);const allowed=new Set(selected);
+ function visit(code){for(const p of prerequisitePolicy.requires?.[code]||[]){if(!allowed.has(p)){allowed.add(p);visit(p);}}} selected.forEach(visit);
+ const earlier=[...allowed].filter(c=>!selected.includes(c));
+ $(target).textContent=selected.length?`Selected targets: ${selected.join(', ')}. ${earlier.length?'Also allows earlier prerequisites: '+earlier.join(', ')+'. ':''}Out-of-scope extensions are removed only with an approved part/topic map; required context is never dropped.`:'No topic restriction. Full preserves every part; Short uses approved dependency maps.';
+}
+$('#search').addEventListener('change',()=>showTopicScope($('#search'),'#search-scope'));
+$('#generate').addEventListener('change',()=>showTopicScope($('#generate'),'#generate-scope'));
