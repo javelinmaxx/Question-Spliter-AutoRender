@@ -4,6 +4,30 @@ A local question bank for IB DP Physics HL and SL, using the syllabus first asse
 
 ## Run
 
+### macOS
+
+Install [Homebrew](https://brew.sh) and Xcode Command Line Tools (`xcode-select --install`), then run from the repository root:
+
+```sh
+./scripts/setup_macos.sh
+source .venv/physics-env.sh
+python app.py
+```
+
+The script installs Homebrew Python 3.12 and Tesseract, creates or reuses `.venv`, configures English OCR locally, installs dependencies, and runs the tests. It supports Apple Silicon and Intel Macs, including repository paths containing spaces, and leaves shell profiles unchanged.
+
+Optional flags:
+
+```sh
+./scripts/setup_macos.sh --start                 # Set up, test, and start the app
+./scripts/setup_macos.sh --with-model            # Also install the local model runtime
+./scripts/setup_macos.sh --download-model --start # Also download verified weights and start
+```
+
+Apple Silicon model builds enable Metal; Intel builds use CPU inference. Weights are saved in ignored `instance/models/`. Model downloads require access to Hugging Face and its artifact hosts. Use `source .venv/physics-env.sh` in each new terminal to restore OCR and any configured model path. Existing incompatible virtual environments or custom environment helper files are preserved and reported for you to resolve.
+
+### Manual setup
+
 Requires Python 3.12 (tested on Linux) and Tesseract with English language data. On Debian/Ubuntu, the OCR system packages are `tesseract-ocr` and `tesseract-ocr-eng`. No API key, external database, or Node build is required.
 
 ```sh
