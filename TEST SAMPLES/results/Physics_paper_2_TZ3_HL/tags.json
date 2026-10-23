@@ -1,0 +1,671 @@
+{
+  "source_file": "Physics_paper_2_TZ3_HL.pdf",
+  "source_sha256": "3943e6237296a7177a1fedab68cdcc717f272f7472d3d19de6547097df9442e9",
+  "source_pages": 29,
+  "metadata": {
+    "year": 2025,
+    "level": "HL",
+    "paper": "Paper 2",
+    "syllabus": "2025"
+  },
+  "mark_audit": {
+    "expected": 90,
+    "detected": 90,
+    "status": "matched"
+  },
+  "warnings": [
+    "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving."
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "E.1"
+      ],
+      "commands": [
+        "calculate",
+        "state"
+      ],
+      "marks": 4,
+      "minutes": 7.2,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.1": [
+          "energy level",
+          "energy levels"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.1"
+        ],
+        "commands": [
+          "calculate",
+          "state"
+        ]
+      },
+      "image": "questions/question-01.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.1": "Structure of the atom"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 1,
+        "required_topics": [
+          "E.1"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "Turn over\n1.\t\nThe diagram shows the three lowest energy levels of the hydrogen atom. \n\nThe energy of each level is indicated.\ndiagram not to scale\n−13.6 eV\n−3.40 eV\n−1.51 eV\n(a)\t\nState the number of transitions between these levels that result in the emission \n\nof photons.\b\n[1]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(b)\t\nCalculate the largest photon wavelength for these transitions.\b\n[3]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������",
+        "ocr": "1.\nThe diagram shows the three lowest energy levels of the hydrogen atom.\nThe energy of each level is indicated.\ndiagram not to scale\n(a)\nState the number of transitions between these levels that result in the emission\nof photons.\n[1]\n(b)\nCalculate the largest photon wavelength for these transitions.\n[3]\n-4-\n8825-6721"
+      }
+    },
+    {
+      "number": 2,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "A.1",
+        "A.2"
+      ],
+      "commands": [
+        "calculate",
+        "determine",
+        "draw",
+        "explain",
+        "state"
+      ],
+      "marks": 11,
+      "minutes": 19.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.1": [
+          "velocity",
+          "acceleration"
+        ],
+        "A.2": [
+          "friction",
+          "force"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.1",
+          "A.2"
+        ],
+        "commands": [
+          "calculate",
+          "determine",
+          "explain",
+          "state"
+        ]
+      },
+      "image": "questions/question-02.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.1": "Kinematics",
+        "A.2": "Forces and momentum"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "2.\t\nA ball is connected to a string that is attached to the ceiling of a truck. The truck accelerates \nto the right on a horizontal road. The string makes an angle of 30° with the vertical.\n30\nacceleration\n(a)\t\n(i)\t\nDraw a labelled free-body diagram of the forces on the ball.\b\n[2]\n(This question continues on the following page)\nTurn over\n(Question 2 continued)\n(ii)\t\nDetermine the acceleration of the truck.\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(b)\t\nThe truck now moves at constant speed up an incline that makes an angle of 10° to \nthe horizontal. State and explain the angle between the string and the vertical.\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(This question continues on page 7)\nTurn over\n(Question 2 continued)\nOn another occasion, the truck enters a horizontal semicircular road of radius of 75 m. \n\nThe coefficient of static friction between the road and the tyres is 0.60. \nvelocity\n75 m\ntruck\nservice station\n(c)\t\nCalculate the maximum speed at which the truck can travel on this road.\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(d)\t\nThe truck runs out of fuel just as it enters the semicircle with speed 15 m s−1. The \nresultant force opposing the motion has magnitude 520 N. The mass of the truck is \n1400 kg. A service station is at the other end of the semicircle.\nDetermine whether the truck will be able to reach the service station.\b\n[3]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������",
+        "ocr": "2.\nA ball is connected toa string that is attached to the ceiling of a truck. The truck accelerates\nto the right on a horizontal road. The string makes an angle of 30° with the vertical.\ni\nacceleration\n(a)\n(i)\n|Drawa\nlabelled free-body diagram of the forces on the ball.\n[2]\nPTE EEE EP\nFT ttt tT et\ntT Tt\n|\nTy\nPCEEEEE EEE\nPT ttt tT te tT tT TT\n| yt\nFi tte tT ey\nte Tt\n| yt Ty\nPCEECEE Eee\nPi ttt tT te tT Tt\n| tT\nFT tT tT tT tT ea\ntT Tt tT\nSERRE Ae\nPp} Tee tT TT ET TT\nPEEP EEE\nPt tte te TT\nPE EET TE\nPt tet tT tT\ntT TT yy\nPEPE\nPt tte te yey et\nTt\nFCCP EEEEE\n(This question continues on the following page)\n(Question 2 continued)\n(ii)\n| Determine the acceleration of the truck.\n[2]\n(b)\nThe truck now moves at constant speed up an incline that makes an angle of 10° to\nthe horizontal. State and explain the angle between the string and the vertical.\n[2]\n(This question continues on page 7)\n(Question 2 continued)\nOn another occasion, the truck enters a horizontal semicircular road of radius of 75m.\nThe coefficient of static friction between the road and the tyres is 0.60.\nvelocity\n——__>\nservice station\na\n(c)\nCalculate the maximum speed at which the truck can travel on this road.\n[2]\n(d)\nThe truck runs out of fuel just as it enters the semicircle with speed 15ms'. The\nresultant force opposing the motion has magnitude 520 N. The mass of the truck is\n1400 kg. A service station is at the other end of the semicircle.\nDetermine whether the truck will be able to reach the service station.\n[3]"
+      }
+    },
+    {
+      "number": 3,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "A.2",
+        "D.2"
+      ],
+      "commands": [
+        "determine",
+        "explain",
+        "show",
+        "suggest"
+      ],
+      "marks": 6,
+      "minutes": 10.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.2": [
+          "force"
+        ],
+        "D.2": [
+          "electric field",
+          "magnetic field"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.2",
+          "D.2"
+        ],
+        "commands": [
+          "determine",
+          "explain",
+          "show",
+          "suggest"
+        ]
+      },
+      "image": "questions/question-03.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.2": "Forces and momentum",
+        "D.2": "Electric and magnetic fields"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "3.\t\n(a)\t\n\u0007Two identical conducting spheres X and Y that carry positive charges are separated \nby a centre-to-centre distance of 24.0 cm in a vacuum. The charge on X is 9Q and the \ncharge on Y is Q. Point R is 6.0 cm from the centre of Y, as shown. \nR\nY\nX\nQ\n9Q\n6.0 cm\n24.0 cm\nThe resultant electric field at R is 32.6 MN C−1. Determine Q, giving an appropriate unit. \b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(This question continues on the following page)\nTurn over\n(Question 3 continued)\n(b)\t\nA particle of mass m and positive charge q moves on a circular path with speed v in a \nvacuum. A uniform magnetic field B is directed into the plane of the page.\nv\nB\n(i)\t\nShow that the radius R of the circular path is given by R\nmv\nqB\n=\n.\b\n[1]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(ii)\t\nSuggest why the speed of the particle stays constant, even though a force \n\nacts on the particle.\b\n[1]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(This question continues on page 11)\nTurn over\n(Question 3 continued)\n(c)\t\nThe particle in (b), now moving in a region of magnetic field in air, follows the path shown.\nv\nExplain the shape of this path.\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������",
+        "ocr": "3.\n(a)\nTwo identical conducting spheres X and Y that carry positive charges are separated\nby acentre-to-centre distance of 24.0cm in a vacuum. The charge on X is 9Q and the\ncharge on Y\nis Q. Point R is 6.0cm from the centre of Y,as shown.\n(\n;\n24.0cm\n:\n; 6.0cm R\nThe resultant electric field at R is 32.6 MNC™'. Determine Q, giving an appropriate unit.\n[2]\n(This question continues on the following page)\n(Question 3 continued)\n(b)\nAparticle of mass m and positive charge q moves on a circular path with speed vin a\nvacuum. A uniform magnetic field B is directed into the plane of the page.\n@\ng\n@\ng\ng\n@\n8\n®\ng\nev\n®\n&\n®\n®\n®\n@\nOr\n@\n&\n®\n®\na\n®\n®\n®\n®\n®\n—\n(i) | Show that the radius R of the circular path is given by R=a\n[1]\nq\n(ii) |Suggest why the speed of the particle stays constant, even though a force\nacts on the particle.\n1]\n(This question continues on page 11)\n(Question 3 continued)\n(c)\nThe particle in (b), now moving in a region of magnetic field in air, follows the path shown.\n=\n@\n@\n@\n@\n@\n=\n®\nSy\nBS r- BF\n7B,\n®@\n®\n®\n®\nQe@ ~ ®\n®\n@\n=\n@\n@\n@\n@\n@\n=\nExplain the shape of this path.\n[2]"
+      }
+    },
+    {
+      "number": 4,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "E.3"
+      ],
+      "commands": [
+        "calculate",
+        "estimate",
+        "explain",
+        "state"
+      ],
+      "marks": 9,
+      "minutes": 16.2,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.3": [
+          "half-life",
+          "radioactive",
+          "decay",
+          "beta-plus"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.3"
+        ],
+        "commands": [
+          "calculate",
+          "estimate",
+          "explain",
+          "state"
+        ]
+      },
+      "image": "questions/question-04.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.3": "Radioactive decay"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 4,
+        "required_topics": [
+          "E.3"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "4.\t\n(a)\t\n\u0007A pure radioactive sample of bismuth-204 (\n83\n204Bi ) is placed near a detector, which is \nconnected to a counter. \nbismuth-204 sample\ndetector\nto counter\nBismuth-204 decays into lead (\n82\n204Pb ) by beta-plus decay according to the equation \n83\n204\n82\n204\nBi\nPb\n\u001f\n\u001e\n\u001e\n\u001e\ne\n\u001d . The graph shows the variation with time t of the count rate R. \n0\n0\n500\n1000\n1500\n2000\n2500\n3000\n5 10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90\n100\n95\nR / hour\n −1\nt / hour\n(i)\t\nState the background count rate.\b\n[1]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(This question continues on the following page)\nTurn over\n(Question 4 continued)\n(ii)\t\nEstimate the half-life of \n83\n204Bi .\b\n[3]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(iii)\t\nState and explain how the binding energy per nucleon of \n83\n204Bi  compares with \nthat of \n82\n204Pb .\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(iv)\t\nThe distance between the sample and the detector is 20 cm. State why this \n\nwould be an inappropriate distance for a sample that decayed by alpha decay.\b\n[1]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(b)\t\nThe following data are available for nuclear masses:\n\t\nbismuth\t=\t203.932254 u\n\t\nlead\t=\t203.928034 u\nCalculate the energy released in the decay of one nucleus of bismuth-204.\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������",
+        "ocr": "4.\n(a)\nApure radioactive sample of bismuth-204 (Bi) is placed near a detector, which is\nconnected to a counter.\nc\n/<—— to counter\nbismuth-204 sample\ndetector\nBismuth-204 decays into lead (733Pb ) by beta-plus decay according to the equation\n73Bi — *93Pb +e* +v\n. The graph shows the variation with time¢of the count rate R.\nR/hour\"\n2500 ERR RRR EEE EERE EE ESS\n2000\n\\\ntoe PLT\n0\n5\n10 15 20 25 30 35 40 45 50 55 60 65 70 75 80 85 90 95100\n(i)\n| State the background count rate.\n[1]\n(This question continues on the following page)\n(Question 4 continued)\n(ii)\nEstimate the half-life of 2°SBi.\n[3]\n(iii)\nState and explain how the binding energy per nucleon of 7;:Bi compares with\nthat of *Pb .\n[2]\n(iv)\nThe distance between the sample and the detector is 20cm. State why this\nwould be an inappropriate distance for\na sample that decayed by alpha decay.\n[1]\n(b)\nThe following data are available for nuclear masses:\nbismuth = 203.932254u\nlead = 203.928034u\nCalculate the energy released in the decay of one nucleus of bismuth-204.\n[2]"
+      }
+    },
+    {
+      "number": 5,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "A.3",
+        "B.1",
+        "B.3",
+        "B.4"
+      ],
+      "commands": [
+        "calculate",
+        "show"
+      ],
+      "marks": 6,
+      "minutes": 10.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.3": [
+          "efficiency",
+          "work done"
+        ],
+        "B.1": [
+          "thermal"
+        ],
+        "B.3": [
+          "ideal monatomic gas"
+        ],
+        "B.4": [
+          "heat engine"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.3",
+          "B.1",
+          "B.3",
+          "B.4"
+        ],
+        "commands": [
+          "calculate",
+          "show"
+        ]
+      },
+      "image": "questions/question-05.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.3": "Work, energy and power",
+        "B.1": "Thermal energy transfers",
+        "B.3": "Gas laws",
+        "B.4": "Thermodynamics"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 5,
+        "required_topics": [
+          "B.3",
+          "B.4"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "5.\t\nThe graph shows the cycle of a heat engine operating with an ideal monatomic gas. It \nconsists of three stages: an isothermal A → B, an isobaric B → C and an adiabatic C → A. \nThe temperature at A is 560 K.\n10\n20\n30\n40\n50\n60\n2.0\n2.5\n3.0\n3.5\n4.0\n4.5\n5.0\nP / kPa\nV / 10−2 m3\nA\nC\nB\n(a)\t\nShow that the thermal energy transferred from the gas along B → C is about 700 J.\b\n[3]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(b)\t\nThe work done along A → B is 840 J. Calculate the efficiency of the engine.\b\n[3]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������",
+        "ocr": "5.\nThe graph shows the cycle of a heat engine operating with an ideal monatomic gas. It\nconsists of three stages: an isothermal A — B, an isobaric\nB > C and an adiabatic C > A.\nThe temperature at Ais 560K.\nP/kPa\n30\nSescsrtrertssrezere\n20 EEE\nSCE eee\nPoppe VIO?\n2.0\n2.5\n3.0\n3.5\n4.0\n4.5\n5.0\n(a)\nShow that the thermal energy transferred from the gas along B —C is about 700J.\n[3]\n(b)\nThe work done along A >B\nis 840J. Calculate the efficiency of the engine.\n[3]"
+      }
+    },
+    {
+      "number": 6,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "A.1",
+        "A.2",
+        "A.4"
+      ],
+      "commands": [
+        "show",
+        "suggest"
+      ],
+      "marks": 4,
+      "minutes": 7.2,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.1": [
+          "acceleration"
+        ],
+        "A.2": [
+          "momentum"
+        ],
+        "A.4": [
+          "moment of inertia",
+          "angular momentum",
+          "angular momentum"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.1",
+          "A.2",
+          "A.4"
+        ],
+        "commands": [
+          "show",
+          "suggest"
+        ]
+      },
+      "image": "questions/question-06.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.1": "Kinematics",
+        "A.2": "Forces and momentum",
+        "A.4": "Rigid body mechanics"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "Turn over\n6.\t\nTwo blocks of mass m and 2m are connected with a string that goes over a pulley of mass m.\ndiagram not to scale\nm\nm\n2m\naxle\npulley\nWhen the blocks are released, the pulley turns about the axle as the blocks move. The string \ndoes not slip relative to the pulley. The radius of the pulley is r and its moment of inertia \nabout the axle is mr 2\n2\n.\n(a)\t\nShow that the acceleration a of the blocks is given by a\ng\n= 2\n7 .\b\n[3]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(b)\t\nSuggest whether the angular momentum of the pulley–blocks system is conserved.\b\n[1]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������",
+        "ocr": "6.\nTwo blocks of mass m and 2m are connected with a string that goes over a pulley of mass m.\ndiagram not to scale\npulley\nWhen the blocks are released, the pulley turns about the axle as the blocks move. The string\ndoes not slip relative to the pulley. The radius of the pulley is r and its moment of inertia\nabout the axle is a ;\n(a)\nShow that the acceleration a of the blocks is given by a=“2.\n[3]\n(b)\nSuggest whether the angular momentum of the pulley—blocks system is conserved.\n[1]"
+      }
+    },
+    {
+      "number": 7,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "C.2",
+        "C.3"
+      ],
+      "commands": [
+        "calculate",
+        "outline"
+      ],
+      "marks": 4,
+      "minutes": 7.2,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "C.2": [
+          "wavelength"
+        ],
+        "C.3": [
+          "diffraction",
+          "single slit"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "C.2",
+          "C.3"
+        ],
+        "commands": [
+          "calculate",
+          "outline"
+        ]
+      },
+      "image": "questions/question-07.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.2": "Wave model",
+        "C.3": "Wave phenomena"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 7,
+        "required_topics": [
+          "C.2",
+          "C.3"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "7.\t\nA monochromatic light beam is incident on a single slit. M is the point on a screen far from \nthe slit, directly across from the mid-point of the slit. The diagram shows two of the incident \nrays that reach M after they have diffracted at the slit. These rays are symmetrical with \nrespect to the dotted line.\ndiagram not to scale\nlight beam\nslit\nscreen\nM\n(a)\t\nOutline, by considering pairs of rays arriving at M such as the ones shown, why a \nmaximum in intensity will be observed at M.\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(This question continues on the following page)\nTurn over\n(Question 7 continued)\n(b)\t\nThe graph shows the variation with diffraction angle θ of the intensity I on the screen.\n0.00\n0.05\n  0.05\n20\n40\n60\n80\nI  / W m 2\n  θ / rad\nThe slit width is 1.3 × 10−5 m. Calculate the wavelength of the light.\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������",
+        "ocr": "7. |Amonochromatic light beam is incident ona single slit. M is the point on a screen far from\nthe slit, directly across from the mid-point of the slit. The diagram shows two of the incident\nrays that reach M after they have diffracted at the slit. These rays are symmetrical with\nrespect to the dotted line.\ndiagram not to scale\nlight beam\n|\nslit\nscreen\n(a)\nOutline, by considering pairs of rays arriving at M such as the ones shown, why a\nmaximum in intensity will be observed at M.\n[2]\n(This question continues on the following page)\n(Question 7 continued)\n(b)\n|The graph shows the variation with diffraction angle @ of the intensity 7 on the screen.\n<<.\n=\n>—\nOl/rad\n0.05\n0.00\n0.05\nThe slit width is 1.3 x 10m. Calculate the wavelength of the light.\n(2)"
+      }
+    },
+    {
+      "number": 8,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "D.2",
+        "D.3",
+        "D.4"
+      ],
+      "commands": [
+        "explain",
+        "suggest"
+      ],
+      "marks": 6,
+      "minutes": 10.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "D.2": [
+          "magnetic field"
+        ],
+        "D.3": [
+          "force on conducting rod in magnetic field"
+        ],
+        "D.4": [
+          "motional emf and magnetic braking"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "D.2",
+          "D.3",
+          "D.4"
+        ],
+        "commands": [
+          "explain",
+          "suggest"
+        ]
+      },
+      "image": "questions/question-08.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "D.2": "Electric and magnetic fields",
+        "D.3": "Motion in electromagnetic fields",
+        "D.4": "Induction"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 8,
+        "required_topics": [
+          "D.3",
+          "D.4"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "8.\t\n(a)\t\nA conducting rod is placed on horizontal, conducting, frictionless rails.\nrod\nview from above\nrails\nA uniform magnetic field is directed into the plane of the page.\nThe rod begins to move to the right after it is given a short push. Explain why the rod will \nquickly stop moving.\b\n[3]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(This question continues on the following page)\nTurn over\n(Question 8 continued)\n(b)\t\nIn another experiment, the rod is at rest on the rails. A cell and a switch are inserted \nas shown.\nswitch\nThe switch is closed. \n(i)\t\nSuggest what happens to the rod.\b\n[1]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(ii)\t\nExplain why the rod will eventually reach terminal speed.\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������",
+        "ocr": "8.\n(a)\nAconducting rod is placed on horizontal, conducting, frictionless rails.\n@\n®\n®8,8\n8\n@®\n®\n®\n@e|/@\n®\n@ \\\nrails\n®\n®\n@|/®\n®\n@®\nWA\n®@\n® Fa ®\n®\n®\nrod\nview from above\nA uniform magnetic field is directed into the plane of the page.\nThe rod begins to move to the right after it is given a short push. Explain why the rod will\nquickly stop moving.\n[3]\n(This question continues on the following page)\n(Question 8 continued)\n(b)\nIn another experiment, the rod is at rest on the rails. A cell and a switch are inserted\nas shown.\n®\n®\n®,8®\n®\n®\n8\n®\n®\n®@\nB18\n8\n&®\n®\n®@\ne\n@\nelle\n©\n®\n@®\n@\n®\n®\n®\n®\n®\n®\n®\n®\nThe switch is closed.\n(i)\n| Suggest what happens to the rod.\n[1]\n(ii)\n| Explain why the rod will eventually reach terminal speed.\n[2]"
+      }
+    },
+    {
+      "number": 9,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "A.1",
+        "B.1",
+        "B.3",
+        "C.2",
+        "C.4"
+      ],
+      "commands": [
+        "calculate",
+        "determine",
+        "draw",
+        "estimate",
+        "explain",
+        "outline"
+      ],
+      "marks": 20,
+      "minutes": 36.0,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.1": [
+          "displacement"
+        ],
+        "B.1": [
+          "latent heat"
+        ],
+        "B.3": [
+          "molar"
+        ],
+        "C.2": [
+          "wave model"
+        ],
+        "C.4": [
+          "standing wave",
+          "harmonic"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.1",
+          "B.1",
+          "B.3",
+          "C.2",
+          "C.4"
+        ],
+        "commands": [
+          "calculate",
+          "determine",
+          "draw",
+          "estimate",
+          "explain",
+          "outline"
+        ]
+      },
+      "image": "questions/question-09.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.1": "Kinematics",
+        "B.1": "Thermal energy transfers",
+        "B.3": "Gas laws",
+        "C.2": "Wave model",
+        "C.4": "Standing waves and resonance"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 9,
+        "required_topics": [
+          "B.1",
+          "C.2",
+          "C.4"
+        ],
+        "forbidden_topics": [
+          "E.5"
+        ],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "9.\t\n(a)\t\n\u0007A copper rod has mass 0.400 kg. The density of solid copper is 8.94 × 103 kg m−3. \n\nThe molar mass (the mass of a mole) of copper is 63.5 g mol−1.\nEstimate\n(i)\t\nthe mass of a copper atom;\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(ii)\t\nthe volume corresponding to each atom, given by \nvolume of copper\nnumber of copper atoms ;\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(iii)\t\nthe average separation of two neighbouring copper atoms, assuming that the \nvolume corresponding to each atom is a cube.\b\n[1]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(b)\t\nThe specific latent heat of fusion of copper is 206 kJ kg−1. Calculate the energy needed \nto completely melt 0.400 kg of solid copper at its melting point.\b\n[1]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(This question continues on the following page)\nTurn over\n(Question 9 continued)\n(c)\t\nCopper atoms in the solid and liquid phase coexist at the melting point. Comparing \nequal numbers of atoms in the solid and liquid phase at the melting point, state and \nexplain which atoms have the greater internal energy.\b\n[3]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(d)\t\nA copper rod is suspended at its centre, as shown. P and Q are the equilibrium \npositions of two copper atoms in the rod. When a hammer taps the left-hand end of \nthe rod, the first harmonic sound standing wave is formed in the rod. The longitudinal \nstanding wave in this rod is identical to a standing wave in a pipe with both ends open. \ndiagram not to scale\nP\nQ\nhammer\ncopper rod\n(i)\t\nExplain, by reference to the principle of superposition, why a standing wave is \n\nset up in the pipe.\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(This question continues on the following page)\n(Question 9 continued)\n(ii)\t\nDraw, on the diagram, the standing wave in the rod. The width of the rod is \nshown larger to help with your drawing.\b\n[1]\nP\nQ\n(iii)\t\nThe graph shows the variation with time of the displacement of the atom at P. \nDraw, on the same axes, the variation with time of the displacement of the \n\natom at Q.\b\n[2]\ndisplacement\ndisplacement of P\ntime\n(This question continues on the following page)\nTurn over\n(Question 9 continued)\n(e)\t\nThe copper rod is brought close to a glass tube that contains light sand. When the \n\nleft-hand end of the rod is tapped with a hammer and the length of the tube is adjusted \nby moving the piston, a standing wave is established in the tube. Sand collects in piles \nas shown. The distance between the centres of two consecutive piles of sand is d.\ndiagram not to scale\ncopper rod\nglass tube\npiles of sand\nd\npiston\n(i)\t\nOutline why the sand collects in piles.\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(ii)\t\nThe following data are available:\n\t\nd\t=\t1.8 cm\n\t\nspeed of sound in air\t=\t330 m s−1\n\t\nlength of copper rod\t=\t34 cm\nDetermine the speed of sound in copper.\b\n[4]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������",
+        "ocr": "9.\n(a)\nAcopper rod has mass 0.400kg. The density of solid copper is 8.94 x 10°kgm\n°.\nThe molar mass (the mass of a mole) of copper is 63.5gmol.\nEstimate\n(i)\n| the mass of a copper atom;\n[2]\n(ii) | the volume corresponding to each atom, given by __volume of copper__ ;\n[2]\nnumber of copper atoms\n(iii)\nthe average separation of two neighbouring copper atoms, assuming that the\nvolume corresponding to each atom is a cube.\n[1]\n(b)\nThe specific latent heat of fusion of copper is 206 kJ kg‘. Calculate the energy needed\nto completely melt 0.400kg of solid copper at its melting point.\n[1]\n(This question continues on the following page)\n(Question 9 continued)\n(c)\nCopper atoms in the solid and liquid phase coexist at the melting point. Comparing\nequal numbers of atoms in the solid and liquid phase at the melting point, state and\nexplain which atoms have the greater internal energy.\n[3]\n(d)\nAcopper rod is suspended at its centre, as shown. P and Q are the equilibrium\npositions of two copper atoms in the rod. When a hammer taps the left-hand end of\nthe rod, the first harmonic sound standing wave is formed in the rod. The longitudinal\nstanding wave in this rod is identical to a standing wave in a pipe with both ends open.\ndiagram not to scale\n=\nP\nQ\n—\ncopper rod\nhammer\n(i)\nExplain, by reference to the principle of superposition, why a standing wave is\nset up in the pipe.\n[2]\n(This question continues on the following page)\n(Question 9 continued)\n(ii)\n| Draw, on the diagram, the standing wave in the rod. The width of the rod is\nshown larger to help with your drawing.\n[1]\n(iii)\n|The graph shows the variation with time of the displacement of the atom at P.\nDraw, on the same axes, the variation with time of the displacement of the\natom at Q.\n[2]\ndisplacement\ndisplacement of P\ntime\n(This question continues on the following page)\n(Question 9 continued)\n(e)\nThe copper rod is brought close to a glass tube that contains light sand. When the\nleft-hand end of the rod is tapped with\na hammer and the length of the tube is adjusted\nby moving the piston, a standing wave is established in the tube. Sand collects in piles\nas shown. The distance between the centres of two consecutive piles of sand is d.\ndiagram not to scale\ncopper rod\nglass tube\not\n\\t 7\npiston\npiles of sand\n(i) | Outline why the sand collects in piles.\n[2]\n(ii)\n|The following data are available:\nspeed of sound in air = 330ms\"'\nlength of copper rod = 34cm\nDetermine the speed of sound in copper.\n[4]"
+      }
+    },
+    {
+      "number": 10,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "A.1",
+        "A.2",
+        "D.1",
+        "E.2"
+      ],
+      "commands": [
+        "draw",
+        "estimate",
+        "explain",
+        "outline",
+        "show",
+        "state",
+        "deduce"
+      ],
+      "marks": 20,
+      "minutes": 36.0,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.1": [
+          "acceleration"
+        ],
+        "A.2": [
+          "momentum"
+        ],
+        "D.1": [
+          "orbit"
+        ],
+        "E.2": [
+          "photon"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.1",
+          "A.2",
+          "D.1",
+          "E.2"
+        ],
+        "commands": [
+          "draw",
+          "estimate",
+          "explain",
+          "outline",
+          "show",
+          "deduce"
+        ]
+      },
+      "image": "questions/question-10.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.1": "Kinematics",
+        "A.2": "Forces and momentum",
+        "D.1": "Gravitational fields",
+        "E.2": "Quantum physics"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 10,
+        "required_topics": [
+          "A.1",
+          "A.2",
+          "D.1",
+          "E.2"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "10.\t\n(a)\t\nOutline one experimental piece of evidence that shows that photons have momentum.\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(b)\t\nPhotons of wavelength λ are incident normally on a flat surface of area A. \n\nThe photons are reflected without change in wavelength. \narea A\nphotons\nThere are N photons incident per second.\n(i)\t\nShow that the intensity I that is incident on the surface is given by I \u001f N\nA\nhc\n\u001e . \b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(This question continues on the following page)\nTurn over\n(Question 10 continued)\n(ii)\t\nDeduce that the pressure P exerted on the surface is given by P\nc\n= 2I .\b\n[3]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(This question continues on the following page)\n(Question 10 continued)\n(c)\t\nIt is proposed to send a spacecraft to Jupiter. The spacecraft would be launched to \na point Q far from Earth and would then be accelerated by the pressure of the Sun’s \nradiation on a sail attached to the spacecraft. The following data are available:\n\t\ntotal mass of spacecraft\t =\t1400 kg\n\t\nsail area\t =\t1600 m2\n\t\nsolar radiation intensity at Q\t =\t420 W m−2 \t\n(i)\t\nShow that the acceleration of the spacecraft at Q due to solar radiation alone is \nabout 3 × 10−6 m s−2. \b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(ii)\t\nThe distance between Q and Jupiter is 6.1 × 1011 m. Estimate the time, in years, \nit would take the spacecraft to reach Jupiter, assuming that the spacecraft moves \nwith the acceleration in (i).\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(iii)\t\nState one reason why the acceleration of the spacecraft will not be constant.\b\n[1]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(This question continues on the following page)\nTurn over\n(Question 10 continued)\n(d)\t\nThe spacecraft enters an elliptical orbit around Jupiter.\nspacecraft\nAt the position shown, the spacecraft has its maximum orbital speed.\n(i)\t\nDraw, on the diagram, a possible position of Jupiter.\b\n[1]\n(ii)\t\nExplain your answer to (d) (i).\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(This question continues on the following page)\n(Question 10 continued)\n(e)\t\nThe spacecraft changes its orbit into a circular orbit just above the surface of Jupiter, so \nthat the orbit radius is essentially equal to the radius of Jupiter.\ndiagram not to scale\nJupiter\nspacecraft\norbit\n(i)\t\nShow that the orbital period, T, of the spacecraft is given by T\nG\n\u001f\n3\u001e\n\u001d , \n\nwhere ρ is the density of Jupiter.\b\n[3]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n(ii)\t\nThe orbital period is 2.9 hours. Estimate the density of Jupiter.\b\n[2]\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b��������������������������������������������������������������������������������������������������������������������������������������������������\n\b",
+        "ocr": "10.\n(a)\nOutline one experimental piece of evidence that shows that photons have momentum.\n[2]\n(b)\nPhotons of wavelength / are incident normally ona flat surface of area A.\nThe photons are reflected without change in wavelength.\nphotons\nThere are N photons incident per second.\n(i) | Show that the intensity / that is incident on the surface is given by J =Aq\n[2]\n(This question continues on the following page)\n(Question 10 continued)\n(ii) |Deduce that the pressure P exerted on the surface is given by P=ar .\n[3]\n(This question continues on the following page)\n(Question 10 continued)\n(c)\nIt is proposed to send a spacecraft to Jupiter. The spacecraft would be launched to\na point Q far from Earth and would then be accelerated by the pressure of the Sun’s\nradiation on a sail attached to the spacecraft. The following data are available:\ntotal mass of spacecraft = 1400kg\nsail area = 1600m?\nsolar radiation intensity atQ = 420Wm~*\n(i)\n| Show that the acceleration of the spacecraft at Q due to solar radiation alone is\nabout 3 x 10°ms”.\n[2]\n(ii)\n|The distance between Q and Jupiter is 6.1 x 10\"'m. Estimate the time, in years,\nit would take the spacecraft to reach Jupiter, assuming that the spacecraft moves\nwith the acceleration in (i).\n[2]\n(iii)\n|State one reason why the acceleration of the spacecraft will not be constant.\n[1]\n(This question continues on the following page)\n(Question 10 continued)\n(d)\nThe spacecraft enters an elliptical orbit around Jupiter.\nAt the position shown, the spacecraft has its maximum orbital speed.\n(i)\n| Draw, on the diagram, a possible position of Jupiter.\n[1]\n(ii)\nExplain your answer to (d) (i).\n[2]\n(This question continues on the following page)\n(Question 10 continued)\n(e)\nThe spacecraft changes its orbit into a circular orbit just above the surface of Jupiter, so\nthat the orbit radius is essentially equal to the radius of Jupiter.\ndiagram not to scale\n\\\nj\nspacecraft\nJupiter “*S==~\"\n(i) | Show that the orbital period, 7, of the spacecraft is given by T = j2= ;\nwherep is the density of Jupiter.\nGp\n[3]\n(ii)\n| The orbital period is 2.9 hours. Estimate the density of Jupiter.\n[2]"
+      }
+    }
+  ]
+}

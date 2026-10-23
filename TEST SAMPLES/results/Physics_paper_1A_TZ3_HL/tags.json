@@ -1,0 +1,1693 @@
+{
+  "source_file": "Physics_paper_1A_TZ3_HL.pdf",
+  "source_sha256": "431f3df5dbd9b6387e35400954671d0263bf389ffabb6200657001dd88da4a79",
+  "source_pages": 22,
+  "metadata": {
+    "year": 2025,
+    "level": "HL",
+    "paper": "Paper 1A",
+    "syllabus": "2025"
+  },
+  "mark_audit": {
+    "expected": 40,
+    "detected": 40,
+    "status": "matched"
+  },
+  "warnings": [
+    "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving."
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.1": [
+          "velocity",
+          "displacement",
+          "acceleration"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-01.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.1": "Kinematics"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 1,
+        "required_topics": [
+          "A.1"
+        ],
+        "forbidden_topics": [
+          "B.5"
+        ],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "1.\t\nA stone is released from rest and falls vertically. Air resistance is negligible. What is correct about \nthe stone during each consecutive second of its motion?\nA.\t\nThe change in velocity is constant.\nB.\t\nThe change in displacement is constant.\nC.\t\nThe change in acceleration decreases.\nD.\t\nThe change in speed increases.",
+        "ocr": "1.\nAstone is released from rest and falls vertically. Air resistance is negligible. What is correct about\nthe stone during each consecutive second of its motion?\nA.\n| The change in velocity is constant.\nB.\n| The change in displacement is constant.\nC.\nThe change in acceleration decreases.\nD.\nThe change in speed increases."
+      }
+    },
+    {
+      "number": 2,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.1": [
+          "projectile"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-02.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.1": "Kinematics"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "2.\t\nA projectile is launched horizontally from the top of a cliff with a speed of 10 m s−1. The projectile \nhits the ground at a distance of 30 m from the base of the cliff. Air resistance is negligible. \nWhat is the height of the cliff?\nA.\t\n15 m\nB.\t\n30 m\nC.\t\n45 m\nD.\t\n90 m",
+        "ocr": "2.\n— Aprojectile is launched horizontally from the top ofa cliff with a speed of 10ms™. The projectile\nhits the ground at a distance of 30m from the base of the cliff. Air resistance is negligible.\nWhat is the height of the cliff?\nA.\n15m\nB.\n30m\nCc.\n45m\nD.\n90m"
+      }
+    },
+    {
+      "number": 3,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.1",
+        "A.2"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.1": [
+          "acceleration"
+        ],
+        "A.2": [
+          "force"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.1",
+          "A.2"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-03.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.1": "Kinematics",
+        "A.2": "Forces and momentum"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "3.\t\nA force is applied to a mass of 3 kg. The graph shows the variation with time t of the acceleration a \nof the mass.\n0\n2\n4\n6\n0\n1\n2\n3\n4\n5\na / m s−2\nt / s\nWhat is the average force acting on the mass?\nA.\t\n5 N\nB.\t\n6 N\nC.\t\n12 N\nD.\t\n24 N",
+        "ocr": "3.\n| Aforce is applied to\na mass of 3kg. The graph shows the variation with time t of the acceleration a\nof the mass.\n5\n4\n3\na/ms?\n2\n1\n0\n0\n2\n4\n6\nt/s\nWhat is the average force acting on the mass?\nA.\n5N\nB.\n6N\nCc.\n12N\nD.\n24N"
+      }
+    },
+    {
+      "number": 4,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.2",
+        "A.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.2": [
+          "collides"
+        ],
+        "A.3": [
+          "kinetic energy"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.2",
+          "A.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-04.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.2": "Forces and momentum",
+        "A.3": "Work, energy and power"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "4.\t\nAn object of mass m, moving with a speed v, collides with a stationary object of mass m. The \nobjects stick together.\nWhat is the change in kinetic energy in the collision? \nA.\t\nZero\nB.\t\nmv 2\n8\nC.\t\nmv 2\n4\nD.\t\n3\n8\n2\nmv",
+        "ocr": "4.\nAnobject of mass m, moving with a speed v, collides with a stationary object of mass m. The\nobjects stick together.\nWhat is the change in kinetic energy in the collision?\nA.\nZero\n2\nB\n7”\n8\n2\nc\nmm\n4\n2\nD.\n3mv\n8"
+      }
+    },
+    {
+      "number": 5,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.2",
+        "A.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.2": [
+          "tension"
+        ],
+        "A.3": [
+          "kinetic energy"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.2",
+          "A.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-05.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.2": "Forces and momentum",
+        "A.3": "Work, energy and power"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "5.\t\nA mass m is attached to a string and moves in a vertical circle of constant radius R. At the top of \nthe circle, the tension in the string is T. Air resistance is negligible.\nWhat is the kinetic energy of m at the top of the circle?\nA.\t\nR T\nmg\n\u001f\n\u001e\n\u001d\n2\nB.\t\nR T\nmg\n\u001f\n\u001e\n\u001d\n2\nC.\t\nR T\nmg\n\u001f\n\u001e\n\u001d\nD.\t\nR T\nmg\n\u001f\n\u001e\n\u001d",
+        "ocr": "5.\n|Amass mis attached to a string and moves in a vertical circle of constant radius R. At the top of\nthe circle, the tension in the string is T. Air resistance is negligible.\nWhat is the kinetic energy of m at the top of the circle?\nR(T\n-\na\nR(T=mg)\n2\nR(T\np.\nR(7+mg)\n2\nCc.\nR(T-mg)\nD.\nR(T+mg)"
+      }
+    },
+    {
+      "number": 6,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.3": [
+          "kinetic energy",
+          "power",
+          "efficiency"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-06.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.3": "Work, energy and power"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "Turn over\n6.\t\nA pump has efficiency η when raising water from a well of depth d. The mass of water raised per \nsecond is R. Changes in kinetic energy of the water are considered negligible.\nWhat is the input power to the pump required to raise the water?\nA.\t\nRd\ng\nη\nB.\t\nηR\ngd\nC.\t\nηRgd \nD.\t\nRdg\nη",
+        "ocr": "6.\nApump has efficiency 7 when raising water from a well of depth d. The mass of water raised per\nsecond is R. Changes in kinetic energy of the water are considered negligible.\nWhat is the input power to the pump required to raise the water?\na,\nRd\nng\ngd\nC.\n nRgd\np.\nag\nn\nTurn over"
+      }
+    },
+    {
+      "number": 7,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.4"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.4": [
+          "torque",
+          "angular momentum",
+          "angular velocity"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.4"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-07.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.4": "Rigid body mechanics"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 7,
+        "required_topics": [
+          "A.4"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "7. \nAn ice skater is spinning with their arms extended in a fixed position at a constant angular velocity. \nThe ice skater then quickly pulls their arms closer to their body. Frictional effects are negligible. \nThree statements are made about the ice skater’s motion.\nI. \nThe angular momentum of the ice skater remains constant.\nII. \nThe rotational kinetic energy of the ice skater remains constant.\nIII. \nThe net torque acting on the ice skater is zero.\nWhich of the statements are correct?\nA. \nI and II only\nB. \nI and III only\nC. \nII and III only\nD. \nI, II and III",
+        "ocr": "7.\nAnice skater is spinning with their arms extended in a fixed position at a constant angular velocity.\nThe ice skater then quickly pulls their arms closer to their body. Frictional effects are negligible.\nia\noe\na\nws\nThree statements are made about the ice skater’s motion.\nI.\nThe angular momentum of the ice skater remains constant.\nll.\nThe rotational kinetic energy of the ice skater remains constant.\nIll.\n| The net torque acting on the ice skater is zero.\nWhich of the statements are correct?\nA.\n— land Il only\nB.\nland Ill only\nC. — Iland III only\nD.\nI,\nll and Ill"
+      }
+    },
+    {
+      "number": 8,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.5"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.5": [
+          "space-time"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "disagreement",
+        "topics": [],
+        "commands": []
+      },
+      "image": "questions/question-08.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.5": "Galilean and special relativity"
+      },
+      "language_review": {
+        "input_hash": "4c3402cf7a1db8c072b22af28f15b6e804b98bf8dd6d0abc90c5f8f922764e42",
+        "prompt_version": "physics-ocr-v1",
+        "topics": [],
+        "evidence": [],
+        "status": "unavailable",
+        "reason": "Local language model is not configured."
+      },
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "8.\t\nRocket R travels away from an observer on Earth at a speed of 0.80c. A space–time diagram \nshows four world lines. \nWhat is the correct world line of R in the reference frame of Earth?\n0\n1\n−1\n−2\n2\n1\n2\n3\n4\nx / km\nct / km\nA\nB\nD\nC",
+        "ocr": "8.\nRocket R travels away from an observer on Earth at a speed of 0.80c.\nAspace—time diagram\nshows four world lines.\nWhat is the correct world line of R in the reference frame of Earth?\nct/km\n4\nCc\n3\nB\nA\n2\nD\n1\nx/km\n-2\n-1\n0\n1\n2"
+      }
+    },
+    {
+      "number": 9,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.5"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.5": [
+          "relativistic spaceship speed"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.5"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-09.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.5": "Galilean and special relativity"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 9,
+        "required_topics": [
+          "A.5"
+        ],
+        "forbidden_topics": [
+          "E.5"
+        ],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "Turn over\n9.\t\nThe fixed distance between Earth and a star measured in Earth’s reference frame is dE. A \nspaceship travels from Earth to the star at a constant speed of 0.8c relative to Earth. The distance \nbetween Earth and the star as measured by the spaceship is ds.\nWhat is d\nd\ns\nE\n?\nA.\t\n3\n5\nB.\t\n4\n5\nC.\t\n5\n4\nD.\t\n5\n3",
+        "ocr": "9.\nThe fixed distance between Earth and a star measured in Earth’s reference frame is d,. A\nspaceship travels from Earth to the star at a constant speed of 0.8c relative to Earth. The distance\nbetween Earth and the star as measured by the spaceship is d,.\nWhat is es 2?\nd,\na3\n5\np.\n4\n5\nc.\n2\n4\nbp\n2\n3\nTurn over"
+      }
+    },
+    {
+      "number": 10,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "B.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "B.1": [
+          "thermal"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "B.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-10.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.1": "Thermal energy transfers"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "10.\t\nInsulated solid copper rods of different diameters and fixed length are placed in thermal contact \nwith two objects X and Y, maintained at different temperatures TX and TY respectively. The diagram \nshows the setup with one such rod. \nX\nY\ninsulation\ncopper rod\nTY\nTX\nWhich graph shows the variation with rod diameter d of the rate of thermal energy transfer Δ\nΔ\nQ\nt  \nalong the rod?\nA.\nd\n∆\n∆\nQ\nt\nB.\nd\n∆\n∆\nQ\nt\nC.\nd\n∆\n∆\nQ\nt\nD.\nd\n∆\n∆\nQ\nt",
+        "ocr": "10.\nInsulated solid copper rods of different diameters and fixed length are placed in thermal contact\nwith two objects X and Y, maintained at different temperatures T,, and 7, respectively. The diagram\nshows the setup with one such rod.\nTy\nTy\ninsulation\na\na\ncopper rod\nWhich graph shows the variation with rod diameterd of the rate of thermal energy transfer AQ\nalong the rod?\nAt\n“4\nPQ\nAt\nAt\n°\n a@\nPQ\nAt\nAt\nL- d\n[/ d"
+      }
+    },
+    {
+      "number": 11,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "B.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "B.1": [
+          "specific heat",
+          "heat capacity"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "B.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-11.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.1": "Thermal energy transfers"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "11.\t\n80 g of a liquid are heated with a constant power output of 100 W. All the power goes into the liquid.\nAfter 60 s, the rise in temperature is 50 K. \nWhat is the specific heat capacity of the liquid in J kg−1 K−1?\nA.\t\n120\nB.\t\n960\nC.\t\n1200\nD.\t\n1500",
+        "ocr": "11.\n80g ofa\nliquid are heated with a constant power output of 100W. All the power goes into the liquid.\nAfter 60s, the rise in temperature is 50K.\nWhat is the specific heat capacity of the liquid in\nJkg'K'?\nA.\n120\nB.\n960\nCc.\n1200\nD.\n1500"
+      }
+    },
+    {
+      "number": 12,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "B.2"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "B.2": [
+          "energy balance",
+          "atmospheric radiation balance"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "B.2"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-12.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.2": "Greenhouse effect"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 12,
+        "required_topics": [
+          "B.2"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "Turn over\n12.\t\nThe energy balance model of a planet’s climate is shown. The reflected and radiated intensities are \ngiven in terms of the incident incoming intensity I. \nincoming\nintensity I\nreflected from\natmosphere 0.25 I\nreflected by planet\nsurface 0.15 I\nradiated\ninto space \nradiated from\nsurface of planet\nradiated by\natmosphere 0.10 I\nplanet surface\natmosphere\nWhat is the radiated intensity from the surface of the planet? \nA.\t\n0.40 I\nB.\t\n0.50 I\nC.\t\n0.70 I\nD.\t\n1.10 I",
+        "ocr": "12.\nThe energy balance model of a planet’s climate is shown. The reflected and radiated intensities are\ngiven in terms of the incident incoming intensity /.\nincoming\nintensity 7\nreflected by planet\nradiated\nreflected from\nsurface 0.157\ninto space\natmosphere 0.257\nareaarin rrrree (Bee nen\n|», atmosphere\nradiated by\nradiated from\natmosphere 0.107\nsurface of planet\nplanet surface\nYa\nVy\nWhat is the radiated intensity from the surface of the planet?\nA.\n0.407\nB.\n0.507\nCc.\n0.707\nD.\n1.107\nTurn over"
+      }
+    },
+    {
+      "number": 13,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "B.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "B.3": [
+          "molecules of an ideal"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "B.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-13.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.3": "Gas laws"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "13.\t\nA rigid vessel of volume V contains N molecules of an ideal monatomic gas. The average kinetic \nenergy of the molecules is Ek. What is the pressure in the vessel?\nA.\t\n2\n3\nN\nVEk\nB.\t\n2\n3\nNE\nV\nk\nC.\t\n3\n2\nN\nVEk\nD.\t\n3\n2\nNE\nV\nk",
+        "ocr": "13.\nArigid vessel of volume V contains N molecules of an ideal monatomic gas. The average kinetic\nenergy of the molecules is E,. What is the pressure in the vessel?\na,\n2NL\n3VE,,\nB.\n2NE,\n3V\nc.\nNL\n2VE,,\nD.\n3NE,\n2V"
+      }
+    },
+    {
+      "number": 14,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "B.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "B.1": [
+          "intermolecular"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "B.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-14.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.1": "Thermal energy transfers"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "14.\t\nA substance changes from a liquid into a solid without a change in temperature.\nWhat is true about the internal energy of the substance and the total intermolecular potential \nenergy of the substance when this phase change occurs?\nInternal energy of \nthe substance\nTotal intermolecular potential \nenergy of the substance\nA.\ndecrease\ndecrease\nB.\nno change\ndecrease\nC.\ndecrease\nno change\nD.\nno change\nno change",
+        "ocr": "14.\nAsubstance changes froma liquid into a solid without a change in temperature.\nWhat is true about the internal energy of the substance and the total intermolecular potential\nenergy of the substance when this phase change occurs?\nInternal energy of\nTotal intermolecular potential\nthe substance\nenergy of the substance\nA\n5\nc\n0"
+      }
+    },
+    {
+      "number": 15,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "B.4"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "B.4": [
+          "entropy",
+          "microstates"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "B.4"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-15.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.4": "Thermodynamics"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "15.\t\nThe entropy of a system is S, and the number of possible microstates is Ω. What is the number of \npossible microstates for a system of entropy S\n2 ?\nA.\t\nΩ\n2\nB.\t\nΩ\n2\nC.\t\nΩ\nD.\t\nΩ2",
+        "ocr": "15.\nThe entropy of a system is S, and the number of possible microstates is Q. What is the number of\npossible microstates for a system of entropy S?\na&\n2\np,\nv2\n2\nc.\nVa\nD."
+      }
+    },
+    {
+      "number": 16,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "B.4"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "B.4": [
+          "carnot"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "B.4"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-16.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.4": "Thermodynamics"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 16,
+        "required_topics": [
+          "B.4"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "16.\t\nThe Carnot efficiency of a heat engine is 0.4 when the cold reservoir temperature is Tc. The hot \nreservoir is held at a constant temperature. What is the Carnot efficiency when the cold reservoir \ntemperature is Tc\n2 ?\nA.\t\n0.2\nB.\t\n0.3\nC.\t\n0.7\nD.\t\n0.8",
+        "ocr": "16.\nThe Carnot efficiency of a heat engine is 0.4 when the cold reservoir temperature is T,. The hot\nreservoir is held at a constant temperature. What is the Carnot efficiency when the cold reservoir\ntemperature is rey\nA.\n0.2\nB.\n0.3\nCc.\n07\nD.\n08"
+      }
+    },
+    {
+      "number": 17,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "B.5"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "B.5": [
+          "circuit",
+          "resistance"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "B.5"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-17.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.5": "Current and circuits"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "Turn over\n17.\t\nIn the circuit shown, the cell has negligible internal resistance.\nR\n3R\nI3\nI1\nI2\nWhich equation is correct?\nA.\t\nI1 = 4(I2 + I3)\nB.\t\nI1 = 4I2 \nC.\t\nI3 = 4I2 \nD.\t\nI\nI\n3\n1\n4\n3\n=",
+        "ocr": "17.\nIn the circuit shown, the cell has negligible internal resistance.\nR\nL,\nL,\n3R\nI,\nWhich equation is correct?\nA.\n1=4(,+41,)\nB\n1,=41\nCc\n8 L,=4h\nbp.\n1,=44\n3\nTurn over"
+      }
+    },
+    {
+      "number": 18,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "C.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "C.1": [
+          "simple harmonic"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "C.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-18.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.1": "Simple harmonic motion"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "18.\t\nAn object undergoes simple harmonic motion with frequency f. The graph shows the variation of its \nacceleration with displacement.\n0\n2\n−2\n−0.2\n0.2\n−4\n4\ndisplacement / m\nacceleration / m s−2\nWhat is the value of f 2 in s−2?\nA.\t\n5\n2\nπ\nB.\t\n5\nπ\nC.\t\n100\n2\nπ\nD.\t\n100\nπ",
+        "ocr": "18.\nAn object undergoes simple harmonic motion with frequency/ The graph shows the variation of its\nacceleration with displacement.\nacceleration/ms?\n4\n2\ndisplacement/m\n-0.2\n0\n0.2\n-2\n-4\nWhat is the value of f? in s??\n5\nA\n=>\nT\nB.\n2\nT\n100\nCc\n>\nn\na\np,\n100\nT"
+      }
+    },
+    {
+      "number": 19,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "C.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "C.1": [
+          "simple harmonic"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "C.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-19.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.1": "Simple harmonic motion"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "19.\t\nA mass oscillating vertically on a spring undergoes simple harmonic motion with amplitude X, total \nenergy E and maximum speed vmax.\nWhat is correct about the elastic potential energy EH and speed v when the displacement is X\n2 ?\nA.\nE\nE\nH < 2\nv\nvmax\n>\n2\nB.\nE\nE\nH < 2\nv\nvmax\n<\n2\nC.\nE\nE\nH > 2\nv\nvmax\n>\n2\nD.\nE\nE\nH > 2\nv\nvmax\n<\n2",
+        "ocr": "19.\nAmass oscillating vertically on a spring undergoes simple harmonic motion with amplitude X, total\nenergy E and maximum speed v,,,,.\nWhat is correct about the elastic potential energy E,, and speed v when the displacement is ~.\nA.\nE,, < E\nv> Vmax.\n2\n2\nB.\nE,, < E\nv < “max\n2\n2\nC.\nE,, > E\nv > Lima\n2\n2\nD.\n2\n2"
+      }
+    },
+    {
+      "number": 20,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "C.2",
+        "C.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "C.2": [
+          "wavelength",
+          "frequency",
+          "wave model"
+        ],
+        "C.3": [
+          "refracted"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "C.2",
+          "C.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-20.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.2": "Wave model",
+        "C.3": "Wave phenomena"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "20.\t\nA sound wave in air is directed towards a water boundary, and part of it is refracted.\nThree statements are made about the refracted wave compared to the incident wave.\nI.\t\nThe wavelength is different.\nII.\t\nThe amplitude is different.\nIII.\t\nThe frequency is different.\nWhich of the statements are correct? \nA.\t\nI and II only\nB.\t\nI and III only\nC.\t\nII and III only\nD.\t\nI, II and III",
+        "ocr": "20.\nAsound wave in air is directed towards a water boundary, and part of it is refracted.\nThree statements are made about the refracted wave compared to the incident wave.\nI.\nThe wavelength is different.\nIl.\nThe amplitude is different.\nIll.\nThe frequency is different.\nWhich of the statements are correct?\nA.\n— land Il only\nB.\n— land Ill only\nC. — Iland III only\nD.\nI,\nll and Ill"
+      }
+    },
+    {
+      "number": 21,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "C.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "C.3": [
+          "critical angle"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "C.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-21.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.3": "Wave phenomena"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 21,
+        "required_topics": [
+          "C.3"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "Turn over\n21.\t\nThe critical angle for light passing from a medium into air is 30°. \nWhat is the approximate value for the speed of light in the medium?\nA.\t\n0.5 × 108 m s−1\nB.\t\n1.5 × 108 m s−1\nC.\t\n2.0 × 108 m s−1\nD.\t\n2.6 × 108 m s−1",
+        "ocr": "21.\nThe critical angle for light passing from a medium into air is 30°.\nWhat is the approximate value for the speed of light in the medium?\nA.\n0.5x10°ms\"\nB.\n15x 10°ms*\nCc.\n2.0x10®ms\"\nD.\n26x 10°ms*\nTurn over"
+      }
+    },
+    {
+      "number": 22,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "C.2",
+        "C.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "C.2": [
+          "wavelength"
+        ],
+        "C.3": [
+          "interference",
+          "double-slit"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "C.2",
+          "C.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-22.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.2": "Wave model",
+        "C.3": "Wave phenomena"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "22.\t\nIn a double-slit experiment using coherent light of wavelength λ, the central bright fringe is \nobserved on a screen at point P. A point of destructive interference occurs at point Q. Only one \npoint of constructive interference is observed between P and Q.\ndiagram not to scale\ndouble slit\nscreen\nQ\nP\nWhat is the path difference at Q?\nA.\t\nλ\n2\nB.\t\nλ \nC.\t\n3\n2\nλ\nD.\t\n2 λ",
+        "ocr": "22.\nIna double-slit experiment using coherent light of wavelength /, the central bright fringe is\nobserved on a screen at point P. A point of destructive interference occurs at point Q. Only one\npoint of constructive interference is observed between P and Q.\ndiagram not to scale\n|\nQ\n————xqxqxwrX~\neS\n]\nP\neS\n|\ndouble slit\nscreen\nWhat is the path difference at Q?\naA\n4\n2\nBA\nc,\n%\n2\nD.\n2A"
+      }
+    },
+    {
+      "number": 23,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "C.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "C.3": [
+          "diffraction"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "C.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-23.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.3": "Wave phenomena"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "23.\t\nMonochromatic coherent light is directed normally at a diffraction grating with N slits per unit length. \nNine maxima in intensity are produced on a screen far away.\nWhat change will occur to the angle between successive maxima and the number of observable \nmaxima when the number of slits per unit length is 2N ?\nAngle between  \nsuccessive maxima\nNumber of  \nobservable maxima\nA.\nincrease\ndecrease\nB.\nincrease\nincrease\nC.\ndecrease\ndecrease\nD.\ndecrease\nincrease",
+        "ocr": "23.\nMonochromatic coherent light is directed normally at a diffraction grating with N slits per unit length.\nNine maxima in intensity are produced on a screen far away.\nWhat change will occur to the angle between successive maxima and the number of observable\nmaxima when the number of slits per unit length is 2N?\nAngle between\nNumber of\nsuccessive maxima\nobservable maxima\nA\n5\nc\n0"
+      }
+    },
+    {
+      "number": 24,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "C.2",
+        "C.4"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "C.2": [
+          "frequency"
+        ],
+        "C.4": [
+          "harmonic"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "C.2",
+          "C.4"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-24.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.2": "Wave model",
+        "C.4": "Standing waves and resonance"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "24.\t\nA string that is fixed at both ends oscillates in the second harmonic with frequency 100 Hz.  \nWhat other harmonic frequencies, in Hz, can this string oscillate at? \nA.\t\n25 and 50\nB.\t\n25 and 75\nC.\t\n50 and 150\nD.\t\n75 and 150",
+        "ocr": "24.\nAsstring that is fixed at both ends oscillates in the second harmonic with frequency 100 Hz.\nWhat other harmonic frequencies, in Hz, can this string oscillate at?\nA.\n25 and 50\nB.\n25 and 75\nC.\n50 and 150\nD.\n75 and 150"
+      }
+    },
+    {
+      "number": 25,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "C.5"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "C.5": [
+          "moving source / observed waves"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "disagreement",
+        "topics": [],
+        "commands": []
+      },
+      "image": "questions/question-25.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.5": "Doppler effect"
+      },
+      "language_review": {
+        "input_hash": "e6d64d98dc2c8cdff887145d1db303715c53afa0ca97fdd7867bff35ae1eb07a",
+        "prompt_version": "physics-ocr-v1",
+        "topics": [],
+        "evidence": [],
+        "status": "unavailable",
+        "reason": "Local language model is not configured."
+      },
+      "anchor_check": {
+        "number": 25,
+        "required_topics": [
+          "C.5"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "25.\t\nA source moving with speed v away from a stationary observer emits light of wavelength λ. The \nwavelength received by the observer is λ + Δλ. The speed v is much less than the speed of light. \nWhich graph gives the variation of Δλ with v ?\nA.\nv\n0\nB.\nv\n0\nC.\nv\n0\nD.\nv\n0",
+        "ocr": "25.\nAsource moving with speed v away from a stationary observer emits light of wavelength A. The\nwavelength received by the observer is 2 + AA. The speed v is much less than the speed of light.\nWhich graph gives the variation of AA with v?\nA.\nAd\nB.\nAA\n0\n0\nC.\nAd\nD.\nAd\n0\n0"
+      }
+    },
+    {
+      "number": 26,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "D.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "D.1": [
+          "orbit",
+          "kepler"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "D.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-26.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "D.1": "Gravitational fields"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "Turn over\n26.\t\nWhich is a statement of one of Kepler’s laws of orbital motion?\nA.\t\nThe square of the planet’s orbital period is proportional to the cube of the length of the  \nsemi-major axis of its orbit.\nB.\t\nA line segment joining a planet and the Sun sweeps out equal arc lengths during equal \nintervals of time.\nC.\t\nA planet’s orbital period is proportional to the cube of the length of the semi-major axis of \nits orbit.\nD.\t\nThe orbit of a planet is an ellipse with the Sun positioned at the centre.",
+        "ocr": "26.\nWhich is a statement of one of Kepler’s laws of orbital motion?\nA.\n| The square of the planet’s orbital period is proportional to the cube of the length of the\nsemi-major axis of its orbit.\nB.\nAline segment joining a planet and the Sun sweeps out equal arc lengths during equal\nintervals of time.\nC.\n Aplanet’s orbital period is proportional to the cube of the length of the semi-major axis of\nits orbit.\nD.\nThe orbit of a planet is an ellipse with the Sun positioned at the centre.\nTurn over"
+      }
+    },
+    {
+      "number": 27,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "D.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "D.1": [
+          "gravitational",
+          "gravitational"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "D.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-27.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "D.1": "Gravitational fields"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "27.\t\nIsolated planets X and Y have masses MX and MY respectively and are separated by a distance R. \nA point P is located at a distance R\n3  from planet X, as shown. The gravitational field strength at P \nis zero.\nX\nY\nP\nR\nR\n3\nWhat is M\nM\nY\nX\n?\nA.\t\n2\nB.\t\n3\nC.\t\n4\nD.\t\n9",
+        "ocr": "27.\nIsolated planets X and Y have masses M,, and M, respectively and are separated by a distance R.\nA point P is located at a distance R from planet X, as shown. The gravitational field strength at P\nis zero.\n3\nX\nPp\nY\nQ----=----0-------------------\nR\n3\nR\nWhat is My 9\nMy\nA.\n2\nB.\n3\nCc.\n4\nD.\n9"
+      }
+    },
+    {
+      "number": 28,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "D.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "D.1": [
+          "gravitational",
+          "gravitational"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "D.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-28.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "D.1": "Gravitational fields"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "28.\t\nA point mass of 5 kg is placed at point P located on one of three gravitational equipotential lines, \neach separated by a distance of 100 km, as shown.\nP\n100 km\n100 km\n−5 MJ kg−1\n−3 MJ kg−1\n−1 MJ kg−1\nWhat is the initial acceleration of the point mass?\nA.\t\n4 m s−2 to the left\nB.\t\n4 m s−2 to the right\nC.\t\n20 m s−2 to the left\nD.\t\n20 m s−2 to the right",
+        "ocr": "28.\nApoint mass of 5kg is placed at point P located on one of three gravitational equipotential lines,\neach separated by a distance of 100 km, as shown.\n100km\n100km\nP\n-5 MJ kg\"\n-3MJkg™\n-1MJkg\"\nWhat is the initial acceleration of the point mass?\nA.\n 4ms°® to the left\nB.\n4ms* to the right\nC.\n20ms” to the left\nD.\n20ms™to the right"
+      }
+    },
+    {
+      "number": 29,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "D.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "D.1": [
+          "escape speed"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "D.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-29.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "D.1": "Gravitational fields"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "29.\t\nFour planets have masses M or 2M and radii R or 2R as shown. \nWhich planet has the largest escape speed?\nA.\nM, R\nB.\n2M, R\nC.\nM, 2R\nD.\n2M, 2R",
+        "ocr": "29.\nFour planets have masses M or 2M and radii R or 2R as shown.\nWhich planet has the largest escape speed?\n;"
+      }
+    },
+    {
+      "number": 30,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "D.2"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "D.2": [
+          "charged rod"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "D.2"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-30.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "D.2": "Electric and magnetic fields"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "Turn over\n30.\t\nA positively charged rod is near a metal plate that is grounded as shown. \nmetal plate\ncharged rod\ngrounding wire\nThe grounding wire and then the rod are removed. What is correct about the overall charge on the \nplate before and after grounding is removed?\nCharge on plate before \ngrounding is removed\nCharge on plate after \ngrounding is removed\nA.\nneutral\nneutral\nB.\nneutral\nnegative\nC.\nnegative\nneutral\nD.\nnegative\nnegative",
+        "ocr": "30.\nA positively charged rod is near a metal plate that is grounded as shown.\nmetal plate\ncharged rod , +\nSs» +\n+t\ngrounding wire\nThe grounding wire and then the rod are removed. What is correct about the overall charge on the\nplate before and after grounding is removed?\nCharge on plate before\nCharge on plate after\ngrounding is removed\ngrounding is removed\nA\n5\nc\n0\nTurn over"
+      }
+    },
+    {
+      "number": 31,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "D.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "D.3": [
+          "charged-particle motion in fields"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "D.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-31.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "D.3": "Motion in electromagnetic fields"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "31.\t\nAn electron with speed v enters the region between two charged parallel plates midway between \nthe plates, as shown. The potential difference between the plates is V. \ne−\nWhat is the speed of the electron on impact with the plate?\nA.\t\nv\neV\nme\n2\n2\n+\nB.\t\nv\neV\nme\n2\n2\n2\n\u001f \u001e\n\u001d\n\u001c\n\u001b\n\u001a\n\u0019\nC.\t\nv\neV\nme\n2 +\nD.\t\nv\neV\nme\n2\n2\n\u001f \u001e\n\u001d\n\u001c\n\u001b\n\u001a\n\u0019  ",
+        "ocr": "31.\nAn electron with speed v enters the region between two charged parallel plates midway between\nthe plates, as shown. The potential difference between the plates is V.\ne\n—=------- ~~ ~~ ~~~ ~~\nWhat is the speed of the electron on impact with the plate?\nA.\nv2 4oY\n2m,\nV\n2\nB.\nvetEs\n2m,\nCc.\nvetev\nmM,\nV\n2\nD.\nve +(=)\nmM,"
+      }
+    },
+    {
+      "number": 32,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "D.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "D.3": [
+          "charged particle",
+          "magnetic force"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "D.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-32.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "D.3": "Motion in electromagnetic fields"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "32.\t\nA positively charged particle is moving towards a current-carrying wire as shown.\ncurrent\nWhat is the direction of the magnetic force acting on the charged particle?\nA.\t\nTo the right\nB.\t\nTo the left\nC.\t\nInto the page\nD.\t\nOut of the page",
+        "ocr": "32.\nA positively charged particle is moving towards a current-carrying wire as shown.\n®\nen\ncurrent\nWhat is the direction of the magnetic force acting on the charged particle?\nA.\n— To the right\nB. _ To the left\nC.\nInto the page\nD.\nOut of the page"
+      }
+    },
+    {
+      "number": 33,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.1": [
+          "energy level",
+          "absorption spectra"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-33.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.1": "Structure of the atom"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "33.\t\nThree statements are made about emission and absorption spectra.\nI.\t\nThey provide information on the chemical composition of substances.\nII.\t\nThey provide evidence for mass-energy equivalence.\nIII.\t\nThey arise from transitioning electrons between energy levels. \nWhich of the statements are correct?\nA.\t\nI and II only\nB.\t\nI and III only\nC.\t\nII and III only\nD.\t\nI, II and III",
+        "ocr": "33.\nThree statements are made about emission and absorption spectra.\nI.\nThey provide information on the chemical composition of substances.\nIl.\nThey provide evidence for mass-energy equivalence.\nIll.\n| They arise from transitioning electrons between energy levels.\nWhich of the statements are correct?\nA.\n— land Il only\nB.\n— land Ill only\nC. — Iland III only\nD.\nI,\nll and Ill"
+      }
+    },
+    {
+      "number": 34,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.1": [
+          "bohr"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-34.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.1": "Structure of the atom"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 34,
+        "required_topics": [
+          "E.1"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "34.\t\nFor which of the following atoms would the Bohr model apply, if one electron was removed from \nthe atom?\nA.\t\n11\n22Na\nB.\t\n3\n5Li\nC.\t\n92\n235U\nD.\t\n2\n4He",
+        "ocr": "34.\nFor which of the following atoms would the Bohr model apply, if one electron was removed from\nthe atom?\nA.\n“Na\nB.\nLi\nCc.\n*uU\nD.\n$He"
+      }
+    },
+    {
+      "number": 35,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.2"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.2": [
+          "photon"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.2"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-35.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.2": "Quantum physics"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "Turn over\n35.\t\nA photon scatters off an electron at an angle θ, as shown. The shift in the photon wavelength after \nscattering is \nh\nm c\ne\n2\n.\nelectron\nθ\nincident photon\nscattered\nphoton\n \nWhat is correct about the frequency of the photon after scattering and θ ?\nFrequency\nθ\nA.\nincreases\n30°\nB.\nincreases\n60°\nC.\ndecreases\n30°\nD.\ndecreases\n60°",
+        "ocr": "35.\nAphoton scatters off an electron at an angle 6, as shown. The shift in the photon wavelength after\nscattering is on\n2m,c\nelectron\nalfa wa ---------\nincident photon\nscattered\nphoton\nWhat is correct about the frequency of the photon after scattering and 0?\n(Feweny\nAee\nc\na\nTurn over"
+      }
+    },
+    {
+      "number": 36,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.2"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.2": [
+          "photon",
+          "photoelectrons",
+          "electron emission from metal"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.2"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-36.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.2": "Quantum physics"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "36.\t\nLight is incident on two different metal surfaces L and H. The minimum photon energy required to \nemit electrons from surface H is less than that from surface L. \nWhich graph shows the variation with light frequency f of the maximum kinetic energy Emax of \nphotoelectrons emitted from both surfaces?\nA.\nL\nH\nf\nEmax\n0\nB.\nL\nH\nf\nEmax\n0\nC.\nL\nH\nf\nEmax\n0\nD.\nL\nH\nf\nEmax\n0",
+        "ocr": "36.\nLight is incident on two different metal surfaces L and H. The minimum photon energy required to\nemit electrons from surfaceH\nis less than that from surface L.\nWhich graph shows the variation with light frequency\nfof the maximum kinetic energy E.,,, of\nphotoelectrons emitted from both surfaces?\nKR\nEvax\nBe\nEan\na\na\n0\nf\n0\nf\nCay\nDE\n0\nf\n0\nf"
+      }
+    },
+    {
+      "number": 37,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.3": [
+          "binding energy"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-37.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.3": "Radioactive decay"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 37,
+        "required_topics": [
+          "E.3"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "37.\t\nA graph of the variation with nucleon number A of the binding energy per nucleon is shown.\n0\n20\n40\n60\n80\n100 120 140 160 180 200 220 240\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\nnucleon number A\nbinding energy per\nnucleon / MeV\nWhat is the approximate total energy, in MeV, needed to completely separate the nucleons of a \n72\n180Hf  nucleus?\nA.\t\n580\nB.\t\n620\nC.\t\n1440\nD.\t\n2020",
+        "ocr": "37.\nAgraph of the variation with nucleon number A of the binding energy per nucleon is shown.\n9\n8\n7\n6\n5\nbinding energy per\nnucleon/MeV\n4\n3\n2\n1\n0\n0\n20\n40\n60\n80\n100\n120\n140\n160\n180 200\n220\n240\nnucleon number A\nWhat is the approximate total energy, in MeV, needed to completely separate the nucleons of a\n‘Hf nucleus?\nA.\n580\nB.\n620\nCc.\n1440\nD.\n2020"
+      }
+    },
+    {
+      "number": 38,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.4"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.4": [
+          "chain reaction",
+          "nuclear power station"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.4"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-38.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.4": "Fission"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 38,
+        "required_topics": [
+          "E.4"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "Turn over\n38.\t\nWhich two components of a nuclear power station are primarily responsible for ensuring that a \ncontrolled chain reaction is maintained?\nA.\t\nControl rods and heat exchangers\nB.\t\nModerators and shielding\nC.\t\nShielding and heat exchangers\nD.\t\nModerators and control rods",
+        "ocr": "38.\nWhich two components of a nuclear power station are primarily responsible for ensuring that a\ncontrolled chain reaction is maintained?\nA. — Control rods and heat exchangers\nB.\nModerators and shielding\nC.\n— Shielding and heat exchangers\nD.\nModerators and control rods\nTurn over"
+      }
+    },
+    {
+      "number": 39,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.5"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.5": [
+          "star",
+          "luminosity"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.5"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-39.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.5": "Fusion and stars"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "39.\t\nThe Sun and positions of four stars A, B, C and D are plotted on the grid of a Hertzsprung–Russell \n(HR) diagram. Which star is a white dwarf? \n40 000\n20 000\n10 000\n5000\n2500\n10−4\n10−2\n1\n102\n104\nsurface temperature / K\nluminosity relative\nto the Sun\nB\nC\nSun\nD\nA",
+        "ocr": "39.\nThe Sun and positions of four stars A, B,\nC and D are plotted on the grid ofa Hertzsprung—Russell\n(HR) diagram. Which star is a white dwarf?\n10*\n@B\n10?\nec\nSun\nree\n.\n1\no)\nluminosity relative\nto the Sun\n10?\nA\n@\ned\n10%\n40000\n20000\n10000\n5000\n2500\nsurface temperature\n/K"
+      }
+    },
+    {
+      "number": 40,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.5"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.5": [
+          "star"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.5"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-40.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.5": "Fusion and stars"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "40.\t\nA star is found to have a parallax angle of 0.25 arc-seconds. What is the distance to the star in \nlight years?\nA.\t\n4.0\nB.\t\n13\nC.\t\n6.0 × 1011\nD.\t\n38 × 1015\n\b",
+        "ocr": "40.\nAstar is found to have a parallax angle of 0.25 arc-seconds. What is the distance to the star in\nlight years?\nA.\n4.0\nB.\n13\nCc.\n60x10\"\nD.\n38x10\""
+      }
+    }
+  ]
+}

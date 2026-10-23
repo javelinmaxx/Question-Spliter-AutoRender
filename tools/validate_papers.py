@@ -1,6 +1,7 @@
 """Run local OCR, topic anchors, PNG rendering and PDF generation on supplied papers.
 
-Original PDFs are in TEST SAMPLES; recognized text and outputs stay outside it.
+Original PDFs are in TEST SAMPLES. Generate working outputs outside the checkout;
+export_sample_results.py can preserve crops and tag results as a reviewed baseline.
 Run from the root:
 python tools/validate_papers.py --papers /path/to/pdfs --output /path/to/results
 """

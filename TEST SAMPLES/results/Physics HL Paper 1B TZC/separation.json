@@ -1,0 +1,135 @@
+{
+  "source_file": "Physics HL Paper 1B TZC.pdf",
+  "source_sha256": "90febe5e5db7dfebf7b624776aa42bd67cc4a4f6f3f588edf0855106b5bf1dc6",
+  "source_pages": 11,
+  "metadata": {
+    "year": 2026,
+    "level": "HL",
+    "paper": "Paper 1B",
+    "syllabus": "2025"
+  },
+  "mark_audit": {
+    "expected": 20,
+    "detected": 18,
+    "status": "mismatch"
+  },
+  "warnings": [
+    "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving.",
+    "Detected 18 marks, but the cover states 20. Review question marks and timing; OCR may omit mark brackets."
+  ],
+  "coordinate_system": "PDF points; page indices in regions are zero-based; source_pages are one-based",
+  "questions": [
+    {
+      "number": 1,
+      "image": "questions/question-01.png",
+      "image_sha256": "0f5ae2d840895dad206f823605896c7362ad4bcd6f820892afc2fc15e4ff86ad",
+      "width": 1400,
+      "height": 4978,
+      "source_pages": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "regions": [
+        {
+          "page": 2,
+          "rect": [
+            30,
+            88.96003723144531,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 3,
+          "rect": [
+            30,
+            50,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 4,
+          "rect": [
+            30,
+            50,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 5,
+          "rect": [
+            30,
+            50,
+            582.0,
+            59.440032958984375
+          ]
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "image": "questions/question-02.png",
+      "image_sha256": "9d373a7ca01496b3e3bce96c714f9f527826d38fc053689a93b4973262074e6b",
+      "width": 1400,
+      "height": 8318,
+      "source_pages": [
+        6,
+        7,
+        8,
+        9,
+        11
+      ],
+      "regions": [
+        {
+          "page": 5,
+          "rect": [
+            30,
+            59.440032958984375,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 6,
+          "rect": [
+            30,
+            50,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 7,
+          "rect": [
+            30,
+            50,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 8,
+          "rect": [
+            30,
+            50,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 10,
+          "rect": [
+            30,
+            50,
+            582.0,
+            762.0
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -33,7 +33,7 @@ Generated PNGs use a 1400-pixel white canvas with 60-pixel padding and consisten
 - **Scans:** OCR text is saved and remains searchable after crop review and application restart. Equations, superscripts, tiny mark brackets and diagrams may be recognized incorrectly. If English OCR data is missing or OCR fails, a page-specific warning is shown; manual crops and tags remain available. Password-protected PDFs must be unlocked first. OCR is serialized within the application because the native Leptonica bridge cannot run concurrently in multiple threads.
 - **Paper output:** Preserves selected crop order and content, including multi-page groups. Very tall crops may be tiled across consecutive pages. It does not synthesize new questions, create markschemes, balance assessment objectives, or insert standardized answer spaces.
 
-Import documents you have permission to use. No past papers are bundled or downloaded by the application.
+The application imports local PDFs rather than downloading papers. User-supplied regression PDFs are included in `TEST SAMPLES/`.
 
 ## Data and tests
 
@@ -84,3 +84,11 @@ The command exits nonzero while any case remains unresolved. In the current clou
 ```
 
 The runner uses `TEST SAMPLES/` by default (`--papers /another/path` overrides it), verifies that the six originals match their saved hashes, and reads all pages with OCR. It checks years, page/question counts and topic anchors, renders every question to a PNG, and runs isolated import/save/search/PDF-generation checks for each paper. It writes `report.md`, `report.json`, crop PNGs and six generated PDFs outside the checkout. Use a fresh output directory for each integration run. OCR results cached in `output/bank/ocr-cache` can be copied to a new output directory to avoid repeating recognition. Scanned-paper mark mismatches are recorded explicitly and do not count as timing verification. Generated papers use a manually checked representative question from each source; the test does not automatically approve the whole question bank.
+
+The saved baseline is in [`TEST SAMPLES/results/`](<TEST SAMPLES/results/README.md>): all 141 question PNGs, crop coordinates, per-paper JSON/CSV tag results, a combined [`tags.csv`](<TEST SAMPLES/results/tags.csv>), source text/evidence and validation/review reports. These are automatic suggestions with explicit unresolved flags, not approved tags. Tests verify source links, PNG checksums, crop bounds and tag-table completeness.
+
+```sh
+.venv/bin/python tools/export_sample_results.py --validation /path/to/validation-results --output /tmp/physics-results-new
+```
+
+Omit `--output` to target `TEST SAMPLES/results/`. Existing changed files are preserved; regenerate into a fresh directory to review changes. Add `--language-report /path/to/language-report.json` to include actual recorded model-review results. Full-page OCR caches, working databases and generated practice PDFs are not copied into the committed baseline.

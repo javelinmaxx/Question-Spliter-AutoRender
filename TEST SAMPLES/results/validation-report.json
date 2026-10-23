@@ -1,0 +1,207 @@
+{
+  "papers": [
+    {
+      "filename": "Physics_paper_1A_TZ3_HL.pdf",
+      "sha256": "431f3df5dbd9b6387e35400954671d0263bf389ffabb6200657001dd88da4a79",
+      "year": 2025,
+      "pages": 22,
+      "questions": 40,
+      "topic_anchors": 10,
+      "anchor_failures": [],
+      "checks": {
+        "page_count": true,
+        "question_count": true,
+        "question_sequence": true,
+        "year": true,
+        "level": true,
+        "cover_marks": true,
+        "ocr_all_pages": true,
+        "topic_anchors": true,
+        "png_rendering": true,
+        "save_search_generate_download": true
+      },
+      "mark_audit": {
+        "expected": 40,
+        "detected": 40,
+        "status": "matched"
+      },
+      "warnings": [
+        "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving."
+      ],
+      "ocr_disagreements": [
+        8,
+        25
+      ],
+      "artifacts": "Physics_paper_1A_TZ3_HL"
+    },
+    {
+      "filename": "Physics_paper_1A_TZ1_HL.pdf",
+      "sha256": "c857abde44be3393eac02d1287fac688733f630f09e5e3a94a37462818e03888",
+      "year": 2025,
+      "pages": 24,
+      "questions": 40,
+      "topic_anchors": 11,
+      "anchor_failures": [],
+      "checks": {
+        "page_count": true,
+        "question_count": true,
+        "question_sequence": true,
+        "year": true,
+        "level": true,
+        "cover_marks": true,
+        "ocr_all_pages": true,
+        "topic_anchors": true,
+        "png_rendering": true,
+        "save_search_generate_download": true
+      },
+      "mark_audit": {
+        "expected": 40,
+        "detected": 40,
+        "status": "matched"
+      },
+      "warnings": [
+        "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving."
+      ],
+      "ocr_disagreements": [
+        3,
+        23
+      ],
+      "artifacts": "Physics_paper_1A_TZ1_HL"
+    },
+    {
+      "filename": "Physics HL Paper 1A TZC.pdf",
+      "sha256": "9cfe6b8931355444ce29019ed716a5d0139e6ab2e5cb1130de584863c2297f95",
+      "year": 2026,
+      "pages": 22,
+      "questions": 40,
+      "topic_anchors": 12,
+      "anchor_failures": [],
+      "checks": {
+        "page_count": true,
+        "question_count": true,
+        "question_sequence": true,
+        "year": true,
+        "level": true,
+        "cover_marks": true,
+        "ocr_all_pages": true,
+        "topic_anchors": true,
+        "png_rendering": true,
+        "save_search_generate_download": true
+      },
+      "mark_audit": {
+        "expected": 40,
+        "detected": 40,
+        "status": "matched"
+      },
+      "warnings": [
+        "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving.",
+        "Page 2: OCR read question 4; proposed 1 from adjacent numbering. Confirm the image.",
+        "Page 10: OCR read question 46; proposed 16 from adjacent numbering. Confirm the image."
+      ],
+      "ocr_disagreements": [],
+      "artifacts": "Physics HL Paper 1A TZC"
+    },
+    {
+      "filename": "Physics_paper_2_TZ3_HL.pdf",
+      "sha256": "3943e6237296a7177a1fedab68cdcc717f272f7472d3d19de6547097df9442e9",
+      "year": 2025,
+      "pages": 29,
+      "questions": 10,
+      "topic_anchors": 7,
+      "anchor_failures": [],
+      "checks": {
+        "page_count": true,
+        "question_count": true,
+        "question_sequence": true,
+        "year": true,
+        "level": true,
+        "cover_marks": true,
+        "ocr_all_pages": true,
+        "topic_anchors": true,
+        "png_rendering": true,
+        "save_search_generate_download": true
+      },
+      "mark_audit": {
+        "expected": 90,
+        "detected": 90,
+        "status": "matched"
+      },
+      "warnings": [
+        "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving."
+      ],
+      "ocr_disagreements": [],
+      "artifacts": "Physics_paper_2_TZ3_HL"
+    },
+    {
+      "filename": "Physics HL Paper 2 TZC (1).pdf",
+      "sha256": "f1bac7d411edd4f3022779da3588986a512c0841e0c8b986b63444f657003448",
+      "year": 2026,
+      "pages": 23,
+      "questions": 9,
+      "topic_anchors": 9,
+      "anchor_failures": [],
+      "checks": {
+        "page_count": true,
+        "question_count": true,
+        "question_sequence": true,
+        "year": true,
+        "level": true,
+        "cover_marks": true,
+        "ocr_all_pages": true,
+        "topic_anchors": true,
+        "png_rendering": true,
+        "save_search_generate_download": true
+      },
+      "mark_audit": {
+        "expected": 90,
+        "detected": 61,
+        "status": "mismatch"
+      },
+      "warnings": [
+        "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving.",
+        "Detected 61 marks, but the cover states 90. Review question marks and timing; OCR may omit mark brackets."
+      ],
+      "ocr_disagreements": [],
+      "artifacts": "Physics HL Paper 2 TZC (1)"
+    },
+    {
+      "filename": "Physics HL Paper 1B TZC.pdf",
+      "sha256": "90febe5e5db7dfebf7b624776aa42bd67cc4a4f6f3f588edf0855106b5bf1dc6",
+      "year": 2026,
+      "pages": 11,
+      "questions": 2,
+      "topic_anchors": 2,
+      "anchor_failures": [],
+      "checks": {
+        "page_count": true,
+        "question_count": true,
+        "question_sequence": true,
+        "year": true,
+        "level": true,
+        "cover_marks": true,
+        "ocr_all_pages": true,
+        "topic_anchors": true,
+        "png_rendering": true,
+        "save_search_generate_download": true
+      },
+      "mark_audit": {
+        "expected": 20,
+        "detected": 18,
+        "status": "mismatch"
+      },
+      "warnings": [
+        "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving.",
+        "Detected 18 marks, but the cover states 20. Review question marks and timing; OCR may omit mark brackets."
+      ],
+      "ocr_disagreements": [],
+      "artifacts": "Physics HL Paper 1B TZC"
+    }
+  ],
+  "failures": [],
+  "limitations": [
+    "Topic anchors check specified required and forbidden labels, not every possible extra label.",
+    "The anchors were used to diagnose and improve heuristics; this is not a held-out accuracy benchmark.",
+    "OCR/PDF topic agreement is not proof of semantic accuracy. All other tags and crop boundaries still need review.",
+    "Cover mark mismatches flag incomplete OCR marks; difficulty is unrated and time remains heuristic."
+  ]
+}

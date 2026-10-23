@@ -1,0 +1,1699 @@
+{
+  "source_file": "Physics_paper_1A_TZ1_HL.pdf",
+  "source_sha256": "c857abde44be3393eac02d1287fac688733f630f09e5e3a94a37462818e03888",
+  "source_pages": 24,
+  "metadata": {
+    "year": 2025,
+    "level": "HL",
+    "paper": "Paper 1A",
+    "syllabus": "2025"
+  },
+  "mark_audit": {
+    "expected": 40,
+    "detected": 40,
+    "status": "matched"
+  },
+  "warnings": [
+    "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving."
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.1": [
+          "velocity",
+          "projectile"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-01.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.1": "Kinematics"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 1,
+        "required_topics": [
+          "A.1"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "1.\t\nA projectile is launched with an initial velocity v at an angle θ  above the horizontal. The projectile \nlands at the same height from which it was released. Air resistance is negligible.\nv\nθ\nWhat is the time of flight of the projectile?\nA.\t\nv\ng\nsinθ\nB.\t\n2v\ng\nsinθ\nC.\t\n2v\ng\ncosθ\nD.\t\n2v\ng\nsin cos\nθ\nθ",
+        "ocr": "1.\nAprojectile is launched with an initial velocity v at an angle 0 above the horizontal. The projectile\nlands at the same height from which it was released. Air resistance is negligible.\nVv ae\nA\\9\nWhat is the time of flight of the projectile?\nA\nvsingd\ng\nB.\n2vsing\ng\nC.\n2vcosé\ng\nD.\n2vsinécosé\ng"
+      }
+    },
+    {
+      "number": 2,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.1": [
+          "acceleration"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-02.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.1": "Kinematics"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "2.\t\nA cart starts from rest at point S and moves in a straight line with a constant acceleration. \nTwo points X and Y are 0.50 m and 1.0 m from S.\n0.50 m\n1.0 m\nS\nX\nY\nThe cart passes X with speed vX and passes Y with speed vY. What is v\nv\nY\nX\n?\nA.\t\n2\nB.\t\n2\nC.\t\n2 2\nD.\t\n4",
+        "ocr": "2.\n Acart starts from rest at point\nS and moves in a straight line with a constant acceleration.\nTwo points X and Y are 0.50m and 1.0m from S.\nSs\nx\nY\ncary\n(|\n050m\n|;\n'\n‘¢\nid\n1\ni\n1\n1.0m\nThe cart passes X with speed v, and passes Y with speed v,. What is Ww 2?\nVy\nA.\n2\nB.\n2\nCc.\n2V2\nD.\n4"
+      }
+    },
+    {
+      "number": 3,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.1": [
+          "acceleration"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "disagreement",
+        "topics": [
+          "A.1",
+          "A.2"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-03.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.1": "Kinematics"
+      },
+      "language_review": {
+        "input_hash": "c3b70b1622a89b7ed763cbc059693174e8bcaa3b22d62c90c6f6dec2a87088c2",
+        "prompt_version": "physics-ocr-v1",
+        "topics": [],
+        "evidence": [],
+        "status": "unavailable",
+        "reason": "Local language model is not configured."
+      },
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "3.\t\nA ball is thrown vertically upwards. Air resistance is not negligible. Four positions of the ball are \nshown: A and B on the way up, C at the maximum height, and D on the way down. At which \nposition does the acceleration of the ball have its greatest magnitude?\nA.\nB.\nC.\nD.\nup\ndown",
+        "ocr": "3.\nAball is thrown vertically upwards. Air resistance is not negligible. Four positions of the ball are\nshown: A and B on the way up, C at the maximum height, and D on the way down. At which\nposition does the acceleration of the ball have its greatest magnitude?\nC.\nB.\nA.\nD.\nup{}\n[| aon"
+      }
+    },
+    {
+      "number": 4,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.1",
+        "A.2"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.1": [
+          "velocity"
+        ],
+        "A.2": [
+          "collides"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.1",
+          "A.2"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-04.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.1": "Kinematics",
+        "A.2": "Forces and momentum"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "Turn over\n4.\t\nCart X, of mass 2 kg, is moving at a speed of 3 m s-1 to the right and collides on a horizontal track \nwith cart Y of mass 1 kg. Y is initially stationary.\n2 kg\n1 kg\n3 m s−1\nX\nY\nThe velocity of Y immediately after the collision is 4 m s-1 to the right. What is the velocity of X \nimmediately after the collision?\nA.\t\n1 m s-1 to the right\nB.\t\n1 m s-1 to the left\nC.\t\n2 m s-1 to the right\nD.\t\n2 m s-1 to the left",
+        "ocr": "4.\nCart X, of mass 2kg, is moving at a speed of 3ms'‘ to the right and collides on a horizontal track\nwith cart Y of mass 1kg. Y\nis initially stationary.\n3ms\"\nx\nY\nThe velocity ofY immediately after the collision is 4ms'‘ to the right. What is the velocity of X\nimmediately after the collision?\nA.\n1ms‘‘ to the right\nB.\n1ms' to the left\nC.\n 2ms'' to the right\nD.\n2ms' to the left\nTurn over"
+      }
+    },
+    {
+      "number": 5,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.2",
+        "A.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.2": [
+          "force"
+        ],
+        "A.3": [
+          "kinetic energy"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.2",
+          "A.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-05.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.2": "Forces and momentum",
+        "A.3": "Work, energy and power"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "5.\t\nA block of mass m is released from rest and slides down a ramp of length d that makes an angle θ \nwith the horizontal. A constant frictional force F acts on the block. \nd\nθ\nblock\nWhat is the kinetic energy of the block at the bottom of the ramp?\nA.\t\nmgd - Fd cos θ\nB.\t\nmgd - Fd\nC.\t\nmgd sin θ - Fd cos θ\nD.\t\nmgd sin θ - Fd",
+        "ocr": "5. — Ablock of mass mis released from rest and slides down a ramp of length d that makes an angle 0\nwith the horizontal. A constant frictional force F acts on the block.\nblock »\nd\nOLN\nWhat is the kinetic energy of the block at the bottom of the ramp?\nA.\nmgd -—Fdcos@\nB.\nmgd-—Fd\nC.\nmgd sin@-—Fdcosé\nD.\nmgdsin@-—Fd"
+      }
+    },
+    {
+      "number": 6,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.3": [
+          "power",
+          "efficiency"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-06.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.3": "Work, energy and power"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "6.\t\nAn electric motor of efficiency 75 % raises a mass of 120 kg at a constant speed of 0.50 m s-1. \nWhat is the power input to the motor?\nA.\t\n20 W\nB.\t\n450 W\nC.\t\n600 W\nD.\t\n800 W",
+        "ocr": "6.\n Anelectric motor of efficiency 75% raises a mass of 120kg at a constant speed of 0.50ms‘.\nWhat is the power input to the motor?\nA.\n20W\nB.\n450W\nCc.\n600W\nD.\n800W"
+      }
+    },
+    {
+      "number": 7,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.4"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.4": [
+          "torque",
+          "moment of inertia",
+          "angular acceleration"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.4"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-07.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.4": "Rigid body mechanics"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "7.\t\nThe graph shows how the angular acceleration α of a flywheel varies with torque τ  applied to \nthe flywheel.\n0\n0\n5\n10\n15\n20\n1\n2\n3\n4\n/ rad s−2\nα \n/ N m\nτ\nWhat is the moment of inertia of the flywheel?\nA.\t\n0.20 kg m2\nB.\t\n5.0 kg m2\nC.\t\n40 kg m2\nD.\t\n80 kg m2",
+        "ocr": "7.\nThe graph shows how the angular acceleration @ of a flywheel varies with torque t applied to\nthe flywheel.\n20\n15\nalrads?\n10\n5\n0\n0\n1\n2\n3\n4\nt/Nm\nWhat is the moment of inertia of the flywheel?\nA.\n0.20kgm?\nB.\n5.0kgm?\nC.\n 40kgm?\nD.\n80kgm*"
+      }
+    },
+    {
+      "number": 8,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.5"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.5": [
+          "proper lifetime"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.5"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-08.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.5": "Galilean and special relativity"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 8,
+        "required_topics": [
+          "A.5"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "Turn over\n8.\t\nA muon of proper lifetime t is produced in the high atmosphere and travels towards Earth at a \nrelativistic speed v. What is the distance travelled by the muon in the reference frame of Earth?\nA.\t\nvt\nB.\t\nvt\nv\nc\n1\n2\n2\n\u001f\n\u001e\n\u001d\u001c\n\u001b\n\u001a\u0019\nC.\t\nvt\nv\nc\n1\n2\n2\n−\nD.\t\nvt\nv\nc\n1\n2\n2\n\u001f",
+        "ocr": "8.\n| Amuon of proper lifetime t is produced in the high atmosphere and travels towards Earth at a\nrelativistic speed v. What is the distance travelled by the muon in the reference frame of Earth?\nA.\nvt\nv2\nB.\nat-4)\nv2\nCc.\nvt,J1-—\nc\nVv\nVe\nTurn over"
+      }
+    },
+    {
+      "number": 9,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "A.5"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "A.5": [
+          "space-time"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "A.5"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-09.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.5": "Galilean and special relativity"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 9,
+        "required_topics": [
+          "A.5"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "9.\t\nThe space–time diagram shows coordinate axes of inertial reference frames S (x , ct ) and \nS′(x′ , ct ′). Event X occurs at t = 1 s according to the S reference frame. A line of constant \nspace–time interval is drawn through X.\nX\nx\nct\nct ′\nx′\nR\nQ\nP\nconstant\nspace-time interval\nIn the S′ reference frame, which event is simultaneous with X and which event has the time \ncoordinate t ′ = 1 s?\nSimultaneous with X \nin the S′frame\nt ′ = 1 s in the S′frame\nA.\nP\nR\nB.\nQ\nR\nC.\nR\nP\nD.\nR\nQ",
+        "ocr": "9.\nThe space-time diagram shows coordinate axes of inertial reference frames S (x, ct) and\nS'(x’, ct’). Event X occurs at t= 1s according to the S reference frame. A line of constant\nspace-time interval is drawn through X.\nct\nct’\n_ constant\n_7~\nSpace-time interval\nff Q\nXv\nPp\nx\nIn the S’ reference frame, which event is simultaneous with X and which event has the time\ncoordinate t' = 1s?\nSimultaneous with X\nt'=1s in the S'frame\nin the S’frame\nAR\nBR\na\na"
+      }
+    },
+    {
+      "number": 10,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "B.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "B.1": [
+          "thermal"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "B.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-10.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.1": "Thermal energy transfers"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "10.\t\nA layer of glass separates cold air from hot air. The temperature gradient across the glass is H, and \nthe rate of thermal energy transfer through a unit surface area of the glass is P.\nglass\ncold air\nhot air\nThe thickness of the glass layer is doubled. What are the temperature gradient and the rate of \nthermal energy transfer through the glass after this change?\nTemperature gradient\nRate of thermal \nenergy transfer\nA.\n2H\n2P\nB.\n2H\nP\n2\nC.\nH\n2\n2P\nD.\nH\n2\nP\n2",
+        "ocr": "10.\nA layer of glass separates cold air from hot air. The temperature gradient across the glass is H, and\nthe rate of thermal energy transfer through a unit surface area of the glass is P.\ncold air\nhot air\nThe thickness of the glass layer is doubled. What are the temperature gradient and the rate of\nthermal energy transfer through the glass after this change?\n.\nRate of thermal\nTemperature gradient\nenergy transfer\nA\nP\nB.\n2H\n=\nom\nH\nC.\n=\n2P\nFe\nD.\nA\nP\n2\n2"
+      }
+    },
+    {
+      "number": 11,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "B.1",
+        "B.2"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "B.1": [
+          "emissivity"
+        ],
+        "B.2": [
+          "albedo",
+          "solar radiation"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "B.1",
+          "B.2"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-11.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.1": "Thermal energy transfers",
+        "B.2": "Greenhouse effect"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "Turn over\n11.\t\nThe diagram shows the incident, radiated and reflected intensities of the solar radiation for two \nregions X and Y on the surface of Earth. X and Y have the same surface temperature.\nincident 500 W m−2\nradiated 350 W m−2\nreflected 150 W m−2\nregion X\nincident 500 W m−2\nradiated 320 W m−2\nreflected 180 W m−2\nregion Y\nWhich region has a greater albedo, and which region has a greater emissivity?\nGreater albedo\nGreater emissivity\nA.\nX\nX\nB.\nY\nX\nC.\nX\nY\nD.\nY\nY",
+        "ocr": "11.\nThe diagram shows the incident, radiated and reflected intensities of the solar radiation for two\nregions X and Y on the surface of Earth. X and Y have the same surface temperature.\nincident 500 Wm?\nincident\n500 Wm?\nradiated 350 Wm?\nradiated 320 Wm?\nreflected\n150 Wm\nreflected 180 Wm\nregion X\nregion Y\nWhich region has a greater albedo, and which region has a greater emissivity?\nGreater albedo\nGreater emissivity\nA\n.\n:\n0\nTurn over"
+      }
+    },
+    {
+      "number": 12,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "B.2"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "B.2": [
+          "greenhouse",
+          "greenhouse",
+          "atmospheric radiation balance"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "B.2"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-12.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.2": "Greenhouse effect"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "12.\t\nWhich process involving gas molecules in the Earth’s atmosphere is the main cause of the \ngreenhouse effect?\nA.\t\nReflection of incoming solar radiation \nB.\t\nAbsorption and re-radiation of incoming solar radiation\nC.\t\nReflection of outgoing infrared radiation\nD.\t\nAbsorption and re-radiation of outgoing infrared radiation",
+        "ocr": "12.\nWhich process involving gas molecules in the Earth’s atmosphere is the main cause of the\ngreenhouse effect?\nA.\n— Reflection of incoming solar radiation\nB.\n— Absorption and re-radiation of incoming solar radiation\nC.\n— Reflection of outgoing infrared radiation\nD.\nAbsorption and re-radiation of outgoing infrared radiation"
+      }
+    },
+    {
+      "number": 13,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "B.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "B.3": [
+          "ideal gas",
+          "ideal gas"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "B.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-13.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.3": "Gas laws"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 13,
+        "required_topics": [
+          "B.3"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "13.\t\nA sample of n moles of an ideal gas is kept at a constant volume. The graph shows how the \npressure P of the gas varies with absolute temperature T.\nP\nT\nP2\nP1\nT1\nT2\n0\n0\nWhat is the volume of the gas?\nA.\t\nnR T\nT\nP\nP\n2\n1\n2\n1\n−\n−\nB.\t\nnR P\nP\nT\nT\n2\n1\n2\n1\n−\n−\nC.\t\nnR T\nP\nT\nP\n2\n2\n1\n1\n\u001f\n\u001e\n\u001d\n\u001c\n\u001b\n\u001a\n\u0019\nD.\t\nnR P\nT\nP\nT\n2\n2\n1\n1\n\u001f\n\u001e\n\u001d\n\u001c\n\u001b\n\u001a\n\u0019",
+        "ocr": "13.\nAsample of n moles of an ideal gas is kept at\na constant volume. The graph shows how the\npressure P of the gas varies with absolute temperature T.\nP\nP, Oe\nP,0T\n0\nT,\nT,\nWhat is the volume of the gas?\nA.\nnRlwh\nP,-P,\nB. nr\nT,-T,\nCc.\nnR ET\nP,P,\nD.\nnR PA\nqT\n7,"
+      }
+    },
+    {
+      "number": 14,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "B.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "B.3": [
+          "monatomic gas"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "B.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-14.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.3": "Gas laws"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "14.\t\nTwo containers are filled with monatomic gas of equal mass at the same temperature. \nOne container holds helium and the other neon. \nThe mass of a neon atom is five times the mass of a helium atom. \nWhat is internal energy of the helium gas\ninternal energy of the neon gas ?\nA.\t\n1\n5\nB.\t\n1\nC.\t\n5\nD.\t\n5",
+        "ocr": "14.\nTwo containers are filled with monatomic gas of equal mass at the same temperature.\nOne container holds helium and the other neon.\nThe mass of a neon atom is five times the mass of a helium atom.\nWhat is internal energy of the helium gas 2\ninternal energy of the neon gas\na1\n5\nB.\n1\nc.\nV5\nD.\n5"
+      }
+    },
+    {
+      "number": 15,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "B.4"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "B.4": [
+          "first law: gas heat and work"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "B.4"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-15.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.4": "Thermodynamics"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 15,
+        "required_topics": [
+          "B.4"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "Turn over\n15.\t\nA thermal energy of 7.0 J is removed from an ideal gas, and a work of 2.0 J is done by the gas. \nWhat is the change in the internal energy of the gas?\nA.\t\n-9.0 J\nB.\t\n-5.0 J\nC.\t\n+5.0 J\nD.\t\n+9.0 J",
+        "ocr": "15.\nAthermal energy of 7.0J is removed from an ideal gas, and a work of 2.0J is done by the gas.\nWhat is the change in the internal energy of the gas?\nA.\n-9.0J\nB.\n-5.0J\nCc.\n+5.0J\nD.\n+9.0J\nTurn over"
+      }
+    },
+    {
+      "number": 16,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "B.5"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "B.5": [
+          "resistor"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "B.5"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-16.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.5": "Current and circuits"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "16.\t\nThree identical resistors are arranged in four different networks. The same potential difference is \napplied across each network. Which network dissipates the greatest electrical power?\nA.\nB.\nC.\nD.",
+        "ocr": "16.\nThree identical resistors are arranged in four different networks. The same potential difference is\napplied across each network. Which network dissipates the greatest electrical power?\nA.\nog\nes\nB. — {7 }"
+      }
+    },
+    {
+      "number": 17,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "C.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "C.1": [
+          "simple harmonic"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "C.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-17.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.1": "Simple harmonic motion"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "17.\t\nA force F acts on a particle. The displacement of the particle is x. Which variation of F with x results \nin simple harmonic motion?\nA.\nF\nx\n0\n0\nB.\nF\nx\n0\n0\nC.\nF\nx\n0\n0\nD.\nF\nx\n0\n0",
+        "ocr": "17.\nAforce F acts on a particle. The displacement of the particle is x. Which variation of F with x results\nin simple harmonic motion?\nA.\nF\nB.\nF\n0\nx\n0\n0\nC.\nF\nDz.\nF\n0\nx\n0\n0\n0"
+      }
+    },
+    {
+      "number": 18,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "C.2"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "C.2": [
+          "wave model"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "C.2"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-18.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.2": "Wave model"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 18,
+        "required_topics": [
+          "C.2"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "Turn over\n18.\t\nThe graph shows how the displacement of a wave varies with the position  x  along the wave. \nThe wave travels towards positive  x .\nAt the instant shown, which point along the wave has the maximum positive velocity?\nA.\nB.\nC.\nD.\nx\ndisplacement",
+        "ocr": "18.\nThe graph shows how the displacement of a wave varies with the position x along the wave.\nThe wave travels towards positive x.\nAt the instant shown, which point along the wave has the maximum positive velocity?\ndisplacement\nA.\nB.\nD.\nx\nTurn over"
+      }
+    },
+    {
+      "number": 19,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "C.2",
+        "C.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "C.2": [
+          "wavelength",
+          "frequency"
+        ],
+        "C.3": [
+          "superposition of coherent sources"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "C.2",
+          "C.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-19.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.2": "Wave model",
+        "C.3": "Wave phenomena"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "19.\t\nTwo loudspeakers are driven in phase and emit sound of the same frequency. A minimum intensity \nof sound is detected at point P. \nP is 4.0 m from one loudspeaker and 4.6 m from the other.\nP\n4.0 m\n4.6 m\nWhat is a possible wavelength of the sound?\nA.\t\n20 cm\nB.\t\n30 cm\nC.\t\n40 cm\nD.\t\n60 cm",
+        "ocr": "19.\nTwo loudspeakers are driven in phase and emit sound of the same frequency. A minimum intensity\nof sound is detected at point P.\nP is 4.0m from one loudspeaker and 4.6m from the other.\nP\n4.0m\n4.6m\nWhat is a possible wavelength of the sound?\nA.\n20cm\nB.\n30cm\nCc.\n40cm\nD.\n60cm"
+      }
+    },
+    {
+      "number": 20,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "C.2",
+        "C.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "C.2": [
+          "wavelength"
+        ],
+        "C.3": [
+          "diffraction"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "C.2",
+          "C.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-20.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.2": "Wave model",
+        "C.3": "Wave phenomena"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "20.\t\nMonochromatic light of wavelength λ is incident normally on a diffraction grating. The adjacent \nlines of the diffraction grating are separated by a distance of 2.8 λ. How many diffraction maxima \nare present in the transmitted light?\nA.\t\n2\nB.\t\n3\nC.\t\n5\nD.\t\n7",
+        "ocr": "20.\nMonochromatic light of wavelength A is incident normally on a diffraction grating. The adjacent\nlines of the diffraction grating are separated by a distance of 2.82. How many diffraction maxima\nare present in the transmitted light?\nA.\n2\nB.\n3\nCc.\n5\nD.\n7"
+      }
+    },
+    {
+      "number": 21,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "C.2",
+        "C.4"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "C.2": [
+          "wavelength",
+          "wave model"
+        ],
+        "C.4": [
+          "standing wave"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "C.2",
+          "C.4"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-21.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.2": "Wave model",
+        "C.4": "Standing waves and resonance"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "21.\t\nA standing sound wave is formed in a pipe of length L that is open at both ends. The standing \nwave has two nodes. What is the wavelength of the standing wave?\nA.\t\nL\n2\nB.\t\n2\n3\nL\nC.\t\nL\nD.\t\n2L",
+        "ocr": "21.\nAstanding sound wave is formed in a pipe of length L that is open at both ends. The standing\nwave has two nodes. What is the wavelength of the standing wave?\nAE\n2\np2\n3\ncL\nD.\n2b"
+      }
+    },
+    {
+      "number": 22,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "C.4"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "C.4": [
+          "driven oscillation and resonance"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "C.4"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-22.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.4": "Standing waves and resonance"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 22,
+        "required_topics": [
+          "C.4"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "Turn over\n22.\t\nA heavily damped oscillator of natural frequency  f0  is driven by a periodic force of frequency  f . \nWhich graph shows how the amplitude of the oscillations varies with  f ?\nA.\namplitude\n0\n0\nf0\nf\nB.\namplitude\n0\n0\nf0\nf\nC.\namplitude\n0\n0\nf0\nf\nD.\namplitude\n0\n0\nf0\nf",
+        "ocr": "22.\nAheavily damped oscillator of natural frequency fj is driven by a periodic force of frequency /.\nWhich graph shows how the amplitude of the oscillations varies with {?\nA.\namplitude\nB.\namplitude\n0\n>f\n0\n>f\n0\nf,\n0\nIo\nC.\namplitude\nD.\namplitude\nmaf\npef\n0\nf,\n0\nto\nTurn over"
+      }
+    },
+    {
+      "number": 23,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "C.5"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "C.5": [
+          "moving source / observed waves"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "disagreement",
+        "topics": [
+          "C.2"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-23.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.5": "Doppler effect"
+      },
+      "language_review": {
+        "input_hash": "0c8059a1b204f2026488e3a5ea4edfeed23f850b8e7d0940cac34df054fadae0",
+        "prompt_version": "physics-ocr-v1",
+        "topics": [],
+        "evidence": [],
+        "status": "unavailable",
+        "reason": "Local language model is not configured."
+      },
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "23.\t\nA source S of a sound wave is moving at a constant velocity along a line joining stationary \nobservers X and Y. The diagram shows consecutive wavefronts of the sound.\nS\nY\nX\nConsider the following statements:\nI.\t\nMore wavefronts pass X in a unit time than Y. \nII.\t\nThe speed of the wavefronts is greater at X than at Y.\nIII.\t\nThe wavelength of the sound at X is less than the wavelength at Y.\nWhich statements are correct?\nA.\t\nI and II only\nB.\t\nI and III only\nC.\t\nII and III only\nD.\t\nI, II and III",
+        "ocr": "23.\nAsource S of a sound wave is moving at a constant velocity along a line joining stationary\nobservers X and Y. The diagram shows consecutive wavefronts of the sound.\n|) |\nConsider the following statements:\nI.\nMore wavefronts pass X in a unit time than Y.\nIl.\nThe speed of the wavefronts is greater at X than at Y.\nIll.\n| The wavelength of the sound at X is less than the wavelength at Y.\nWhich statements are correct?\nA.\n— land Il only\nB.\n— land Ill only\nC. — Iland III only\nD.\nI,\nll and Ill"
+      }
+    },
+    {
+      "number": 24,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "D.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "D.1": [
+          "gravitational",
+          "gravitational"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "D.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-24.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "D.1": "Gravitational fields"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "Turn over\n24.\t\nA space probe moves in a gravitational field. No other forces than the gravitational force act on \nthe probe. At one instant, the probe is at point P. The diagram shows the path of the probe and the \ngravitational field line through P.\nP\npath of the space probe  \ngravitational field line\nthrough P\nWhat is the direction of the acceleration of the probe at P?\nA.\t\nTangent to the path of the probe\nB.\t\nPerpendicular to the path of the probe\nC.\t\nTangent to the gravitational field line through P\nD.\t\nPerpendicular to the gravitational field line through P",
+        "ocr": "24.\nAspace probe moves in a gravitational field. No other forces than the gravitational force act on\nthe probe. At one instant, the probe is at point P. The diagram shows the path of the probe and the\ngravitational field line through P.\ngravitational field line\nthrough P\n‘\n\\\npath of the space probe\nWhat is the direction of the acceleration of the probe at P?\nA.\n— Tangent to the path of the probe\nB.\n| Perpendicular to the path of the probe\nC.\nTangent to the gravitational field line through P\nD.\nPerpendicular to the gravitational field line through P\nTurn over"
+      }
+    },
+    {
+      "number": 25,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "D.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "D.1": [
+          "orbit"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "D.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-25.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "D.1": "Gravitational fields"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "25.\t\nTwo satellites X and Y with the same mass orbit a planet. The scaled diagram shows the orbits of \nthe satellites.\nplanet\norbit of X\norbit of Y\nWhat is kinetic energy of X\nkinetic energy of Y ?\nA.\t\n2\nB.\t\n3\nC.\t\n4\nD.\t\n9",
+        "ocr": "25.\nTwo satellites X and Y with the same mass orbit a planet. The scaled diagram shows the orbits of\nthe satellites.\norbit of Y\norbit of X\nWhat is Kinetic energy of X 2\nkinetic energy of Y\nA.\n2\nB.\n3\nCc.\n4\nD.\n9"
+      }
+    },
+    {
+      "number": 26,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "D.2"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "D.2": [
+          "electric field",
+          "point charges"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "D.2"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-26.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "D.2": "Electric and magnetic fields"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "26.\t\nTwo point charges, +Q and -Q, are at a distance d from each other.\nWhat is the magnitude of the electric field strength midway between the charges?\nA.\t\nZero\nB.\t\n2\n2\nkQ\nd\nC.\t\n4\n2\nkQ\nd\nD.\t\n8\n2\nkQ\nd",
+        "ocr": "26.\nTwo point charges, +Q and —Q, are at a distance d from each other.\nWhat is the magnitude of the electric field strength midway between the charges?\nA.\nZero\np,\n20\nc. a\np,\nse"
+      }
+    },
+    {
+      "number": 27,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "D.2"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "D.2": [
+          "electric field"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "D.2"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-27.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "D.2": "Electric and magnetic fields"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "27.\t\nTwo points R and S are in a uniform electric field of strength E, directed vertically downwards. The \nhorizontal distance from R to S is ∆ x, and the vertical distance from R to S is ∆y. \nS\nE\nR\n∆y\n∆ x\nThe electric potential at R is zero. What is the electric potential at S?\nA.\t\nE \u001f\n\u001f\nx\ny\n2\n2\n\u001e\nB.\t\nE∆y\nC.\t\n\u001f\n\u001e\nE \u001d\n\u001d\nx\ny\n2\n2\nD.\t\n-E∆y",
+        "ocr": "27.\nTwo points R and S are in a uniform electric field of strength E, directed vertically downwards. The\nhorizontal distance from R to S is Ax, and the vertical distance from R to S is Ay.\nE\nSs\nAy\nR\nAx\nThe electric potential at R is zero. What is the electric potential at S?\nA.\nExAx? + Ay?\nB.\nEAy\nC.\n-E.Ax? + Ay?\nD.\n—EAy"
+      }
+    },
+    {
+      "number": 28,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "D.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "D.3": [
+          "charged-particle motion in fields"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "D.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-28.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "D.3": "Motion in electromagnetic fields"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 28,
+        "required_topics": [
+          "D.3"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "Turn over\n28.\t\nAn electron moves with speed v in a region of a uniform magnetic field of strength B. The path of \nthe electron is a circle of radius R. The graph shows how R varies with v.\nR\nv\n0\n0\nWhat is the gradient of the graph?\nA.\t\nm B\ne\ne\nB.\t\neB\nme\nC.\t\nm\neB\ne\nD.\t\ne\nm B\ne",
+        "ocr": "28.\nAn electron moves with speed v in a region of a uniform magnetic field of strength B. The path of\nthe electron is a circle of radius R. The graph shows howR\nvaries with v.\nV4\n0\nVv\n0\nWhat is the gradient of the graph?\na,\nmB\ne\np.\n98\nm,\nc\nmm\neB\nDp\n—&\nmB\nTurn over"
+      }
+    },
+    {
+      "number": 29,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "D.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "D.3": [
+          "charged-particle motion in fields"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "D.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-29.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "D.3": "Motion in electromagnetic fields"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "29.\t\nA proton enters a region where electric and magnetic fields are perpendicular to each other. The \ninitial velocity v of the proton is perpendicular to both fields. The path of the proton is not deflected \nin the fields.\nv\nmagnetic field\npath of the proton\nelectric field\nThe proton is replaced by an alpha particle that is also not deflected by the fields. What is the \nvelocity of the alpha particle?\nA.\t\nv\n2\nB.\t\nv\nC.\t\n2v\nD.\t\n4v",
+        "ocr": "29.\nAproton enters a region where electric and magnetic fields are perpendicular to each other. The\ninitial velocity v of the proton is perpendicular to both fields. The path of the proton is not deflected\nin the fields.\nmagnetic fieldNx\nx\nx\nx\nx\nx\nx\nx\npath of the proton\nVv\n/\n@—\n> - - - - 4 -- errr rrr\n--\nx\nx\nx\nx\n*\nx\n*\nx |electric field\nThe proton is replaced by an alpha particle that is also not deflected by the fields. What is the\nvelocity of the alpha particle?\nA©\n2\nB.\nov\nCc.\n2v\nD.\n4v"
+      }
+    },
+    {
+      "number": 30,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "D.4"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "D.4": [
+          "induced",
+          "electromagnetic induction"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "D.4"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-30.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "D.4": "Induction"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "30.\t\nA conducting ring is perpendicular to a uniform magnetic field directed out of the page.\nThe magnitude of the magnetic field strength increases. What are the direction of the conventional \ncurrent induced in the ring and the net magnetic force on the ring?\nCurrent induced in the ring\nMagnetic force on the ring\nA.\nclockwise\nzero\nB.\ncounter-clockwise\nzero\nC.\nclockwise\nnon-zero\nD.\ncounter-clockwise\nnon-zero",
+        "ocr": "30.\nAconducting ring is perpendicular to a uniform magnetic field directed out of the page.\n©\n(0)\n©\n©\n©\n©\n©\n©\n©\n©\n©\n©\n0}\n(O}\n©\n©\nThe magnitude of the magnetic field strength increases. What are the direction of the conventional\ncurrent induced in the ring and the net magnetic force on the ring?\nCurrent induced in the ring | Magnetic force on the ring\nA\n.\nc\n0"
+      }
+    },
+    {
+      "number": 31,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "D.4"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "D.4": [
+          "magnetic flux",
+          "magnetic flux",
+          "electromagnetic induction"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "D.4"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-31.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "D.4": "Induction"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "31.\t\nThe graph shows how the magnetic flux linked through a conducting coil varies with time. The coil \nhas only one turn.\n0\n0\n1\n2\n3\n4\n5\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\ntime / s\nmagnetic flux / Wb\nWhat is the maximum emf induced in the coil?\nA.\t\n0.40 V\nB.\t\n1.0 V\nC.\t\n2.0 V\nD.\t\n4.0 V",
+        "ocr": "31.\nThe graph shows how the magnetic flux linked through a conducting coil varies with time. The coil\nhas only one turn.\n5\n24\n=\n53\n2\n22\nDoD\n©\nEe\n4\n0\n0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\ntime/s\nWhat is the maximum emf induced in the coil?\nA.\n0.40V\nB.\n1.0V\nCc.\n2.0V\nD.\n4.0V"
+      }
+    },
+    {
+      "number": 32,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.1": [
+          "rutherford"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-32.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.1": "Structure of the atom"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 32,
+        "required_topics": [
+          "E.1"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "Turn over\n32.\t\nWhich claim about the structure of the atom is falsified by the results of  \nthe Geiger–Marsden–Rutherford experiment?\nA.\t\nThe nucleus is only made up of positively charged particles.\nB.\t\nThe electrons in the atom move in orbits of fixed radius.\nC.\t\nThe positive charge occupies all of the atom’s volume.\nD.\t\nThe electrons in the atom have continuous energy.",
+        "ocr": "32.\nWhich claim about the structure of the atom is falsified by the results of\nthe Geiger—Marsden—Rutherford experiment?\nA.\n— The nucleus is only made up of positively charged particles.\nB.\nThe electrons in the atom move in orbits of fixed radius.\nC.\nThe positive charge occupies all of the atom’s volume.\nD.\nThe electrons in the atom have continuous energy.\nTurn over"
+      }
+    },
+    {
+      "number": 33,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.1"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.1": [
+          "energy level",
+          "energy levels"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.1"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-33.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.1": "Structure of the atom"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "33.\t\nSome energy levels for a hydrogen atom are shown.\ndiagram not to scale\nn = 3\nn = 1\nn = 2\nX\nY\nWhat is energy absorbed in transition X\nenergy absorbed in transition Y ?\nA.\t\n32\n27\nB.\t\n3\n2\nC.\t\n2\nD.\t\n9\n4",
+        "ocr": "33.\nSome energy levels for a hydrogen atom are shown.\ndiagram not to scale\n——_————— n=3\nx\nn=2\nY\nn=1\nWhat is &72\"9Y. absorbed in transition x 2\nenergy absorbed in transition Y\na\n2\n27\np.\n3\n2\nCc.\n2\nbp\n2\n4"
+      }
+    },
+    {
+      "number": 34,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.2"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.2": [
+          "electron emission from metal"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.2"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-34.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.2": "Quantum physics"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 34,
+        "required_topics": [
+          "E.2"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "34.\t\nMonochromatic electromagnetic radiation is incident on a metal surface. Three observations about \nthe electrons emitted from the surface are:\nI.\t\nThe maximum energy of the electrons does not depend on radiation intensity.\nII.\t\nThe number of electrons emitted in a unit time increases with radiation intensity.\nIII.\t\nNo electrons are emitted when the frequency of radiation is less than a threshold value.\nWhich observations are inconsistent with the wave model of electromagnetic radiation?\nA.\t\nI and II only\nB.\t\nI and III only\nC.\t\nII and III only\nD.\t\nI, II and III",
+        "ocr": "34.\nMonochromatic electromagnetic radiation is incident on a metal surface. Three observations about\nthe electrons emitted from the surface are:\nI.\nThe maximum energy of the electrons does not depend on radiation intensity.\nIl.\nThe number of electrons emitted in a unit time increases with radiation intensity.\nIll.\n| No electrons are emitted when the frequency of radiation is less than a threshold value.\nWhich observations are inconsistent with the wave model of electromagnetic radiation?\nA.\n— land Il only\nB.\n— land Ill only\nC. — Iland III only\nD.\nI,\nIl and Ill"
+      }
+    },
+    {
+      "number": 35,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.2"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.2": [
+          "photon"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.2"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-35.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.2": "Quantum physics"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "35.\t\nA photon of wavelength λ0 scatters off an electron at rest. The shift in photon wavelength is ∆λ. \nWhat is the kinetic energy of the scattered electron?\nA.\t\nhc\n\u001f\u001e\nB.\t\nhc\n\u001f\n\u001f\n0 \u001e \u001d\nC.\t\nhc\nhc\n\u001f\n\u001f\n0\n\u001e \u001d\nD.\t\nhc\nhc\n\u001f\n\u001f\n\u001f\n0\n0\n\u001e\n\u001d \u001c",
+        "ocr": "35.\nAphoton of wavelength A, scatters off an electron at rest. The shift in photon wavelength is AA.\nWhat is the kinetic energy of the scattered electron?\na\nfe\nAA\nBe\nAy + Ada\nc,\nhehe\nA,\nAA\np.\nfe__fe_\nAy\nAy\ntAA"
+      }
+    },
+    {
+      "number": 36,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.2"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.2": [
+          "de broglie",
+          "de broglie"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.2"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-36.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.2": "Quantum physics"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "36.\t\nTwo particles are accelerated from rest through the same electric potential difference. The particles \nhave the same charge and different masses. Which row correctly compares the kinetic energy and \nthe de Broglie wavelength of the particles after the acceleration?\nKinetic energy\nDe Broglie wavelength\nA.\nsame\nsame\nB.\ndifferent\nsame\nC.\nsame\ndifferent\nD.\ndifferent\ndifferent",
+        "ocr": "36.\nTwo particles are accelerated from rest through the same electric potential difference. The particles\nhave the same charge and different masses. Which row correctly compares the kinetic energy and\nthe de Broglie wavelength of the particles after the acceleration?\nKinetic energy\nDe Broglie wavelength\nA\n5\nc\n0"
+      }
+    },
+    {
+      "number": 37,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.3"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.3": [
+          "half-life",
+          "radioactive"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.3"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-37.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.3": "Radioactive decay"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "Turn over\n37.\t\nThe table shows how the count rate from a sample of a radioactive nuclide varies with time t. \nThe nuclide has a half-life of 50 s. The average background count rate is constant.\nt / s\nCount rate / s-1\n0\n72\n50\n40\nWhat count rate will the detector measure when t = 150 s?\nA.\t\n8 s-1\nB.\t\n16 s-1\nC.\t\n24 s-1\nD.\t\n32 s-1",
+        "ocr": "37.\nThe table shows how the count rate from a sample of a radioactive nuclide varies with time t.\nThe nuclide hasa half-life of 50s. The average background count rate is constant.\noo\n|\nWhat count rate will the detector measure when f= 150s?\nA.\n8s\"\nB.\n16s‘\nC.\n24s\"\nD.\n32s\"\nTurn over"
+      }
+    },
+    {
+      "number": 38,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.4"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.4": [
+          "neutron-induced nuclear splitting"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.4"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-38.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.4": "Fission"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 38,
+        "required_topics": [
+          "E.4"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "38.\t\nA nucleus of uranium-235 (\n92\n235U) absorbs a neutron and decays into two nuclides, \nxenon-140 ( 54\n140Xe) and strontium-94 ( 38\n94Sr). \nHow many neutrons are released in this reaction?\nA.\t\n1\nB.\t\n2\nC.\t\n3\nD.\t\n4",
+        "ocr": "38.\nAnucleus of uranium-235 (723U) absorbs a neutron and decays into two nuclides,\nxenon-140 (‘éXe) and strontium-94 (3'Sr).\nHow many neutrons are released in this reaction?\nA.\n1\nB.\n2\nCc.\n3\nD.\n4"
+      }
+    },
+    {
+      "number": 39,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.5"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.5": [
+          "star",
+          "luminosity"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.5"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-39.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.5": "Fusion and stars"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "39.\t\nThe Hertzsprung–Russell diagram shows three stars X, Y and Z.\n1 000 000 L\n10 000 L\n100 L\nL\n10 000\n6000\n3000\n25 000\n1\n100\nL\n1\n10 000\nL\nX\nY\nZ\ntemperature / K\nluminosity\nWhich of the following lists the stars in the order of their evolutionary stage?\nA.\t\nX, Y, Z\nB.\t\nZ, Y, X\nC.\t\nY, X, Z\nD.\t\nY, Z, X",
+        "ocr": "39.\nThe Hertzsprung—Russell diagram shows three stars X, Y and Z.\n1000000L,\n10000\n°\n25000\n10000\n6000\n3000\ntemperature /K\nWhich of the following lists the stars in the order of their evolutionary stage?\nA.\nX,Y,Z\nB.\nZ,Y,X\nCc.\nY,X,Z\nD.\nY,Z,X"
+      }
+    },
+    {
+      "number": 40,
+      "year": 2025,
+      "level": "HL",
+      "paper": "Paper 1A",
+      "syllabus": "2025",
+      "topics": [
+        "E.5"
+      ],
+      "commands": [],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "native",
+      "topic_evidence": {
+        "E.5": [
+          "star"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "agreement",
+        "topics": [
+          "E.5"
+        ],
+        "commands": []
+      },
+      "image": "questions/question-40.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "E.5": "Fusion and stars"
+      },
+      "language_review": null,
+      "anchor_check": null,
+      "source_texts": {
+        "pdf": "40.\t\nThe stellar parallax method involves a measurement of...\nA.\t\nthe peak wavelength of radiation from a star.\nB.\t\nthe frequency shift of the lines in a stellar spectrum.\nC.\t\nthe position of a star in the sky at different times of year.\nD.\t\nthe intensity of radiation from a star at different wavelengths.\n\b",
+        "ocr": "40.\nThe stellar parallax method involves a measurement of...\nA.\nthe peak wavelength of radiation from a star.\nB. _ the frequency shift of the lines in a stellar spectrum.\nC. _ the position of a star in the sky at different times of year.\nD. _ the intensity of radiation from a star at different wavelengths."
+      }
+    }
+  ]
+}

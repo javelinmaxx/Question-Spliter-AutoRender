@@ -1,0 +1,631 @@
+{
+  "source_file": "Physics HL Paper 2 TZC (1).pdf",
+  "source_sha256": "f1bac7d411edd4f3022779da3588986a512c0841e0c8b986b63444f657003448",
+  "source_pages": 23,
+  "metadata": {
+    "year": 2026,
+    "level": "HL",
+    "paper": "Paper 2",
+    "syllabus": "2025"
+  },
+  "mark_audit": {
+    "expected": 90,
+    "detected": 61,
+    "status": "mismatch"
+  },
+  "warnings": [
+    "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving.",
+    "Detected 61 marks, but the cover states 90. Review question marks and timing; OCR may omit mark brackets."
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "year": 2026,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "B.5"
+      ],
+      "commands": [
+        "calculate",
+        "explain",
+        "show",
+        "state"
+      ],
+      "marks": 3,
+      "minutes": 5.4,
+      "difficulty": "Unrated",
+      "text_source": "ocr",
+      "topic_evidence": {
+        "B.5": [
+          "resistor",
+          "resistance",
+          "current"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "ocr_only",
+        "topics": [
+          "B.5"
+        ],
+        "commands": [
+          "calculate",
+          "explain",
+          "show",
+          "state"
+        ]
+      },
+      "image": "questions/question-01.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.5": "Current and circuits"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 1,
+        "required_topics": [
+          "B.5"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "",
+        "ocr": "1.\nAbattery of emf 12V and negligible intemal resistance is connected to two resistors and a\nthermistor as shown.\nemf = 12\nR, = 1800) R,=2400\n= {This question continues on the following page)\n~\n-3-\n2296-4730\n(Question 1 continued)\n(a)\nAt a particular temperature the reading of the voltmeter is 3.0V.\n(i)\nShow that, at this temperature, the current in the battery is 50mA.\n(2)\n(i)\nCalculate the resistance of the thermistor.\n(2)\nbs be\nbe oes ee ee\nee Bla\nof\neued\n.\n(b)\nThe resistance of the thermistor decreases when the temperature increases. State and\nexplain what happens to the voltmeter reading as the temperature increases.\n[3]"
+      }
+    },
+    {
+      "number": 2,
+      "year": 2026,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "A.2"
+      ],
+      "commands": [
+        "calculate",
+        "determine",
+        "show"
+      ],
+      "marks": 2,
+      "minutes": 3.6,
+      "difficulty": "Unrated",
+      "text_source": "ocr",
+      "topic_evidence": {
+        "A.2": [
+          "tension"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "ocr_only",
+        "topics": [
+          "A.2"
+        ],
+        "commands": [
+          "calculate",
+          "determine",
+          "show"
+        ]
+      },
+      "image": "questions/question-02.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.2": "Forces and momentum"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 2,
+        "required_topics": [
+          "A.2"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "",
+        "ocr": "2.\nAsmall ball of mass 0.20kg is attached to a string of length 0.80m that is initially horizontal.\nThe other end of the string is fixed at S. The ball is released from rest. Air resistance is negligible.\ndiagram not to scale\n0.80m\n5\n(a)\nAt the instant the string is vertical,\na\n(i)\nshow that the speed of the ball is about\n4ms\"*\nmM\n——\n——E———————\neo\nfp SMININ\n(ii)\ncalculate the tension in the string.\n= (This question continues on the following page)\n-5-\n2226-4730\n(Question 2 continued)\n(b)\nJust as the string becomes vertical, the ball in (a) collides with and sticks to an identical\nball. The centre of mass of the two balls is raised to a maximum height fh.\ndiagram not to scale\nDetermine hi.\n[2]"
+      }
+    },
+    {
+      "number": 3,
+      "year": 2026,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "B.1",
+        "B.4"
+      ],
+      "commands": [
+        "calculate",
+        "discuss",
+        "outline",
+        "show"
+      ],
+      "marks": 8,
+      "minutes": 14.4,
+      "difficulty": "Unrated",
+      "text_source": "ocr",
+      "topic_evidence": {
+        "B.1": [
+          "specific heat",
+          "thermal",
+          "latent heat",
+          "heat capacity"
+        ],
+        "B.4": [
+          "entropy",
+          "thermodynamic"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "ocr_only",
+        "topics": [
+          "B.1",
+          "B.4"
+        ],
+        "commands": [
+          "calculate",
+          "discuss",
+          "outline",
+          "show"
+        ]
+      },
+      "image": "questions/question-03.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.1": "Thermal energy transfers",
+        "B.4": "Thermodynamics"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 3,
+        "required_topics": [
+          "B.1",
+          "B.4"
+        ],
+        "forbidden_topics": [
+          "E.5"
+        ],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "",
+        "ocr": "3.\nAmass of 0.25kg of ice at -32°C is placed in water at 0°C, When thermal equilibrium is\nreached the temperature is 0°C. The only transfers of thermal energy are between the ice\nand the water.\nThe following data are available:\nSpecific heat capacity of ice = 2100Jkg 'K'\nSpecific latent heat of fusion of ice = 334kJkg\n(a)\nShow that when thermal equilibrium is reached about 50g of water have tumed into ice.\n[2]\nm (This question continues on the following page)\n-T-\n2228-4730\n— |\n(Question 3 continued)\n(b)\n(i) | Astudent states that the internal energy of the 50g of water in (a) does not\nchange when this mass turns into ice because the temperature is constant\nat 0°C. Discuss this statement.\n[3]\nae eee wee ee ae ee Re ee\nPe ee ee be ee ee le\nee\n(ii)\nCalculate the decrease in the entropy of the water.\n[1]\n(il)\nOutline how the result in (b)(ii) is consistent with the second law of\nthermodynamics.\n[2]"
+      }
+    },
+    {
+      "number": 4,
+      "year": 2026,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "A.5"
+      ],
+      "commands": [
+        "calculate",
+        "determine",
+        "draw"
+      ],
+      "marks": 1,
+      "minutes": 1.8,
+      "difficulty": "Unrated",
+      "text_source": "ocr",
+      "topic_evidence": {
+        "A.5": [
+          "space-time"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "ocr_only",
+        "topics": [
+          "A.5"
+        ],
+        "commands": [
+          "calculate",
+          "determine",
+          "draw"
+        ]
+      },
+      "image": "questions/question-04.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.5": "Galilean and special relativity"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 4,
+        "required_topics": [
+          "A.5"
+        ],
+        "forbidden_topics": [
+          "E.2"
+        ],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "",
+        "ocr": "4.\nArocket R moves past a space station S. The diagram shows the space-time axes of the\nreference frames of R and of 5.\n“fe POTEET\nL LL\nFe Le\n6 ar ans i\nvmig fbn fo —fo\nrood\nPo ee\nee eh a\nYorSames KEER OH oat\na\n2\n4\n6\n8\n10\n(a)\nDetermine the speed of R relative to S.\nti)\n(This question continues on the following page)\n(Question 4 continued)\n(b)\nEvent E, is the emission of a photon from the racket when the racket is 4.0ly from S\naccording to 5. Event E, is the arrival of the photon at 5.\n(i)\nDraw the world line of the photon\nfrom E, to E,.\n1]\n(ii)\n‘Calculate\nthe space-time interval between\nE, and E,,\n[1]\n(c)\nCalculate\nthe time of event E, measured in R.\n(2)\n~1-\n2226-4730"
+      }
+    },
+    {
+      "number": 5,
+      "year": 2026,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "C.3"
+      ],
+      "commands": [
+        "calculate",
+        "determine"
+      ],
+      "marks": 2,
+      "minutes": 3.6,
+      "difficulty": "Unrated",
+      "text_source": "ocr",
+      "topic_evidence": {
+        "C.3": [
+          "diffraction (OCR joined article)"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "ocr_only",
+        "topics": [
+          "C.3"
+        ],
+        "commands": [
+          "calculate",
+          "determine"
+        ]
+      },
+      "image": "questions/question-05.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "C.3": "Wave phenomena"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 5,
+        "required_topics": [
+          "C.3"
+        ],
+        "forbidden_topics": [
+          "A.4"
+        ],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "",
+        "ocr": "5.\n Adiffraction grating has 400 lines per mm. Light, consisting of all wavelengths fram\n4.00 x 107m ta 7.00 x 10° 7m, is incident on the grating. The second-order maximum is shawn.\ndiagram not to scale\nsecond-order\namr\nNght ee.\noe\neee eee\na\nscreen\ngrating\n(a)\nCalculate the angular width @ of the second-order maximum.\n2)\n(b)\nDetermine the largest order forwhich all wavelengths of the incident light are present.\n[2]"
+      }
+    },
+    {
+      "number": 6,
+      "year": 2026,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "A.1",
+        "D.1",
+        "D.2",
+        "D.3"
+      ],
+      "commands": [
+        "calculate",
+        "determine",
+        "explain",
+        "show",
+        "state"
+      ],
+      "marks": 2,
+      "minutes": 3.6,
+      "difficulty": "Unrated",
+      "text_source": "ocr",
+      "topic_evidence": {
+        "A.1": [
+          "velocity",
+          "acceleration"
+        ],
+        "D.1": [
+          "gravitational",
+          "gravitational"
+        ],
+        "D.2": [
+          "electric field",
+          "magnetic field"
+        ],
+        "D.3": [
+          "charged-particle motion in fields"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "ocr_only",
+        "topics": [
+          "A.1",
+          "D.1",
+          "D.2",
+          "D.3"
+        ],
+        "commands": [
+          "calculate",
+          "determine",
+          "explain",
+          "show",
+          "state"
+        ]
+      },
+      "image": "questions/question-06.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.1": "Kinematics",
+        "D.1": "Gravitational fields",
+        "D.2": "Electric and magnetic fields",
+        "D.3": "Motion in electromagnetic fields"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 6,
+        "required_topics": [
+          "A.1",
+          "D.3"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "",
+        "ocr": "6.\nTwo horizontal parallel plates of length 16cm are separated by 3.0.cm in a vacuum. The\npotential differance between the plates is 14'V. A proten enters the region midway between\nthe plates with an initial horizontal velocity of 2.0 » 10°ms‘ as shown. Gravitational forces\nand edge effects are negligible.\ndiagram not to scale\n+\n+\n+\n+\n+\n+\n+\n+\n+\n+\n+“—>\nvacuum\n30cm\n—— aah\n160m\n(a)\n(i)\nCalculate the magnitude of the electric field strength between the plates,\nincluding its unit.\n(ii)\nShow that the acceleration of the proton is about 4.5 x 10\"ms*\n2\n3 aoe|\n(This question continues on the following page)\n(Question 6 continued)\n(iii)\nDetermine whether the proton will hit the lower plate.\n(3)\n(6)\nAn alpha particle enters the field at the same point and with the same initial velocity as\nthe proton.\n(i)\nState and explain whether the alpha particle will hit the lower plate.\n[2]\n(ii)\nAmagnetic field is established between the plates so that the alpha particle is not\ndeflected. Determine the magnitude and direction of the magnetic field.\n(2]"
+      }
+    },
+    {
+      "number": 7,
+      "year": 2026,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "A.3",
+        "D.2",
+        "E.1"
+      ],
+      "commands": [
+        "calculate",
+        "estimate",
+        "explain",
+        "show",
+        "state",
+        "suggest"
+      ],
+      "marks": 8,
+      "minutes": 14.4,
+      "difficulty": "Unrated",
+      "text_source": "ocr",
+      "topic_evidence": {
+        "A.3": [
+          "kinetic energy"
+        ],
+        "D.2": [
+          "electrostatic closest approach"
+        ],
+        "E.1": [
+          "rutherford"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "ocr_only",
+        "topics": [
+          "A.3",
+          "D.2",
+          "E.1"
+        ],
+        "commands": [
+          "calculate",
+          "estimate",
+          "explain",
+          "show",
+          "state",
+          "suggest"
+        ]
+      },
+      "image": "questions/question-07.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.3": "Work, energy and power",
+        "D.2": "Electric and magnetic fields",
+        "E.1": "Structure of the atom"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 7,
+        "required_topics": [
+          "D.2",
+          "E.1"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "",
+        "ocr": "7.\nAnalpha particle has kinetic energy E, = 5.0MeV whenfar from a nucleus. The alpha\nparticle is directed towards the centre of the nucleus. The distance of closest approach\nis d= 1.61\n10m.\ndiagram not to scale\nE,=5.0Mev\n@ -----------------#\nnucleus\not particle\nd\n(a)\nCalculate the proton number of the nucleus.\n[2]\n;\n(b)\n(i)\nThe nucleon number of the nucleus is 58. Show that d = 3.5R where R is the\nradius of the nucleus.\n[2]\n8\n(il)\nState and explain whether d will change when the nucleus is replaced by ane of\n*\nits isotopes.\n[2]\n(This question continues on the following page)\n{Question 7 continued)\n(c)\n(i) | Suggest why deviations from Rutherford scattering are expected as the kinetic\nenergy of the alpha particle increases.\n(2]\n(i)\nDeviations will appear when d = R. Estimate the initial kinetic energy of the alpha\nparticle for which this happens.\n[2]"
+      }
+    },
+    {
+      "number": 8,
+      "year": 2026,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "A.2",
+        "C.1",
+        "C.2",
+        "C.3"
+      ],
+      "commands": [
+        "calculate",
+        "determine",
+        "estimate",
+        "explain",
+        "show",
+        "state"
+      ],
+      "marks": 16,
+      "minutes": 28.8,
+      "difficulty": "Unrated",
+      "text_source": "ocr",
+      "topic_evidence": {
+        "A.2": [
+          "force",
+          "ball (OCR joined article)"
+        ],
+        "C.1": [
+          "oscillation"
+        ],
+        "C.2": [
+          "wavelength",
+          "frequency",
+          "wavefronts",
+          "wave model"
+        ],
+        "C.3": [
+          "coherent-wave superposition"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "ocr_only",
+        "topics": [
+          "A.2",
+          "C.1",
+          "C.2",
+          "C.3"
+        ],
+        "commands": [
+          "calculate",
+          "determine",
+          "estimate",
+          "explain",
+          "show",
+          "state"
+        ]
+      },
+      "image": "questions/question-08.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.2": "Forces and momentum",
+        "C.1": "Simple harmonic motion",
+        "C.2": "Wave model",
+        "C.3": "Wave phenomena"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 8,
+        "required_topics": [
+          "C.1",
+          "C.2",
+          "C.3"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "",
+        "ocr": "8.\nAn elastic rope behaves as a spring that obeys Hooke's law with a spring constant K.\n(a)\nState what is meant by Hooke’s law.\n(]\n(b)\nAball of mass 4.0kg is attached to an elastic rope of an unstretched length of 2.2m.\nThe other end of the rope is fixed at S. The balll is released from rest at S and falls\nvertically. The diagram shows the position of the ball at three different times. Air\nresistance is negligible.\ndiagram not to scale\n-\n| ]\nmB\n\\\n|\nA\nfo.sam\ni\n(i)\nThe ball falls freely toA before the rope begins to stretch. Calculate the speed\nof the ball at A.\n[2]\n(This question continues on the following page)\n(Question 8 continued)\n(li)\nAt B the rope has reached its maximum extension of 0.58m. Show that « for the\nrope is about 650Nm\".\n[2]\n(ii)\nState and explain whether the ball is in equilibrium at position B.\n(2]\n(iv)\nThe time to fall from A to B is 0.138. Estimate the average force exerted on the\nball by the rope.\n[3]\n(This question continues on the following page)\n(Question 8 continued)\n(c)\nTwo identical wedges are attached to two identical vertical springs. The wedges touch\na water surface at S, and S,. As the wedges oscillate, they create travelling waves on\nthe water surface. The wedges oscillate in phase with the same amplitude. P is a paint\non the surface of the water.\ndiagrams not to scale\nfront view\nview from above\n=\n1.6m\n1.4m\nSs\nP\nrs\n(i)\nThe mass of each wedge is 0.200kg and the spring constant is 504Nm'.\nDamping is negligible. Show that the frequency of oscillations is about 8 Hz.\n[2]\n(ii)\nThe speed of the water waves is 1.6ms '. Show that the wavelength of the water\n3\nwaves is 0.20m.\n1]\n(This question continues on the following page)\n_| — (Question 8 continued)\n(iii)\nPis 1.8m from S, and 1.4m from S,. Explain why the amplitude of oscillations at\nP will be maximum.\n[2]\n(iv)\nThe diagram shows, at an instant of time, another point Q on the water surface\nand wavefronts that were emitted by S, and 5,.\ndiagram not to scale\nVL LUA\n@\n| |\n\\ \\\\ Nat\nls\n|)\n}\n=\n\\\n‘\n7\n|\ni\nf\n\\\n‘\nTe\n/\nee\nState and explain what will be observed at Q.\n[2]\n(d)\nThe frequency of oscillation of the two wedges is increased. Determine the next\nfrequency above 8Hz for which the amplitude at P is again a maximum.\n[3]\ncet enum tt pomp * * tomate © gpg Gee\n+ Sd\n«0 ofS He old MEDS + « BOB\n0 og Bate oo Bini e «ew ae ow Ee ee"
+      }
+    },
+    {
+      "number": 9,
+      "year": 2026,
+      "level": "HL",
+      "paper": "Paper 2",
+      "syllabus": "2025",
+      "topics": [
+        "A.1",
+        "D.1",
+        "E.5"
+      ],
+      "commands": [
+        "calculate",
+        "describe",
+        "determine",
+        "explain",
+        "outline",
+        "state",
+        "suggest"
+      ],
+      "marks": 19,
+      "minutes": 34.2,
+      "difficulty": "Unrated",
+      "text_source": "ocr",
+      "topic_evidence": {
+        "A.1": [
+          "projectile"
+        ],
+        "D.1": [
+          "gravitational",
+          "escape speed",
+          "gravitational"
+        ],
+        "E.5": [
+          "fusion",
+          "star"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "ocr_only",
+        "topics": [
+          "A.1",
+          "D.1",
+          "E.5"
+        ],
+        "commands": [
+          "calculate",
+          "describe",
+          "determine",
+          "explain",
+          "outline",
+          "state",
+          "suggest"
+        ]
+      },
+      "image": "questions/question-09.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.1": "Kinematics",
+        "D.1": "Gravitational fields",
+        "E.5": "Fusion and stars"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 9,
+        "required_topics": [
+          "D.1",
+          "E.5"
+        ],
+        "forbidden_topics": [
+          "B.2",
+          "E.1"
+        ],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "",
+        "ocr": "9.\n(a)\nThe escape speed from the surface of a planet with no atmosphere is 1.20 x 10°ms”.\nA projectile is launched from the surface of this planet with speed 1.40 « 10°ms”,\ndiagram not to scale\n1.40 x 10°ms\"\n—- - --- ----------------\nprojectile\nplanet\n(i)\nState what is meant by escape speed.\ni)\n-\n(ii)\nDetermine the speed of the projectile at a very large distance from the planet.\n[3]\n(This question continues on the following page)\n(Question 9 continued)\n(iii)\nThe speed of the projectile decreases from 1.10 x 10°ms at P to 1,05 x 10’ms” at Q.\ndiagram not to scale\n4.10% 10!ms*\n1.05 x 10%ms*\na\n| aa\n2.15= 10'm\nThe distance PQ is 2.15 x 10‘m.\nDetermine the average gravitational field strength between P and Q.\n[2]\nser ta\" “yrasnsa”\n= * pie\n© upsevey® © * assgune™we gage * © eee ge\nques te pou «© Senyems* om gon\n* qe\n= © ageeale\n(b)\n(i)\nAcelestial body has a mass of 40 solar masses. The solar mass is 2.0 x 10°\"kg.\nThe radius of this body is\n1.15 = 10°m. Calculate the escape speed at the\nsurface of this body.\n{2]\nae ee\nee eee Oe eee\neen eee\neee een eee Ree ee ee ee ee eee\n| :\n(i)\nOutline the significance of the result in (b)(i).\n[2]\n{This question continues on the following page)\n(Question 9 continued)\n(c)\n(i)\n| State the main element produced in fusion reactions in main sequence stars.\n[7]\n(ii)\nDescribe how main sequence stars maintain equilibrium.\nFa (This question continues on the following page)\n(Question 9 continued)\n{d)\nThe mass of star Lambda Cephei (4 Cephei) is 50 solar masses. One nuclear fusion\nreaction taking place in A Cepheiis ““O+ 30 — ™Si4 fHe.\n(0)\n«The following data are available for atomic masses:\nOQ =16.9949u;\nSi =27.9769u;\ntHe =4.0026u.\nCalculate, in MeV, the energy released in this reaction.\n[2]\n(ii)\nExplain why this reaction can only happen in very massive stars,\n2\n(iii)\nSuggest why nuclear fusion reactions will not produce any elements heavier\nthan iron.\n[1]\n(iv)\nOutline the likely evolution of 4 Cephei.\n[2]"
+      }
+    }
+  ]
+}

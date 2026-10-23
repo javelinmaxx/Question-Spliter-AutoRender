@@ -1,0 +1,41 @@
+paper_file,question,year,level,paper,syllabus,topics,topic_names,command_terms,marks,estimated_minutes,difficulty,ocr_status,language_review_status,anchor_check,review_status,image
+Physics HL Paper 1A TZC.pdf,1,2026,HL,Paper 1A,2025,A.1,Kinematics,,1,1.8,Unrated,ocr_only,not_run,passed_partial,automatic_suggestion,questions/question-01.png
+Physics HL Paper 1A TZC.pdf,2,2026,HL,Paper 1A,2025,A.1,Kinematics,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-02.png
+Physics HL Paper 1A TZC.pdf,3,2026,HL,Paper 1A,2025,A.2,Forces and momentum,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-03.png
+Physics HL Paper 1A TZC.pdf,4,2026,HL,Paper 1A,2025,A.2,Forces and momentum,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-04.png
+Physics HL Paper 1A TZC.pdf,5,2026,HL,Paper 1A,2025,A.2,Forces and momentum,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-05.png
+Physics HL Paper 1A TZC.pdf,6,2026,HL,Paper 1A,2025,A.2; A.3,"Forces and momentum; Work, energy and power",,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-06.png
+Physics HL Paper 1A TZC.pdf,7,2026,HL,Paper 1A,2025,A.4,Rigid body mechanics,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-07.png
+Physics HL Paper 1A TZC.pdf,8,2026,HL,Paper 1A,2025,A.4,Rigid body mechanics,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-08.png
+Physics HL Paper 1A TZC.pdf,9,2026,HL,Paper 1A,2025,A.5,Galilean and special relativity,,1,1.8,Unrated,ocr_only,not_run,passed_partial,automatic_suggestion,questions/question-09.png
+Physics HL Paper 1A TZC.pdf,10,2026,HL,Paper 1A,2025,B.1,Thermal energy transfers,,1,1.8,Unrated,ocr_only,not_run,passed_partial,automatic_suggestion,questions/question-10.png
+Physics HL Paper 1A TZC.pdf,11,2026,HL,Paper 1A,2025,B.1,Thermal energy transfers,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-11.png
+Physics HL Paper 1A TZC.pdf,12,2026,HL,Paper 1A,2025,B.2,Greenhouse effect,,1,1.8,Unrated,ocr_only,not_run,passed_partial,automatic_suggestion,questions/question-12.png
+Physics HL Paper 1A TZC.pdf,13,2026,HL,Paper 1A,2025,B.3,Gas laws,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-13.png
+Physics HL Paper 1A TZC.pdf,14,2026,HL,Paper 1A,2025,B.4,Thermodynamics,,1,1.8,Unrated,ocr_only,not_run,passed_partial,automatic_suggestion,questions/question-14.png
+Physics HL Paper 1A TZC.pdf,15,2026,HL,Paper 1A,2025,B.5; D.2,Current and circuits; Electric and magnetic fields,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-15.png
+Physics HL Paper 1A TZC.pdf,16,2026,HL,Paper 1A,2025,B.5,Current and circuits,,1,1.8,Unrated,ocr_only,not_run,passed_partial,automatic_suggestion,questions/question-16.png
+Physics HL Paper 1A TZC.pdf,17,2026,HL,Paper 1A,2025,C.1,Simple harmonic motion,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-17.png
+Physics HL Paper 1A TZC.pdf,18,2026,HL,Paper 1A,2025,C.2; D.2,Wave model; Electric and magnetic fields,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-18.png
+Physics HL Paper 1A TZC.pdf,19,2026,HL,Paper 1A,2025,C.3,Wave phenomena,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-19.png
+Physics HL Paper 1A TZC.pdf,20,2026,HL,Paper 1A,2025,C.3,Wave phenomena,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-20.png
+Physics HL Paper 1A TZC.pdf,21,2026,HL,Paper 1A,2025,C.2; C.4,Wave model; Standing waves and resonance,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-21.png
+Physics HL Paper 1A TZC.pdf,22,2026,HL,Paper 1A,2025,C.5,Doppler effect,,1,1.8,Unrated,ocr_only,not_run,passed_partial,automatic_suggestion,questions/question-22.png
+Physics HL Paper 1A TZC.pdf,23,2026,HL,Paper 1A,2025,C.5,Doppler effect,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-23.png
+Physics HL Paper 1A TZC.pdf,24,2026,HL,Paper 1A,2025,D.1,Gravitational fields,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-24.png
+Physics HL Paper 1A TZC.pdf,25,2026,HL,Paper 1A,2025,D.1,Gravitational fields,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-25.png
+Physics HL Paper 1A TZC.pdf,26,2026,HL,Paper 1A,2025,D.2,Electric and magnetic fields,,1,1.8,Unrated,ocr_only,not_run,passed_partial,automatic_suggestion,questions/question-26.png
+Physics HL Paper 1A TZC.pdf,27,2026,HL,Paper 1A,2025,D.2,Electric and magnetic fields,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-27.png
+Physics HL Paper 1A TZC.pdf,28,2026,HL,Paper 1A,2025,D.3,Motion in electromagnetic fields,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-28.png
+Physics HL Paper 1A TZC.pdf,29,2026,HL,Paper 1A,2025,D.3,Motion in electromagnetic fields,,1,1.8,Unrated,ocr_only,not_run,passed_partial,automatic_suggestion,questions/question-29.png
+Physics HL Paper 1A TZC.pdf,30,2026,HL,Paper 1A,2025,D.4,Induction,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-30.png
+Physics HL Paper 1A TZC.pdf,31,2026,HL,Paper 1A,2025,D.4,Induction,,1,1.8,Unrated,ocr_only,not_run,passed_partial,automatic_suggestion,questions/question-31.png
+Physics HL Paper 1A TZC.pdf,32,2026,HL,Paper 1A,2025,E.1,Structure of the atom,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-32.png
+Physics HL Paper 1A TZC.pdf,33,2026,HL,Paper 1A,2025,E.1,Structure of the atom,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-33.png
+Physics HL Paper 1A TZC.pdf,34,2026,HL,Paper 1A,2025,E.2,Quantum physics,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-34.png
+Physics HL Paper 1A TZC.pdf,35,2026,HL,Paper 1A,2025,E.2,Quantum physics,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-35.png
+Physics HL Paper 1A TZC.pdf,36,2026,HL,Paper 1A,2025,E.3,Radioactive decay,,1,1.8,Unrated,ocr_only,not_run,passed_partial,automatic_suggestion,questions/question-36.png
+Physics HL Paper 1A TZC.pdf,37,2026,HL,Paper 1A,2025,E.3,Radioactive decay,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-37.png
+Physics HL Paper 1A TZC.pdf,38,2026,HL,Paper 1A,2025,E.3,Radioactive decay,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-38.png
+Physics HL Paper 1A TZC.pdf,39,2026,HL,Paper 1A,2025,E.4,Fission,,1,1.8,Unrated,ocr_only,not_run,passed_partial,automatic_suggestion,questions/question-39.png
+Physics HL Paper 1A TZC.pdf,40,2026,HL,Paper 1A,2025,E.5,Fusion and stars,,1,1.8,Unrated,ocr_only,not_run,not_checked,automatic_suggestion,questions/question-40.png

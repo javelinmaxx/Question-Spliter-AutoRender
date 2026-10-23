@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "validation_report_sha256": "584d0a2de10af4ae76ec6476d9afbfc222ac4c27f7aba555d9beb81601643087",
+  "papers": [
+    {
+      "filename": "Physics_paper_1A_TZ3_HL.pdf",
+      "source_sha256": "431f3df5dbd9b6387e35400954671d0263bf389ffabb6200657001dd88da4a79",
+      "folder": "Physics_paper_1A_TZ3_HL",
+      "questions": 40,
+      "separation": "Physics_paper_1A_TZ3_HL/separation.json",
+      "tags": "Physics_paper_1A_TZ3_HL/tags.json",
+      "csv": "Physics_paper_1A_TZ3_HL/tags.csv",
+      "mark_audit": {
+        "expected": 40,
+        "detected": 40,
+        "status": "matched"
+      },
+      "warnings": [
+        "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving."
+      ]
+    },
+    {
+      "filename": "Physics_paper_1A_TZ1_HL.pdf",
+      "source_sha256": "c857abde44be3393eac02d1287fac688733f630f09e5e3a94a37462818e03888",
+      "folder": "Physics_paper_1A_TZ1_HL",
+      "questions": 40,
+      "separation": "Physics_paper_1A_TZ1_HL/separation.json",
+      "tags": "Physics_paper_1A_TZ1_HL/tags.json",
+      "csv": "Physics_paper_1A_TZ1_HL/tags.csv",
+      "mark_audit": {
+        "expected": 40,
+        "detected": 40,
+        "status": "matched"
+      },
+      "warnings": [
+        "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving."
+      ]
+    },
+    {
+      "filename": "Physics HL Paper 1A TZC.pdf",
+      "source_sha256": "9cfe6b8931355444ce29019ed716a5d0139e6ab2e5cb1130de584863c2297f95",
+      "folder": "Physics HL Paper 1A TZC",
+      "questions": 40,
+      "separation": "Physics HL Paper 1A TZC/separation.json",
+      "tags": "Physics HL Paper 1A TZC/tags.json",
+      "csv": "Physics HL Paper 1A TZC/tags.csv",
+      "mark_audit": {
+        "expected": 40,
+        "detected": 40,
+        "status": "matched"
+      },
+      "warnings": [
+        "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving.",
+        "Page 2: OCR read question 4; proposed 1 from adjacent numbering. Confirm the image.",
+        "Page 10: OCR read question 46; proposed 16 from adjacent numbering. Confirm the image."
+      ]
+    },
+    {
+      "filename": "Physics_paper_2_TZ3_HL.pdf",
+      "source_sha256": "3943e6237296a7177a1fedab68cdcc717f272f7472d3d19de6547097df9442e9",
+      "folder": "Physics_paper_2_TZ3_HL",
+      "questions": 10,
+      "separation": "Physics_paper_2_TZ3_HL/separation.json",
+      "tags": "Physics_paper_2_TZ3_HL/tags.json",
+      "csv": "Physics_paper_2_TZ3_HL/tags.csv",
+      "mark_audit": {
+        "expected": 90,
+        "detected": 90,
+        "status": "matched"
+      },
+      "warnings": [
+        "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving."
+      ]
+    },
+    {
+      "filename": "Physics HL Paper 2 TZC (1).pdf",
+      "source_sha256": "f1bac7d411edd4f3022779da3588986a512c0841e0c8b986b63444f657003448",
+      "folder": "Physics HL Paper 2 TZC (1)",
+      "questions": 9,
+      "separation": "Physics HL Paper 2 TZC (1)/separation.json",
+      "tags": "Physics HL Paper 2 TZC (1)/tags.json",
+      "csv": "Physics HL Paper 2 TZC (1)/tags.csv",
+      "mark_audit": {
+        "expected": 90,
+        "detected": 61,
+        "status": "mismatch"
+      },
+      "warnings": [
+        "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving.",
+        "Detected 61 marks, but the cover states 90. Review question marks and timing; OCR may omit mark brackets."
+      ]
+    },
+    {
+      "filename": "Physics HL Paper 1B TZC.pdf",
+      "source_sha256": "90febe5e5db7dfebf7b624776aa42bd67cc4a4f6f3f588edf0855106b5bf1dc6",
+      "folder": "Physics HL Paper 1B TZC",
+      "questions": 2,
+      "separation": "Physics HL Paper 1B TZC/separation.json",
+      "tags": "Physics HL Paper 1B TZC/tags.json",
+      "csv": "Physics HL Paper 1B TZC/tags.csv",
+      "mark_audit": {
+        "expected": 20,
+        "detected": 18,
+        "status": "mismatch"
+      },
+      "warnings": [
+        "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving.",
+        "Detected 18 marks, but the cover states 20. Review question marks and timing; OCR may omit mark brackets."
+      ]
+    }
+  ],
+  "total_questions": 141,
+  "limitations": [
+    "Topic anchors check specified required and forbidden labels, not every possible extra label.",
+    "The anchors were used to diagnose and improve heuristics; this is not a held-out accuracy benchmark.",
+    "OCR/PDF topic agreement is not proof of semantic accuracy. All other tags and crop boundaries still need review.",
+    "Cover mark mismatches flag incomplete OCR marks; difficulty is unrated and time remains heuristic."
+  ],
+  "language_review_summary": {
+    "resolved": 0,
+    "remaining": 4,
+    "model": {
+      "available": false,
+      "reason": "Local language model is not configured."
+    }
+  },
+  "source_validation_report_sha256": "3f1e8f327b9c011696b0c50a0ea47a9d7cccd086a63fe353b49a0b30a9144a9a"
+}

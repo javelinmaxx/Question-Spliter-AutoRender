@@ -1,0 +1,1064 @@
+{
+  "source_file": "Physics HL Paper 1A TZC.pdf",
+  "source_sha256": "9cfe6b8931355444ce29019ed716a5d0139e6ab2e5cb1130de584863c2297f95",
+  "source_pages": 22,
+  "metadata": {
+    "year": 2026,
+    "level": "HL",
+    "paper": "Paper 1A",
+    "syllabus": "2025"
+  },
+  "mark_audit": {
+    "expected": 40,
+    "detected": 40,
+    "status": "matched"
+  },
+  "warnings": [
+    "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving.",
+    "Page 2: OCR read question 4; proposed 1 from adjacent numbering. Confirm the image.",
+    "Page 10: OCR read question 46; proposed 16 from adjacent numbering. Confirm the image."
+  ],
+  "coordinate_system": "PDF points; page indices in regions are zero-based; source_pages are one-based",
+  "questions": [
+    {
+      "number": 1,
+      "image": "questions/question-01.png",
+      "image_sha256": "974aaf818d5ca91e4f7cea2498b2a964b6912f49b0eb25a8dacac32a24ecb648",
+      "width": 1400,
+      "height": 558,
+      "source_pages": [
+        2
+      ],
+      "regions": [
+        {
+          "page": 1,
+          "rect": [
+            30,
+            66.64000701904297,
+            582.0,
+            255.27999877929688
+          ]
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "image": "questions/question-02.png",
+      "image_sha256": "59a2c4e3f396900704b0f4f05ae4943ae81c384017ee9bfa047fbf554b93d124",
+      "width": 1400,
+      "height": 592,
+      "source_pages": [
+        2
+      ],
+      "regions": [
+        {
+          "page": 1,
+          "rect": [
+            30,
+            255.27999877929688,
+            582.0,
+            458.32000732421875
+          ]
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "image": "questions/question-03.png",
+      "image_sha256": "1a68f2f618d1cf9ddf5af1d4a5e41a290df4be6d2eb401f491bbe2a9ea12413c",
+      "width": 1400,
+      "height": 848,
+      "source_pages": [
+        2,
+        3
+      ],
+      "regions": [
+        {
+          "page": 1,
+          "rect": [
+            30,
+            458.32000732421875,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 2,
+          "rect": [
+            30,
+            50,
+            582.0,
+            63.76000213623047
+          ]
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "image": "questions/question-04.png",
+      "image_sha256": "746b9f75704fad5a780af88dfc8cfea283aea82d287a297ffede690034d723ac",
+      "width": 1400,
+      "height": 522,
+      "source_pages": [
+        3
+      ],
+      "regions": [
+        {
+          "page": 2,
+          "rect": [
+            30,
+            63.76000213623047,
+            582.0,
+            236.5600128173828
+          ]
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "image": "questions/question-05.png",
+      "image_sha256": "67a774d217eadfa0cdcae8db46367ec70984ed70b01d0d3cf15d45ef750c4c82",
+      "width": 1400,
+      "height": 1367,
+      "source_pages": [
+        3,
+        4
+      ],
+      "regions": [
+        {
+          "page": 2,
+          "rect": [
+            30,
+            236.5600128173828,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 3,
+          "rect": [
+            30,
+            50,
+            582.0,
+            65.56004333496094
+          ]
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "image": "questions/question-06.png",
+      "image_sha256": "85c383fedfa34cb367eafdc047afef000c5ff5a866a9373aea24cab9a35663cd",
+      "width": 1400,
+      "height": 1766,
+      "source_pages": [
+        4,
+        5
+      ],
+      "regions": [
+        {
+          "page": 3,
+          "rect": [
+            30,
+            65.56004333496094,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 4,
+          "rect": [
+            30,
+            50,
+            582.0,
+            66.99998474121094
+          ]
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "image": "questions/question-07.png",
+      "image_sha256": "9b728a5a42bd5df4570f348ace6e8ecee9c217e78e0e2c7d119477f98ece75bc",
+      "width": 1400,
+      "height": 1758,
+      "source_pages": [
+        5,
+        6
+      ],
+      "regions": [
+        {
+          "page": 4,
+          "rect": [
+            30,
+            66.99998474121094,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 5,
+          "rect": [
+            30,
+            50,
+            582.0,
+            64.84004974365234
+          ]
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "image": "questions/question-08.png",
+      "image_sha256": "06486ba2e6e982591dbb657ac20334a4a15328dfa81de8b52bc62725577ac9fd",
+      "width": 1400,
+      "height": 514,
+      "source_pages": [
+        6
+      ],
+      "regions": [
+        {
+          "page": 5,
+          "rect": [
+            30,
+            64.84004974365234,
+            582.0,
+            234.40000915527344
+          ]
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "image": "questions/question-09.png",
+      "image_sha256": "8edb0622cc5c6a210949f72cd2a6f71e5e50c2d1b15fa4452fa55246cd40f1a7",
+      "width": 1400,
+      "height": 548,
+      "source_pages": [
+        6
+      ],
+      "regions": [
+        {
+          "page": 5,
+          "rect": [
+            30,
+            234.40000915527344,
+            582.0,
+            418.3600158691406
+          ]
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "image": "questions/question-10.png",
+      "image_sha256": "f3f76c2aff9830e55f2d11f953a9a22e5645a948ec22d2435bcde6e5c2da3248",
+      "width": 1400,
+      "height": 947,
+      "source_pages": [
+        6,
+        7
+      ],
+      "regions": [
+        {
+          "page": 5,
+          "rect": [
+            30,
+            418.3600158691406,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 6,
+          "rect": [
+            30,
+            50,
+            582.0,
+            66.6400375366211
+          ]
+        }
+      ]
+    },
+    {
+      "number": 11,
+      "image": "questions/question-11.png",
+      "image_sha256": "52a7af22c471724d8f877f791a776af9b3b20ee9fd6882d3f74d5c3bdd624cb1",
+      "width": 1400,
+      "height": 993,
+      "source_pages": [
+        7
+      ],
+      "regions": [
+        {
+          "page": 6,
+          "rect": [
+            30,
+            66.6400375366211,
+            582.0,
+            442.84002685546875
+          ]
+        }
+      ]
+    },
+    {
+      "number": 12,
+      "image": "questions/question-12.png",
+      "image_sha256": "9984382e9ca9c933e009cca87e3bbc433e84cad1f65597995bac5d155a6abfee",
+      "width": 1400,
+      "height": 886,
+      "source_pages": [
+        7,
+        8
+      ],
+      "regions": [
+        {
+          "page": 6,
+          "rect": [
+            30,
+            442.84002685546875,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 7,
+          "rect": [
+            30,
+            50,
+            582.0,
+            64.48001861572266
+          ]
+        }
+      ]
+    },
+    {
+      "number": 13,
+      "image": "questions/question-13.png",
+      "image_sha256": "47237770aa357992eb5e1da006d3340237e5c6a2515b5243f89c97b4bcca8a06",
+      "width": 1400,
+      "height": 1768,
+      "source_pages": [
+        8,
+        9
+      ],
+      "regions": [
+        {
+          "page": 7,
+          "rect": [
+            30,
+            64.48001861572266,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 8,
+          "rect": [
+            30,
+            50,
+            582.0,
+            66.63998413085938
+          ]
+        }
+      ]
+    },
+    {
+      "number": 14,
+      "image": "questions/question-14.png",
+      "image_sha256": "587ca74e268f65c8122fb45836a7115191353c0e27d27fd713e336a159662fd2",
+      "width": 1400,
+      "height": 943,
+      "source_pages": [
+        9
+      ],
+      "regions": [
+        {
+          "page": 8,
+          "rect": [
+            30,
+            66.63998413085938,
+            582.0,
+            421.239990234375
+          ]
+        }
+      ]
+    },
+    {
+      "number": 15,
+      "image": "questions/question-15.png",
+      "image_sha256": "f6d7e0ed823e0a9710b30f81d59c6da25928aac60eb7672d23c8ec2a066309b2",
+      "width": 1400,
+      "height": 935,
+      "source_pages": [
+        9,
+        10
+      ],
+      "regions": [
+        {
+          "page": 8,
+          "rect": [
+            30,
+            421.239990234375,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 9,
+          "rect": [
+            30,
+            50,
+            582.0,
+            64.12004852294922
+          ]
+        }
+      ]
+    },
+    {
+      "number": 16,
+      "image": "questions/question-16.png",
+      "image_sha256": "e0ab73edaf9236e4dee494da7a639456509d15a1cea0b39846fa9b95f1bb79a5",
+      "width": 1400,
+      "height": 821,
+      "source_pages": [
+        10
+      ],
+      "regions": [
+        {
+          "page": 9,
+          "rect": [
+            30,
+            64.12004852294922,
+            582.0,
+            365.79998779296875
+          ]
+        }
+      ]
+    },
+    {
+      "number": 17,
+      "image": "questions/question-17.png",
+      "image_sha256": "c83b9fcd6962b2da381ae89ce65ab91b9802aa8b18640540f3cfa61f32d3b3eb",
+      "width": 1400,
+      "height": 1072,
+      "source_pages": [
+        10,
+        11
+      ],
+      "regions": [
+        {
+          "page": 9,
+          "rect": [
+            30,
+            365.79998779296875,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 10,
+          "rect": [
+            30,
+            50,
+            582.0,
+            68.07999420166016
+          ]
+        }
+      ]
+    },
+    {
+      "number": 18,
+      "image": "questions/question-18.png",
+      "image_sha256": "1faec805606313919f3b7a397c563e45a7d55997f03577a31eb232a625716d9b",
+      "width": 1400,
+      "height": 838,
+      "source_pages": [
+        11
+      ],
+      "regions": [
+        {
+          "page": 10,
+          "rect": [
+            30,
+            68.07999420166016,
+            582.0,
+            377.32000732421875
+          ]
+        }
+      ]
+    },
+    {
+      "number": 19,
+      "image": "questions/question-19.png",
+      "image_sha256": "73462b64aa2620c0a18d2a35b155a27791f72f957174084e836dc4e69d319e89",
+      "width": 1400,
+      "height": 1038,
+      "source_pages": [
+        11,
+        12
+      ],
+      "regions": [
+        {
+          "page": 10,
+          "rect": [
+            30,
+            377.32000732421875,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 11,
+          "rect": [
+            30,
+            50,
+            582.0,
+            64.48003387451172
+          ]
+        }
+      ]
+    },
+    {
+      "number": 20,
+      "image": "questions/question-20.png",
+      "image_sha256": "45abfec3fec6fb064f6f427e6c51beb0626471165cc2318f9d6f7a929fb91d3e",
+      "width": 1400,
+      "height": 1761,
+      "source_pages": [
+        12,
+        13
+      ],
+      "regions": [
+        {
+          "page": 11,
+          "rect": [
+            30,
+            64.48003387451172,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 12,
+          "rect": [
+            30,
+            50,
+            582.0,
+            63.76000213623047
+          ]
+        }
+      ]
+    },
+    {
+      "number": 21,
+      "image": "questions/question-21.png",
+      "image_sha256": "6a3bbe7e4c20fd1726fa5ea27fca91bdd9d666817ffc96ae6c13c5aed618611e",
+      "width": 1400,
+      "height": 550,
+      "source_pages": [
+        13
+      ],
+      "regions": [
+        {
+          "page": 12,
+          "rect": [
+            30,
+            63.76000213623047,
+            582.0,
+            248.80001831054688
+          ]
+        }
+      ]
+    },
+    {
+      "number": 22,
+      "image": "questions/question-22.png",
+      "image_sha256": "7443a8f44cc79a5dfc3fc303f34fb63e331033c3ad184b50ca3dbe8c5cce006b",
+      "width": 1400,
+      "height": 464,
+      "source_pages": [
+        13
+      ],
+      "regions": [
+        {
+          "page": 12,
+          "rect": [
+            30,
+            248.80001831054688,
+            582.0,
+            396.3999938964844
+          ]
+        }
+      ]
+    },
+    {
+      "number": 23,
+      "image": "questions/question-23.png",
+      "image_sha256": "65bc55ed7b64c611d74f8a3f0ce3cffd7cdb43117ba34d98ad7280dcd0a25a6f",
+      "width": 1400,
+      "height": 634,
+      "source_pages": [
+        13
+      ],
+      "regions": [
+        {
+          "page": 12,
+          "rect": [
+            30,
+            396.3999938964844,
+            582.0,
+            617.7999877929688
+          ]
+        }
+      ]
+    },
+    {
+      "number": 24,
+      "image": "questions/question-24.png",
+      "image_sha256": "3af6e1b5db39d95991c0e7668b594803fe36f6310e74d41b1e8460f71c87f8ad",
+      "width": 1400,
+      "height": 490,
+      "source_pages": [
+        13,
+        14
+      ],
+      "regions": [
+        {
+          "page": 12,
+          "rect": [
+            30,
+            617.7999877929688,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 13,
+          "rect": [
+            30,
+            50,
+            582.0,
+            68.80004119873047
+          ]
+        }
+      ]
+    },
+    {
+      "number": 25,
+      "image": "questions/question-25.png",
+      "image_sha256": "370f09c647fad1ec35781442cfe4c1db57be0287dc3cb410f5bf700742fc633c",
+      "width": 1400,
+      "height": 860,
+      "source_pages": [
+        14
+      ],
+      "regions": [
+        {
+          "page": 13,
+          "rect": [
+            30,
+            68.80004119873047,
+            582.0,
+            387.4000244140625
+          ]
+        }
+      ]
+    },
+    {
+      "number": 26,
+      "image": "questions/question-26.png",
+      "image_sha256": "11b7b649dd22a0c6a4ccaf6e94c75459d4ad21f5708a7a51b1dac878642db47c",
+      "width": 1400,
+      "height": 1015,
+      "source_pages": [
+        14,
+        15
+      ],
+      "regions": [
+        {
+          "page": 13,
+          "rect": [
+            30,
+            387.4000244140625,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 14,
+          "rect": [
+            30,
+            50,
+            582.0,
+            64.84000396728516
+          ]
+        }
+      ]
+    },
+    {
+      "number": 27,
+      "image": "questions/question-27.png",
+      "image_sha256": "982b0fd8b70c6f5d49f45fcea810609d74c414b8c9c16c1d1bb58d0b739458da",
+      "width": 1400,
+      "height": 1775,
+      "source_pages": [
+        15,
+        16
+      ],
+      "regions": [
+        {
+          "page": 14,
+          "rect": [
+            30,
+            64.84000396728516,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 15,
+          "rect": [
+            30,
+            50,
+            582.0,
+            70.24003601074219
+          ]
+        }
+      ]
+    },
+    {
+      "number": 28,
+      "image": "questions/question-28.png",
+      "image_sha256": "928101f7e9f4d7a0feaf76ec76d5caf440ac286285b593f45c7607a832c33dfe",
+      "width": 1400,
+      "height": 812,
+      "source_pages": [
+        16
+      ],
+      "regions": [
+        {
+          "page": 15,
+          "rect": [
+            30,
+            70.24003601074219,
+            582.0,
+            367.96002197265625
+          ]
+        }
+      ]
+    },
+    {
+      "number": 29,
+      "image": "questions/question-29.png",
+      "image_sha256": "3eee7a6a534aaa1d636b285cc641203e8b69d3e1edd4379e807c0aa4a4032d98",
+      "width": 1400,
+      "height": 1060,
+      "source_pages": [
+        16,
+        17
+      ],
+      "regions": [
+        {
+          "page": 15,
+          "rect": [
+            30,
+            367.96002197265625,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 16,
+          "rect": [
+            30,
+            50,
+            582.0,
+            64.8399887084961
+          ]
+        }
+      ]
+    },
+    {
+      "number": 30,
+      "image": "questions/question-30.png",
+      "image_sha256": "4409eb08a407ebbd659ddbbb5d070fc0b10c004005e70a0f1b16f74644f094a7",
+      "width": 1400,
+      "height": 1769,
+      "source_pages": [
+        17,
+        18
+      ],
+      "regions": [
+        {
+          "page": 16,
+          "rect": [
+            30,
+            64.8399887084961,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 17,
+          "rect": [
+            30,
+            50,
+            582.0,
+            67.36003112792969
+          ]
+        }
+      ]
+    },
+    {
+      "number": 31,
+      "image": "questions/question-31.png",
+      "image_sha256": "5bc70c99e8e443ea72078c134deb30779fd1e9948e8c1d92bf3a1d17cc0ea9d4",
+      "width": 1400,
+      "height": 997,
+      "source_pages": [
+        18
+      ],
+      "regions": [
+        {
+          "page": 17,
+          "rect": [
+            30,
+            67.36003112792969,
+            582.0,
+            445.3600158691406
+          ]
+        }
+      ]
+    },
+    {
+      "number": 32,
+      "image": "questions/question-32.png",
+      "image_sha256": "4b3c2a0a8a44b9114f294ada8ebd4a9dce27ea3073becba8389fbbad02bb805a",
+      "width": 1400,
+      "height": 881,
+      "source_pages": [
+        18,
+        19
+      ],
+      "regions": [
+        {
+          "page": 17,
+          "rect": [
+            30,
+            445.3600158691406,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 18,
+          "rect": [
+            30,
+            50,
+            582.0,
+            64.83999633789062
+          ]
+        }
+      ]
+    },
+    {
+      "number": 33,
+      "image": "questions/question-33.png",
+      "image_sha256": "3923ab24f5bfa8da2ce092c2f87472254e4faf01535c1710a3d0d1c11f255ea3",
+      "width": 1400,
+      "height": 1769,
+      "source_pages": [
+        19,
+        20
+      ],
+      "regions": [
+        {
+          "page": 18,
+          "rect": [
+            30,
+            64.83999633789062,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 19,
+          "rect": [
+            30,
+            50,
+            582.0,
+            67.35999298095703
+          ]
+        }
+      ]
+    },
+    {
+      "number": 34,
+      "image": "questions/question-34.png",
+      "image_sha256": "6ad4bb4faf07926c3f03b93bd58e415bcd6aed5f38c388ce3c8752aea087e55c",
+      "width": 1400,
+      "height": 1293,
+      "source_pages": [
+        20
+      ],
+      "regions": [
+        {
+          "page": 19,
+          "rect": [
+            30,
+            67.35999298095703,
+            582.0,
+            572.7999877929688
+          ]
+        }
+      ]
+    },
+    {
+      "number": 35,
+      "image": "questions/question-35.png",
+      "image_sha256": "22c7943a4c629020a32bbfe658a219892614affe230026e349078d44c8e79b81",
+      "width": 1400,
+      "height": 604,
+      "source_pages": [
+        20,
+        21
+      ],
+      "regions": [
+        {
+          "page": 19,
+          "rect": [
+            30,
+            572.7999877929688,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 20,
+          "rect": [
+            30,
+            50,
+            582.0,
+            73.1200180053711
+          ]
+        }
+      ]
+    },
+    {
+      "number": 36,
+      "image": "questions/question-36.png",
+      "image_sha256": "e74416b784fde233b6a2ff61522ac177de783e5f3fcc360e0e3bc2085ad4b1db",
+      "width": 1400,
+      "height": 561,
+      "source_pages": [
+        21
+      ],
+      "regions": [
+        {
+          "page": 20,
+          "rect": [
+            30,
+            73.1200180053711,
+            582.0,
+            262.84002685546875
+          ]
+        }
+      ]
+    },
+    {
+      "number": 37,
+      "image": "questions/question-37.png",
+      "image_sha256": "5939f671f26c26e78d583742407b5cadf6dbff3aa1aef9a724822369fe73694b",
+      "width": 1400,
+      "height": 457,
+      "source_pages": [
+        21
+      ],
+      "regions": [
+        {
+          "page": 20,
+          "rect": [
+            30,
+            262.84002685546875,
+            582.0,
+            407.5600280761719
+          ]
+        }
+      ]
+    },
+    {
+      "number": 38,
+      "image": "questions/question-38.png",
+      "image_sha256": "c08f0568353997540d1fb73eba593ca440b935b68efb821d16942321cd7fce4d",
+      "width": 1400,
+      "height": 625,
+      "source_pages": [
+        21
+      ],
+      "regions": [
+        {
+          "page": 20,
+          "rect": [
+            30,
+            407.5600280761719,
+            582.0,
+            625.0
+          ]
+        }
+      ]
+    },
+    {
+      "number": 39,
+      "image": "questions/question-39.png",
+      "image_sha256": "5ac4d844b1cb9f1c01c19b5ade9fcb3299a763c3f252c195a2d1971d3d35c2bf",
+      "width": 1400,
+      "height": 471,
+      "source_pages": [
+        21,
+        22
+      ],
+      "regions": [
+        {
+          "page": 20,
+          "rect": [
+            30,
+            625.0,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 21,
+          "rect": [
+            30,
+            50,
+            582.0,
+            67.7199935913086
+          ]
+        }
+      ]
+    },
+    {
+      "number": 40,
+      "image": "questions/question-40.png",
+      "image_sha256": "7461bc3ad73c841db6c440a6bf986d498f8690d6297d7c82a859aec1a49d5420",
+      "width": 1400,
+      "height": 1730,
+      "source_pages": [
+        22
+      ],
+      "regions": [
+        {
+          "page": 21,
+          "rect": [
+            30,
+            67.7199935913086,
+            582.0,
+            762.0
+          ]
+        }
+      ]
+    }
+  ]
+}

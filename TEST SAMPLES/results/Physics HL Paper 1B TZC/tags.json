@@ -1,0 +1,138 @@
+{
+  "source_file": "Physics HL Paper 1B TZC.pdf",
+  "source_sha256": "90febe5e5db7dfebf7b624776aa42bd67cc4a4f6f3f588edf0855106b5bf1dc6",
+  "source_pages": 11,
+  "metadata": {
+    "year": 2026,
+    "level": "HL",
+    "paper": "Paper 1B",
+    "syllabus": "2025"
+  },
+  "mark_audit": {
+    "expected": 20,
+    "detected": 18,
+    "status": "mismatch"
+  },
+  "warnings": [
+    "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving.",
+    "Detected 18 marks, but the cover states 20. Review question marks and timing; OCR may omit mark brackets."
+  ],
+  "questions": [
+    {
+      "number": 1,
+      "year": 2026,
+      "level": "HL",
+      "paper": "Paper 1B",
+      "syllabus": "2025",
+      "topics": [
+        "A.2"
+      ],
+      "commands": [
+        "calculate",
+        "determine",
+        "suggest"
+      ],
+      "marks": 7,
+      "minutes": 12.6,
+      "difficulty": "Unrated",
+      "text_source": "ocr",
+      "topic_evidence": {
+        "A.2": [
+          "force"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "ocr_only",
+        "topics": [
+          "A.2"
+        ],
+        "commands": [
+          "calculate",
+          "determine",
+          "suggest"
+        ]
+      },
+      "image": "questions/question-01.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "A.2": "Forces and momentum"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 1,
+        "required_topics": [
+          "A.2"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "",
+        "ocr": "1.\nAstudent investigates the density of a type of wood and the density ofa liquid.\nThe student suspendsa solid cylinder made of the wood from a force sensor so that part of\nthe cylinder is submerged in the liquid.\ndiagram not to scale\nforce sensor\n= solid cylinder\nstand\nWhena length x of the cylinder is in the liquid, the force indicated by the sensor is F.\nThe student varies x using a stand. The height of this stand can be adjusted.\n(This question continues on the following page)\n(Question 1 continued)\nThe student records F for each value of x. The graph shows howF varies with x.\n7.0\nHt\nc\n6.0\nj\nt\n“TT\n5.0\nrN\not\n—|\n&\n+\n41\n3.5\ncor\n3.0\naH\nawa\n2.04\naaus\n0.00 0.05 0.10 0.15 0.20 0.25 0.30\nThe relationship between F and x is\nF=F,~ pAgx\n$\nwhere F, is the weight of the cylinder, 9, is the density of the liquid, and A is the\ng\ncross-sectional area of the cylinder.\n(a)\nSuggest, with reference to the gradient and an intercept, how the graph supports\nthis relationship.\n[2]\n-5-\n2226-4729\n(Question 1 continued)\n(b)\nCalculate the gradient of the line.\n[2]\nThe radius of the cylinder is 0.028 m. The length of the cylinder is 0.30m.\n(c)\nCalculate p, in kgm”.\n2]\n(d)\nThe density of the wood is p,,. Determine Pu\n[3]\nPt"
+      }
+    },
+    {
+      "number": 2,
+      "year": 2026,
+      "level": "HL",
+      "paper": "Paper 1B",
+      "syllabus": "2025",
+      "topics": [
+        "B.5"
+      ],
+      "commands": [
+        "calculate",
+        "determine",
+        "draw",
+        "show",
+        "state",
+        "suggest"
+      ],
+      "marks": 11,
+      "minutes": 19.8,
+      "difficulty": "Unrated",
+      "text_source": "ocr",
+      "topic_evidence": {
+        "B.5": [
+          "circuit",
+          "resistance",
+          "current"
+        ]
+      },
+      "ocr_comparison": {
+        "status": "ocr_only",
+        "topics": [
+          "B.5"
+        ],
+        "commands": [
+          "calculate",
+          "determine",
+          "draw",
+          "show",
+          "state",
+          "suggest"
+        ]
+      },
+      "image": "questions/question-02.png",
+      "review_status": "automatic_suggestion",
+      "topic_names": {
+        "B.5": "Current and circuits"
+      },
+      "language_review": null,
+      "anchor_check": {
+        "number": 2,
+        "required_topics": [
+          "B.5"
+        ],
+        "forbidden_topics": [],
+        "status": "passed",
+        "scope": "specified required/forbidden topics only"
+      },
+      "source_texts": {
+        "pdf": "",
+        "ocr": "2.\n Agroup of students investigate how the resistance R of a metal wire varies with temperature T.\nThe students make an insulated wire of the metal into a coil. The coil is placed in hot water\nand connected to the circuit shown.\nThe air temperature in the laboratory is 20°C.\ndiagram not to scale\n(tp\nAs the water and coil cool, the students measure the temperature T of the water and\ncalculate the resistance R of the coil.\n(This question continues on the following page)\nfo}\nOo\n(Question 2 continued)\nThe students plot a graph to show howR varies with T. Error bars for each value of R are + 0.04.\nOo\n10\n20\n30\n40\n50\n60\n70\n80\n90\n100\nOne data point is missing from the graph.\nWhen Twas 54.0°C, the potential difference across the coil was 0.950V and the current in\nthe coil was 263mA.\n(a)\n(i)\nCalculate the value of R for the missing data point.\n[1]\n(ii) | Draw the missing point and the best-fit line for the data.\n[1]\n(This question continues on the following page)\n(Question 2 continued)\n(b)\nThe students waited for five minutes between taking each reading. This produces\nunequal spacing between points on the graph.\nSuggest:\n(i)\nwhat this implies about the rate of heat loss from the liquid and the coil.\n[1]\n(ii)\none way to modify the experiment that will improve the graph.\n[1]\n(This question continues on the following page)\n<\n(Question 2 continued)\n(c)\nThe students measured the dimensions of the wire after the experiment.\nThe length / of the wire in the coil was (2.50 + 0.01)m.\nThe cross-sectional area A of the wire was calculated to be (1.43 + 0.01) x 10m’.\nAssume that these values do not change over the temperature range used in this\nexperiment.\nThe students calculated the resistivity p of the metal. The resistance R of the metal\nwire is given by\nR= ps .\nFor the temperature of 50.0°C,\n(i)\ncalculate the resistivity of the metal.\n[1]\n(ii)\n| determine the fractional uncertainty in the resistivity of the metal.\n[2]\n(iii)\nstate the resistivity of the metal together with its absolute uncertainty and an\nappropriate SI unit.\n[2]\n(This question continues on page 11)\n-11-\n2226-4729\n(Question 2 continued)\n(d)\nWhen the students finished their experiment, they checked the thermometer by placing\nit in a stirred mixture of ice and water. The thermometer showed a reading of -0.6 °C.\nThe students then drewa corrected graph of R against T.\n(i) | State the type of error in the thermometer readings.\n[1]\n(ii) |Suggest how the original graph compares with the corrected graph.\n[1]"
+      }
+    }
+  ]
+}

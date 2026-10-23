@@ -1,0 +1,412 @@
+{
+  "source_file": "Physics HL Paper 2 TZC (1).pdf",
+  "source_sha256": "f1bac7d411edd4f3022779da3588986a512c0841e0c8b986b63444f657003448",
+  "source_pages": 23,
+  "metadata": {
+    "year": 2026,
+    "level": "HL",
+    "paper": "Paper 2",
+    "syllabus": "2025"
+  },
+  "mark_audit": {
+    "expected": 90,
+    "detected": 61,
+    "status": "mismatch"
+  },
+  "warnings": [
+    "Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving.",
+    "Detected 61 marks, but the cover states 90. Review question marks and timing; OCR may omit mark brackets."
+  ],
+  "coordinate_system": "PDF points; page indices in regions are zero-based; source_pages are one-based",
+  "questions": [
+    {
+      "number": 1,
+      "image": "questions/question-01.png",
+      "image_sha256": "2fc8f56f8e842b08a1811018d832a9c81850554ebf8f7dde90af0952ac9cbe88",
+      "width": 1400,
+      "height": 3343,
+      "source_pages": [
+        2,
+        3,
+        4
+      ],
+      "regions": [
+        {
+          "page": 1,
+          "rect": [
+            30,
+            86.43998718261719,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 2,
+          "rect": [
+            30,
+            50,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 3,
+          "rect": [
+            30,
+            50,
+            582.0,
+            59.800018310546875
+          ]
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "image": "questions/question-02.png",
+      "image_sha256": "0f4d338ad2bcea8e1511ca5656736aafd80ce7fd8287581accd1e0881c833f2e",
+      "width": 1400,
+      "height": 3405,
+      "source_pages": [
+        4,
+        5,
+        6
+      ],
+      "regions": [
+        {
+          "page": 3,
+          "rect": [
+            30,
+            59.800018310546875,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 4,
+          "rect": [
+            30,
+            50,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 5,
+          "rect": [
+            30,
+            50,
+            582.0,
+            59.800018310546875
+          ]
+        }
+      ]
+    },
+    {
+      "number": 3,
+      "image": "questions/question-03.png",
+      "image_sha256": "45e4e11c8be965a34e8449dc0ff6a805694b7dedf35eb52ba97244778937cb1d",
+      "width": 1400,
+      "height": 3400,
+      "source_pages": [
+        6,
+        7,
+        8
+      ],
+      "regions": [
+        {
+          "page": 5,
+          "rect": [
+            30,
+            59.800018310546875,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 6,
+          "rect": [
+            30,
+            50,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 7,
+          "rect": [
+            30,
+            50,
+            582.0,
+            57.640010833740234
+          ]
+        }
+      ]
+    },
+    {
+      "number": 4,
+      "image": "questions/question-04.png",
+      "image_sha256": "8fff22a93bada511c3d327d259dc01bc82f3e66de004c5a27f63ee54d4d76cbf",
+      "width": 1400,
+      "height": 3417,
+      "source_pages": [
+        8,
+        9,
+        11
+      ],
+      "regions": [
+        {
+          "page": 7,
+          "rect": [
+            30,
+            57.640010833740234,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 8,
+          "rect": [
+            30,
+            50,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 10,
+          "rect": [
+            30,
+            50,
+            582.0,
+            62.68000793457031
+          ]
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "image": "questions/question-05.png",
+      "image_sha256": "767e382af5f37e4c3dbce23b8df8c5ff32b6f6d034fb929deb165ae8602d6c37",
+      "width": 1400,
+      "height": 1754,
+      "source_pages": [
+        11,
+        12
+      ],
+      "regions": [
+        {
+          "page": 10,
+          "rect": [
+            30,
+            62.68000793457031,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 11,
+          "rect": [
+            30,
+            50,
+            582.0,
+            58.72000503540039
+          ]
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "image": "questions/question-06.png",
+      "image_sha256": "a923dba16a2063db29d997741851b821f05bd838e80bab6e8bf5ae52576fa7c8",
+      "width": 1400,
+      "height": 3414,
+      "source_pages": [
+        12,
+        13,
+        14
+      ],
+      "regions": [
+        {
+          "page": 11,
+          "rect": [
+            30,
+            58.72000503540039,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 12,
+          "rect": [
+            30,
+            50,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 13,
+          "rect": [
+            30,
+            50,
+            582.0,
+            62.680023193359375
+          ]
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "image": "questions/question-07.png",
+      "image_sha256": "5c1bceec81c3c638b1506d2dcf18d698009d35ad8de7b6908a4a01f36331e30d",
+      "width": 1400,
+      "height": 3418,
+      "source_pages": [
+        14,
+        15,
+        16
+      ],
+      "regions": [
+        {
+          "page": 13,
+          "rect": [
+            30,
+            62.680023193359375,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 14,
+          "rect": [
+            30,
+            50,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 15,
+          "rect": [
+            30,
+            50,
+            582.0,
+            68.43999481201172
+          ]
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "image": "questions/question-08.png",
+      "image_sha256": "104e641bcaeef014b8bb86a1128f1e46951d4eb6f5a140d0ae7454330b3b45c1",
+      "width": 1400,
+      "height": 6678,
+      "source_pages": [
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "regions": [
+        {
+          "page": 15,
+          "rect": [
+            30,
+            68.43999481201172,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 16,
+          "rect": [
+            30,
+            50,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 17,
+          "rect": [
+            30,
+            50,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 18,
+          "rect": [
+            30,
+            50,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 19,
+          "rect": [
+            30,
+            50,
+            582.0,
+            63.4000244140625
+          ]
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "image": "questions/question-09.png",
+      "image_sha256": "e541e79ad8b2e8e856aa967e8d18bd7f6722c912ebfc078d1e643174cb9e3af0",
+      "width": 1400,
+      "height": 6666,
+      "source_pages": [
+        20,
+        21,
+        22,
+        23
+      ],
+      "regions": [
+        {
+          "page": 19,
+          "rect": [
+            30,
+            63.4000244140625,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 20,
+          "rect": [
+            30,
+            50,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 21,
+          "rect": [
+            30,
+            50,
+            582.0,
+            747.0
+          ]
+        },
+        {
+          "page": 22,
+          "rect": [
+            30,
+            50,
+            582.0,
+            762.0
+          ]
+        }
+      ]
+    }
+  ]
+}
