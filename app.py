@@ -16,6 +16,8 @@ from language_review import review_disagreement, context_hash, status as model_s
 from subquestions import propose_parts, question_hash, validate_layout, validate_graph, approved_map, short_variants, render_variant, choose_short
 from dependency_review import analyze_dependencies
 from topic_scope import scoped_question, topic_closure, POLICY
+from paper_diagnostics import diagnose_selection, finish_diagnostics
+from paper_cover import add_practice_cover, finalize_practice_cover
 
 
 def create_app(data_dir=None):
@@ -446,9 +448,13 @@ def create_app(data_dir=None):
             raise ValueError('Invalid topics.')
         validate_level_topics(selected_topics, level)
         topic_closure(selected_topics)
-        eligible = [q for q in questions() if q['level'] in (level, 'Both') and q['syllabus'] == syllabus
-                    and (not value.get('paper') or q['paper'] == value['paper'])
-                    and (level != 'SL' or sl_compatible(q))]
+        with db() as conn:
+            analyzed = [dict(id=r['id'], questions=json.loads(r['questions'] or '[]')) for r in
+                        conn.execute("SELECT id, json_extract(data, '$.questions') AS questions FROM documents")]
+        source_ids = {d['id'] for d in analyzed if (root / 'documents' / (d['id'] + '.pdf')).is_file()}
+        eligible, diagnostics = diagnose_selection(questions(), analyzed, level=level, syllabus=syllabus,
+                                                   paper=value.get('paper'), topics=selected_topics, mode=mode,
+                                                   target=target, source_ids=source_ids)
         if mode == 'short':
             chosen = choose_short(eligible, target, selected_topics)
         else:
@@ -457,12 +463,11 @@ def create_app(data_dir=None):
             chosen = [q for q in scoped if q['id'] in ids]
         ids = [q['id'] for q in chosen]
         if not chosen:
-            raise ValueError('No question variants fit these filters and duration. Add questions, approve dependency maps for Short, or increase the time.')
+            return jsonify(error=diagnostics['summary'], diagnostics=diagnostics), 400
         paper_id = uuid.uuid4().hex
         actual = round(sum(q['minutes'] for q in chosen), 1)
         with fitz.open() as pdf:
-            cover = pdf.new_page()
-            cover.insert_textbox(fitz.Rect(50, 80, 545, 750), f'IB DP Physics - {level}\nPractice paper\nSyllabus: {syllabus}\nRequested time: {target:g} minutes\nEstimated time: {actual:g} minutes\n{len(chosen)} question groups\nRendering: {mode.title()}\n\nTime estimates are approximate.\nGenerated practice material, not an official IB examination.', fontsize=18)
+            add_practice_cover(pdf, level=level, syllabus=syllabus, target=target, chosen=chosen, mode=mode)
             for i, q in enumerate(chosen, 1):
                 # Keep every crop of the parent together and in source order.
                 with fitz.open(root / 'documents' / (q['document_id'] + '.pdf')) as source:
@@ -479,9 +484,11 @@ def create_app(data_dir=None):
                             page.show_pdf_page(fitz.Rect(50, 60, 545, 770), source, region['page'], clip=clip)
                             page.insert_text((50, 805), f"Source: {q['filename'][:55].encode('ascii', 'replace').decode()} | Q{q['number']} | {q['year']} | {q['paper']}", fontsize=8)
                             top += max_height
+            finalize_practice_cover(pdf)
             pdf.save(root / 'papers' / (paper_id + '.pdf'))
         result = dict(id=paper_id, question_ids=list(ids), target_minutes=target, actual_minutes=actual,
                       shortfall_minutes=round(target - actual, 1), count=len(chosen), render_mode=mode,
+                      diagnostics=finish_diagnostics(diagnostics, chosen, target),
                       selections=[dict(question_id=q['id'], kept_parts=q['kept_parts'], omitted_parts=q['omitted_parts'],
                                        topic_omitted_parts=q.get('topic_omitted_parts', []),
                                        topics=q['topics'],

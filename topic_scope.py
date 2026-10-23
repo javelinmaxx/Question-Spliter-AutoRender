@@ -36,27 +36,36 @@ def effective_topics(question, kept):
     return question['topics']
 
 
-def scoped_question(question, selected):
+def scope_decision(question, selected):
     if not selected:
-        return render_variant(question)
+        return render_variant(question), None
     selected = set(selected)
     allowed = topic_closure(list(selected))
     mapping = approved_map(question)
     whole_matches = bool(selected & set(question['topics'])) and set(question['topics']).issubset(allowed)
     # Unknown part topics never justify removing content from a mixed parent.
     if not mapping or any(not p.get('topics') for p in mapping['parts'] if p['id'] != 'stem'):
-        return render_variant(question) if whole_matches else None
+        if whole_matches:
+            return render_variant(question), None
+        if not selected.intersection(question['topics']):
+            return None, 'topic_target'
+        return None, 'topic_review'
     parts = mapping['parts']
     if not set(parts[0].get('topics', [])).issubset(allowed):
-        return None  # Shared context cannot be removed to make a question fit.
+        return None, 'topic_context'  # Shared context cannot be removed.
     keep = {'stem'} | {p['id'] for p in parts[1:] if set(p['topics']).issubset(allowed)}
+    target_before_dependencies = any(p['id'] in keep and selected.intersection(p.get('topics', [])) for p in parts[1:])
     changed = True
     while changed:
         invalid = {p['id'] for p in parts if p['id'] in keep and not set(p['requires']).issubset(keep)}
         changed = bool(invalid)
         keep -= invalid
     if not any(p['id'] in keep and selected & set(p.get('topics', [])) for p in parts[1:]):
-        return None  # Prerequisite-only material is not a match for the target topic.
+        if target_before_dependencies:
+            return None, 'topic_dependency'
+        if not any(selected.intersection(p.get('topics', [])) for p in parts[1:]):
+            return None, 'topic_target'
+        return None, 'topic_inseparable'
     result = render_variant(question, [p['id'] for p in parts if p['id'] not in keep])
     result['topics'] = effective_topics(question, result['kept_parts'])
     result['topic_omitted_parts'] = result['omitted_parts']
@@ -64,4 +73,8 @@ def scoped_question(question, selected):
     if result['omitted_parts']:
         result['render_mode'] = 'topic_filtered'
         result['text'] = '\n'.join(p['text'] for p in parts if p['id'] in keep)
-    return result
+    return result, None
+
+
+def scoped_question(question, selected):
+    return scope_decision(question, selected)[0]
