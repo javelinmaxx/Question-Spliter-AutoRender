@@ -4,6 +4,7 @@ from io import BytesIO
 import fitz
 from PIL import Image
 from source_origin import origin_label
+from crop_display import display_regions
 
 
 def paper_family(question):
@@ -31,9 +32,9 @@ def content_bounds(page, rect):
                      rect.x1, min(rect.y1, rect.y0 + box[3] * scale_y + 3))
 
 
-def question_clips(source, regions, max_output_height=710):
+def question_clips(source, regions, max_output_height=710, *, paper='Unknown', parent_regions=None):
     """Suppress empty regions/tiles, keeping source and subquestion order."""
-    for region in regions:
+    for region in display_regions(regions, paper, parent_regions):
         page = source[region['page']]
         area = fitz.Rect(region['rect'])
         # IB registration barcodes are vector bars in the bottom margin, not
@@ -63,7 +64,7 @@ class PaperLayout:
     """Flow complete question groups into remaining space at a readable scale."""
     TOP, BOTTOM = 35, 780
     HEADING, REFERENCE, QUESTION_GAP, CROP_GAP = 25, 14, 18, 6
-    MIN_SCALE = .90  # Modest reduction only; retain readable exam text/diagrams.
+    MIN_SCALE = .85  # At most 15% reduction; retain readable exam text/diagrams.
 
     def __init__(self, pdf):
         self.pdf = pdf
@@ -85,9 +86,10 @@ class PaperLayout:
         self.pdf[self.page_index].insert_text((50, self.cursor + 10), text, fontsize=8)
         self.cursor += self.REFERENCE
 
-    def add_question(self, source, question, number):
+    def add_question(self, source, question, number, *, parent_regions=None):
         capacity = self.BOTTOM - self.TOP - self.HEADING - self.REFERENCE
-        clips = list(question_clips(source, question['regions'], capacity))
+        clips = list(question_clips(source, question['regions'], capacity,
+                                    paper=question.get('paper'), parent_regions=parent_regions))
         if not clips:
             return 0
         heights = [clip.height * 495 / clip.width for _, clip in clips]
@@ -140,5 +142,6 @@ class PaperLayout:
         return len(used_pages)
 
 
-def add_question_pages(pdf, source, question, number, layout=None):
-    return (layout if layout is not None else PaperLayout(pdf)).add_question(source, question, number)
+def add_question_pages(pdf, source, question, number, layout=None, *, parent_regions=None):
+    return (layout if layout is not None else PaperLayout(pdf)).add_question(
+        source, question, number, parent_regions=parent_regions)

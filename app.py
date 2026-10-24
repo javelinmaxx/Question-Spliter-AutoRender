@@ -611,7 +611,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             regions = validate_regions(pdf, value['regions'])
             if watermark_rejected(regions, doc.get('watermark', {})):
                 raise ValueError('This question contains a watermark that cannot be removed safely and cannot be added to the bank.')
-            png = render_question(pdf, regions)
+            png = render_question(pdf, regions, paper=paper)
             text = (region_text(doc['text_pages'], regions) if 'text_pages' in doc
                     else '\n'.join(pdf[r['page']].get_text(clip=fitz.Rect(r['rect'])) for r in regions))
         suggestions = suggest(text, paper, level,syllabus)
@@ -743,10 +743,11 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
 
     @app.post('/api/documents/<doc_id>/preview')
     def preview(doc_id):
-        document(doc_id)
+        doc = document(doc_id)
         with fitz.open(source_path(doc_id)) as pdf:
             regions = validate_regions(pdf, request.get_json()['regions'])
-            png = render_question(pdf, regions)
+            paper = request.get_json().get('paper', doc.get('metadata', {}).get('paper', 'Unknown'))
+            png = render_question(pdf, regions, paper=paper)
         return send_file(BytesIO(png), mimetype='image/png')
 
     @app.get('/api/questions/<qid>/image')
@@ -768,7 +769,12 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             else:
                 variant = short_variants(q, scoped.get('omitted_parts', []), topics)[0] if mode == 'short' else scoped
             with fitz.open(source_path(q['document_id'])) as pdf:
-                png = render_question(pdf, variant['regions'])
+                png = render_question(pdf, variant['regions'], paper=q['paper'], parent_regions=q['regions'])
+            return send_file(BytesIO(png), mimetype='image/png')
+        if q['paper'] in ('Paper 1', 'Paper 1A', 'Paper 1B'):
+            # Existing bank PNGs may predate tightening; render from saved crops.
+            with fitz.open(source_path(q['document_id'])) as pdf:
+                png = render_question(pdf, q['regions'], paper=q['paper'])
             return send_file(BytesIO(png), mimetype='image/png')
         return send_file(root / 'images' / (qid + '.png'), mimetype='image/png')
 
@@ -796,7 +802,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             if not any(p['id'] in variant['kept_parts'] and set(p.get('topics', [])) & set(topics) for p in parts):
                 raise ValueError('Keep at least one part that assesses a selected target topic.')
         with fitz.open(source_path(q['document_id'])) as pdf:
-            png = render_question(pdf, variant['regions'])
+            png = render_question(pdf, variant['regions'], paper=q['paper'], parent_regions=q['regions'])
         return send_file(BytesIO(png), mimetype='image/png')
 
     def paper_pool(value):
@@ -926,7 +932,8 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                 with fitz.open(source_path(q['document_id'])) as source:
                     outline_pages = document(q['document_id']).get('watermark', {}).get('outline_pages', [])
                     numbering_results[q['id']] = erase_source_numbers(source, original_questions[q['id']], numbering_cache, outline_pages=outline_pages)
-                    rendered = add_question_pages(pdf, source, q, i, layout=layout)
+                    rendered = add_question_pages(pdf, source, q, i, layout=layout,
+                                                  parent_regions=original_questions[q['id']]['regions'])
                     numbering_results[q['id']]['rendered_pages'] = rendered
                     if not rendered:
                         raise ValueError(f"Question {q['number']} in {q['filename']} has no visible content after cleanup. Review its crop before generating a paper.")
@@ -1008,7 +1015,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                     if mapping and mapping.get('source_hash') == old_hash:
                         mapping['source_hash'] = question_hash(q)
                     with fitz.open(cleaned) as pdf:
-                        png = render_question(pdf, q['regions'])
+                        png = render_question(pdf, q['regions'], paper=q['paper'])
                     q['content_hash'] = question_fingerprint(q['text'], png)
                 else:
                     png = None

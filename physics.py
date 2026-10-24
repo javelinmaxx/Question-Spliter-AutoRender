@@ -9,6 +9,7 @@ import fitz
 from PIL import Image
 from ocr import read_pages, region_text
 from assessment_timing import estimate
+from crop_display import display_regions
 
 TOPICS = {
     'A.0': 'Measurements and uncertainties',
@@ -277,10 +278,10 @@ def validate_regions(pdf, regions):
     return clean
 
 
-def render_question(pdf, regions):
+def render_question(pdf, regions, *, paper='Unknown', parent_regions=None):
     images = []
     width, padding = 1400, 60
-    for region in regions:
+    for region in display_regions(regions, paper, parent_regions):
         rect = fitz.Rect(region['rect'])
         pix = pdf[region['page']].get_pixmap(matrix=fitz.Matrix(min(3, (width - 2 * padding) / rect.width), min(3, (width - 2 * padding) / rect.width)), clip=rect, alpha=False)
         image = Image.open(BytesIO(pix.tobytes('png'))).convert('RGB')

@@ -42,6 +42,26 @@ def save(client, doc, index=0, **overrides):
     return response.json
 
 
+def test_existing_paper_one_images_use_tighter_crop_without_changing_saved_geometry(bank):
+    from physics import render_question
+    client, root = bank
+    doc = upload(client)
+    regions = [dict(page=0, rect=[30, 70, 565, 200])]
+    saved = save(client, doc, paper='Paper 1A', regions=regions)
+    # Simulate a PNG saved before the display-crop rule was introduced.
+    with fitz.open(root / 'documents' / (doc['id'] + '.pdf')) as source:
+        old_png = render_question(source, regions)
+        expected = render_question(source, regions, paper='Paper 1A')
+    (root / 'images' / (saved['id'] + '.png')).write_bytes(old_png)
+    restarted = create_app(root).test_client()
+    image = restarted.get(f"/api/questions/{saved['id']}/image")
+    assert image.status_code == 200 and image.data == expected and image.data != old_png
+    preview = restarted.post(f"/api/documents/{doc['id']}/preview",
+                             json=dict(regions=regions, paper='Paper 1A'))
+    assert preview.data == expected
+    assert restarted.get('/api/questions').json[0]['regions'] == regions
+
+
 def test_import_group_review_png_search_and_restart(bank):
     client, root = bank
     doc = upload(client)

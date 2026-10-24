@@ -179,7 +179,7 @@ def test_two_slightly_oversized_half_page_questions_share_a_page_without_splitti
         assert all(abs(rect.width/rect.height-360/315)<.001 for rect in diagrams)
 
 
-def test_half_page_sizing_does_not_shrink_short_questions_or_exceed_ten_percent():
+def test_half_page_sizing_does_not_shrink_short_questions_or_exceed_fifteen_percent():
     with fitz.open() as source, fitz.open() as output:
         page=source.new_page();page.insert_text((50,100),'SHORT_BODY',fontsize=12)
         page=source.new_page();page.insert_text((50,100),'LARGE_BODY',fontsize=12)
@@ -207,6 +207,63 @@ def test_reduced_half_page_questions_still_start_paper_two_on_a_new_page():
         layout.add_question(source,q,2)
         assert len(output)==2
         assert 'Question 2' not in output[0].get_text() and 'Question 2' in output[1].get_text()
+
+
+def test_two_questions_requiring_more_than_ten_percent_reduction_share_page():
+    with fitz.open() as source, fitz.open() as output:
+        page = source.new_page()
+        page.insert_text((50, 100), 'REDUCED_BODY', fontsize=12)
+        page.draw_rect(fitz.Rect(70, 140, 430, 490))
+        q = question([dict(page=0, rect=[30, 75, 565, 510])])
+        layout = PaperLayout(output)
+        for number in (1, 2):
+            layout.add_question(source, q, number)
+        assert len(output) == 1
+        spans = [s for b in output[0].get_text('dict')['blocks']
+                 for line in b.get('lines', []) for s in line['spans']
+                 if 'REDUCED_BODY' in s['text']]
+        assert len(spans) == 2
+        assert all(.85 <= s['size'] / (12 * 495 / 535) < .90 for s in spans)
+        assert max(b[3] for b in output[0].get_text('blocks')) <= PaperLayout.BOTTOM
+
+
+def test_paper_one_bottom_trim_removes_edge_text_and_pixels_only():
+    from copy import deepcopy
+    from crop_display import display_regions
+    from physics import render_question
+    from io import BytesIO
+    from PIL import Image
+    with fitz.open() as source, fitz.open() as output:
+        page = source.new_page()
+        page.insert_text((50, 100), 'Which quantity is a vector?')
+        page.insert_text((60, 240), 'D. Velocity')
+        page.insert_text((50, 298), 'EDGE_RESIDUE', fontsize=6)
+        page.draw_rect(fitz.Rect(200, 294, 210, 298), fill=(1, 0, 0), color=None)
+        regions = [dict(page=0, rect=[30, 75, 565, 300])]
+        original = deepcopy(regions)
+        for paper in ('Paper 1', 'Paper 1A', 'Paper 1B'):
+            clips = list(question_clips(source, regions, paper=paper))
+            assert len(clips) == 1
+            text = page.get_text(clip=clips[0][1])
+            assert 'Velocity' in text and 'EDGE_RESIDUE' not in text
+            png = render_question(source, regions, paper=paper)
+            image = Image.open(BytesIO(png)).convert('RGB')
+            assert not any(r > 200 and g < 50 and b < 50 for r, g, b in image.getdata())
+        assert display_regions(regions, 'Paper 2') == original
+        assert regions == original
+        q = dict(question(regions), paper='Paper 1A')
+        add_question_pages(output, source, q, 1)
+        assert 'Velocity' in output[0].get_text() and 'EDGE_RESIDUE' not in output[0].get_text()
+
+
+def test_short_parts_use_parent_trim_without_trimming_internal_boundaries_again():
+    from crop_display import display_regions
+    parent = [dict(page=0, rect=[30, 75, 565, 300])]
+    parts = [dict(page=0, rect=[30, 75, 565, 180]),
+             dict(page=0, rect=[30, 180, 565, 300])]
+    displayed = display_regions(parts, 'Paper 1B', parent)
+    assert displayed[0] == parts[0]
+    assert displayed[1]['rect'] == [30, 180, 565, 288.75]
 
 
 def test_obsolete_option_headings_removed_but_question_wording_and_choices_remain():
