@@ -12,6 +12,7 @@ import uuid
 
 import fitz
 from cpu_runtime import cpu_setting
+from paper_labels import obsolete_option_indices
 
 _ocr_lock = Lock()  # MuPDF's Leptonica bridge cannot run in two threads at once.
 _pool_lock = Lock()
@@ -144,9 +145,11 @@ def region_text(records, regions, source='selected'):
         else:
             key = 'lines' if source == 'ocr' else 'native_lines'
         rect = fitz.Rect(region['rect'])
-        for line in record[key]:
+        ignored = obsolete_option_indices([line['text'] for line in record[key]])
+        for index, line in enumerate(record[key]):
             box = fitz.Rect(line['bbox'])
             center = fitz.Point((box.x0 + box.x1) / 2, (box.y0 + box.y1) / 2)
             if rect.contains(center):
-                parts.append(line['text'])
+                if index not in ignored:
+                    parts.append(line['text'])
     return '\n'.join(parts)

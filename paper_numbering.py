@@ -3,6 +3,7 @@ import re
 
 import fitz
 from ocr import _ocr_lock
+from paper_labels import obsolete_option_indices
 
 ADMINISTRATIVE_LINE = re.compile(
     r'(?:question\s+\d+\s*(?:,|[-–—:])?\s*continued'
@@ -17,16 +18,19 @@ ADMINISTRATIVE_LINE = re.compile(
 def continuation_boxes(raw):
     """Only administrative lines, never a sentence mentioning another question."""
     found = []
-    for block in raw['blocks']:
-        for line in block.get('lines', []):
-            text = ''.join(c['c'] for span in line['spans'] for c in span.get('chars', []))
-            text = text.strip().strip('()[]').strip()
-            box = fitz.Rect(line['bbox'])
-            if ADMINISTRATIVE_LINE.fullmatch(text):
-                found.append(box)
-            elif ((box.y0 < 55 or box.y0 > raw['height'] - 65)
-                  and re.fullmatch(r'(?:[-–—]\s*\d+\s*[-–—]|\d{4}\s*[-–—]\s*\d{4}|\d+)', text)):
-                found.append(box)
+    lines = [line for block in raw['blocks'] for line in block.get('lines', [])]
+    ignored = obsolete_option_indices([''.join(c['c'] for span in line['spans'] for c in span.get('chars', [])) for line in lines])
+    for index, line in enumerate(lines):
+        text = ''.join(c['c'] for span in line['spans'] for c in span.get('chars', []))
+        text = text.strip()
+        if (text[:1], text[-1:]) in (('(', ')'), ('[', ']')):
+            text = text[1:-1].strip()
+        box = fitz.Rect(line['bbox'])
+        if ADMINISTRATIVE_LINE.fullmatch(text) or index in ignored:
+            found.append(box)
+        elif ((box.y0 < 55 or box.y0 > raw['height'] - 65)
+              and re.fullmatch(r'(?:[-–—]\s*\d+\s*[-–—]|\d{4}\s*[-–—]\s*\d{4}|\d+)', text)):
+            found.append(box)
     return found
 
 
@@ -39,6 +43,12 @@ def same_label(box, other):
 def number_boxes(raw, region, number, ocr=False):
     area = fitz.Rect(region['rect'])
     found = []
+    number_top = area.y0 + 35
+    # A manual crop can start at an obsolete option/continuation heading.
+    # Look immediately below those headings, keeping the number search local.
+    for box in sorted(continuation_boxes(raw), key=lambda box: box.y0):
+        if area.y0 - 1 <= box.y0 <= number_top and box.y1 <= area.y1:
+            number_top = max(number_top, box.y1 + 35)
     for block in raw['blocks']:
         for line in block.get('lines', []):
             chars = [char for span in line['spans'] for char in span.get('chars', [])]
@@ -50,7 +60,7 @@ def number_boxes(raw, region, number, ocr=False):
             if detected != number and not (ocr and match[1].replace('4', '1') == str(number)):
                 continue
             rect = fitz.Rect(line['bbox'])
-            if not (area.x0 - 1 <= rect.x0 <= min(area.x0 + 80, 130) and area.y0 - 1 <= rect.y0 <= area.y0 + 35):
+            if not (area.x0 - 1 <= rect.x0 <= min(area.x0 + 80, 130) and area.y0 - 1 <= rect.y0 <= number_top):
                 continue
             glyphs = chars[match.start(1):match.end()]
             box = fitz.Rect(glyphs[0]['bbox'])

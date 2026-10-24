@@ -6,6 +6,7 @@ from subquestions import short_variants
 from topic_scope import scope_decision
 from year_filter import matches_year
 from level_filter import exclusion as level_exclusion
+from paper_types import matches_paper
 
 REASONS = {
     'sl_review': ('SL suitability needs review', 'This HL question has unknown or mixed-depth topics. Review its content and confirm SL suitability in question review before including it for SL.'),
@@ -45,7 +46,7 @@ def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode,
     for q in bank:
         code = level_exclusion(q,level) or ('syllabus' if q['syllabus'] != syllabus else
                 'year' if not matches_year(q.get('year'), year_min, year_max) else
-                'paper' if paper and q['paper'] != paper else
+                'paper' if not matches_paper(q['paper'], paper) else
                 'document' if document_ids and q['document_id'] not in document_ids else
                 'source' if q['document_id'] not in source_ids else
                 'analysis_outdated' if q.get('analysis_outdated') else None)

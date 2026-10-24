@@ -248,8 +248,9 @@ def document_metadata(text, filename):
     years = re.findall(r'\b(20\d{2})\b', source)
     year = int(years[0]) if years else None
     level = 'HL' if re.search(r'\b(HL|higher level)\b', source, re.I) else 'SL' if re.search(r'\b(SL|standard level)\b', source, re.I) else 'Unknown'
-    paper = re.search(r'paper[\s_-]*([12])\s*([ab])?', source, re.I)
-    return dict(year=year, level=level, paper=('Paper ' + paper[1] + (paper[2] or '').upper()) if paper else 'Unknown',
+    paper = re.search(r'paper[\s_-]*([123])(?:[\s_-]*([ab])(?![a-z]))?(?![0-9])', source, re.I)
+    suffix = (paper[2] or '').upper() if paper and paper[1] == '1' else ''
+    return dict(year=year, level=level, paper=('Paper ' + paper[1] + suffix) if paper else 'Unknown',
                 syllabus='2025' if year and year >= 2025 else 'Legacy' if year else 'Unknown')
 
 

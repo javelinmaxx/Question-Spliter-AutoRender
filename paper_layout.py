@@ -11,7 +11,7 @@ def paper_family(question):
 
 def group_questions(questions):
     """Stable grouping: preserve teacher/fill order inside each paper family."""
-    return sorted(questions, key=lambda q: {'Paper 1': 0, 'Paper 2': 1}.get(paper_family(q), 2))
+    return sorted(questions, key=lambda q: {'Paper 1': 0, 'Paper 2': 1, 'Paper 3': 2}.get(paper_family(q), 3))
 
 
 def content_bounds(page, rect):

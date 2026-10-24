@@ -1,5 +1,6 @@
 """Single-user local question bank. Run with python app.py."""
 import json
+import hashlib
 import os
 import sqlite3
 import uuid
@@ -11,8 +12,9 @@ from pathlib import Path
 import fitz
 from flask import Flask, jsonify, render_template, request, send_file
 
-from physics import TOPICS, choose_questions, extract, render_question, validate_regions, suggest, custom_tags, HL_ONLY_TOPICS, validate_level_topics
+from physics import TOPICS, choose_questions, extract, render_question, validate_regions, suggest, custom_tags, HL_ONLY_TOPICS, validate_level_topics, document_metadata
 from ocr import region_text
+from paper_types import PAPERS, matches_paper
 from language_review import review_disagreement, context_hash, status as model_status
 from subquestions import propose_parts, question_hash, validate_layout, validate_graph, approved_map, short_variants, render_variant, choose_short
 from dependency_review import analyze_dependencies
@@ -38,6 +40,10 @@ def create_app(data_dir=None):
     for folder in ('documents', 'images', 'papers'):
         (root / folder).mkdir(exist_ok=True)
 
+    @app.get('/api/health')
+    def health():
+        return jsonify(service='ibdp-physics-question-bank', data_id=hashlib.sha256(str(root).encode()).hexdigest())
+
     def db():
         connection = sqlite3.connect(root / 'bank.sqlite3')
         connection.row_factory = sqlite3.Row
@@ -52,12 +58,27 @@ def create_app(data_dir=None):
         ''')
 
     # Upgrade earlier local banks once; preserve all saved annotations.
+    def upgrade_unknown_paper(question, source_paper):
+        if question.get('paper', 'Unknown') == 'Unknown' and source_paper == 'Paper 3':
+            mapping = question.get('subquestions')
+            current_map = mapping and mapping.get('source_hash') == question_hash(question)
+            question['paper'] = 'Paper 3'
+            if current_map:
+                mapping['source_hash'] = question_hash(question)
+
     with db() as conn:
-        source_levels = {}
-        for row in conn.execute('SELECT id,data FROM documents').fetchall():
+        source_levels, source_papers = {}, {}
+        for row in conn.execute('SELECT id,filename,data FROM documents').fetchall():
             value = json.loads(row['data'])
+            metadata = value.setdefault('metadata', {})
+            if metadata.get('paper', 'Unknown') == 'Unknown':
+                text = '\n'.join(p.get('native') or p.get('text', '') for p in value.get('text_pages', [])[:4])
+                if document_metadata(text, row['filename'])['paper'] == 'Paper 3':
+                    metadata['paper'] = 'Paper 3'
+            source_papers[row['id']] = metadata.get('paper', 'Unknown')
             source_levels[row['id']] = value.get('metadata', {}).get('level', 'Unknown')
             for candidate in value.get('questions', []):
+                upgrade_unknown_paper(candidate, source_papers[row['id']])
                 candidate['source_level'] = source_levels[row['id']]
                 refresh_timing(candidate)
             conn.execute('UPDATE documents SET data=? WHERE id=?', (json.dumps(value), row['id']))
@@ -67,6 +88,7 @@ def create_app(data_dir=None):
                 conn.execute('INSERT OR IGNORE INTO source_fingerprints VALUES (?, ?)', (source_hash(path), row['id']))
         for row in conn.execute('SELECT id, document_id, data FROM questions').fetchall():
             value = json.loads(row['data'])
+            upgrade_unknown_paper(value, source_papers.get(row['document_id']))
             original_level = source_levels.get(row['document_id'])
             value.setdefault('source_level', original_level if original_level in ('HL','SL') else value.get('level'))
             refresh_timing(value)
@@ -389,7 +411,7 @@ def create_app(data_dir=None):
             doc['questions'].append(candidate)
         value = request.get_json() or {}
         paper = value.get('paper', candidate['paper'])
-        if paper not in ('Paper 1', 'Paper 1A', 'Paper 1B', 'Paper 2'):
+        if paper not in PAPERS:
             raise ValueError('Choose a paper type before language review.')
         with fitz.open(source_path(doc_id)) as pdf:
             regions = validate_regions(pdf, value.get('regions', candidate['regions']))
@@ -420,7 +442,7 @@ def create_app(data_dir=None):
         if level not in (('HL', 'SL', 'Both', 'Unknown') if imported else ('HL', 'SL', 'Both')) or syllabus not in (('2025', 'Legacy', 'Unknown') if imported else ('2025', 'Legacy')):
             raise ValueError('Select the level and syllabus before saving.')
         paper = value.get('paper')
-        if paper not in (('Paper 1', 'Paper 1A', 'Paper 1B', 'Paper 2', 'Unknown') if imported else ('Paper 1', 'Paper 1A', 'Paper 1B', 'Paper 2')):
+        if paper not in ((*PAPERS, 'Unknown') if imported else PAPERS):
             raise ValueError('Select a valid paper.')
         topics = value.get('topics', [])
         if not isinstance(topics, list) or any(t not in TOPICS for t in topics):
@@ -499,7 +521,7 @@ def create_app(data_dir=None):
         doc = document(doc_id)
         value = request.get_json() or {}
         paper = value.get('paper', 'Unknown')
-        if paper not in ('Unknown', 'Paper 1', 'Paper 1A', 'Paper 1B', 'Paper 2'):
+        if paper not in ('Unknown', *PAPERS):
             raise ValueError('Choose a valid paper type.')
         with fitz.open(source_path(doc_id)) as pdf:
             regions = validate_regions(pdf, value['regions'])
@@ -549,10 +571,11 @@ def create_app(data_dir=None):
         mode = normalize_mode(request.args.get('level'))
         lower, upper = year_range(request.args)
         items = [q for q in items if matches_year(q.get('year'), lower, upper)]
-        for field in ('syllabus', 'paper', 'difficulty'):
+        for field in ('syllabus', 'difficulty'):
             term = request.args.get(field)
             if term:
                 items = [q for q in items if str(q[field]) == term or (field == 'level' and q[field] == 'Both')]
+        items = [q for q in items if matches_paper(q['paper'], request.args.get('paper'))]
         topics = [t for t in request.args.getlist('topic') if t]
         if sl_mode(mode):
             validate_level_topics(topics, 'SL')

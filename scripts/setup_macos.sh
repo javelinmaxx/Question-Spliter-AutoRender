@@ -4,13 +4,15 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: ./scripts/setup_macos.sh [--with-model] [--download-model] [--no-start]
+Usage: ./scripts/setup_macos.sh [--bootstrap] [--with-model] [--download-model] [--no-start]
 
 Install Homebrew Python 3.12 and English Tesseract OCR, prepare .venv,
 install development dependencies, run the test suite, and start the app.
 The app opens your default browser after binding its local port.
 
   --with-model      Also build the optional local language-model runtime.
+  --bootstrap       Install Homebrew if missing using its official installer.
+                    macOS may ask for your password or developer tools.
   --download-model  Also download and verify official Qwen 1.5B GGUF weights.
                     Implies --with-model; needs Internet access and disk space.
   --no-start        Install and test only, without starting the application.
@@ -27,9 +29,11 @@ fail() { printf 'Setup failed: %s\n' "$*" >&2; exit 1; }
 with_model=0
 download_model=0
 start_app=1
+bootstrap=0
 for argument in "$@"; do
   case "$argument" in
     --with-model) with_model=1 ;;
+    --bootstrap) bootstrap=1 ;;
     --download-model) with_model=1; download_model=1 ;;
     --start) start_app=1 ;;
     --no-start) start_app=0 ;;
@@ -43,6 +47,18 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 repo_dir="$(cd "$script_dir/.." && pwd)"
 cd "$repo_dir"
 
+if [ "$bootstrap" -eq 1 ] && ! command -v brew >/dev/null 2>&1 &&
+   [ ! -x /opt/homebrew/bin/brew ] && [ ! -x /usr/local/bin/brew ]; then
+  printf 'Installing Homebrew from https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh\n'
+  bootstrap_file="$(mktemp -t physics-homebrew)"
+  trap 'rm -f "$bootstrap_file"' EXIT
+  /usr/bin/curl --fail --show-error --location --proto '=https' --tlsv1.2 \
+    https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh -o "$bootstrap_file"
+  /bin/bash "$bootstrap_file"
+  rm -f "$bootstrap_file"
+  trap - EXIT
+fi
+
 # A fresh macOS shell may not yet have Homebrew on PATH.
 if command -v brew >/dev/null 2>&1; then
   brew_command="$(command -v brew)"
@@ -53,8 +69,13 @@ elif [ -x /usr/local/bin/brew ]; then
 else
   fail 'Install Homebrew from https://brew.sh, then rerun this script.'
 fi
-command -v xcode-select >/dev/null 2>&1 && xcode-select -p >/dev/null 2>&1 ||
+if ! command -v xcode-select >/dev/null 2>&1 || ! xcode-select -p >/dev/null 2>&1; then
+  if [ "$bootstrap" -eq 1 ]; then
+    /usr/bin/xcode-select --install || true
+    fail 'Finish the macOS developer-tools installation dialog, then double-click Install and Start.command again.'
+  fi
   fail 'Install Xcode Command Line Tools with: xcode-select --install; then rerun.'
+fi
 
 printf 'Installing Python 3.12 and Tesseract through Homebrew…\n'
 "$brew_command" install python@3.12 tesseract
@@ -131,7 +152,7 @@ fi
   fi
 } > "$helper"
 
-printf '\nSetup complete. To launch again later, run:\n'
+printf '\nSetup complete. Double-click "Install and Start.command" to launch again later.\nOr run:\n'
 printf '  source .venv/physics-env.sh\n  python app.py\n'
 if [ "$with_model" -eq 1 ] && [ "$download_model" -eq 0 ] && [ -z "$model_path" ]; then
   printf '\nModel runtime installed; weights are not configured. Rerun with --download-model to fetch them.\n'

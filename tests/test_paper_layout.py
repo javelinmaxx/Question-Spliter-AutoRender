@@ -207,3 +207,45 @@ def test_reduced_half_page_questions_still_start_paper_two_on_a_new_page():
         layout.add_question(source,q,2)
         assert len(output)==2
         assert 'Question 2' not in output[0].get_text() and 'Question 2' in output[1].get_text()
+
+
+def test_obsolete_option_headings_removed_but_question_wording_and_choices_remain():
+    from paper_labels import obsolete_option_line
+    with fitz.open() as source,fitz.open() as output:
+        page=source.new_page()
+        page.insert_text((50,80),'Option A - Relativity')
+        page.insert_text((50,110),'(Option A continued)')
+        page.insert_text((50,150),'5. Explain why option A is correct.')
+        page.insert_text((65,180),'A. The first option conserves momentum.')
+        q=question([dict(page=0,rect=[30,60,565,240])])
+        report=erase_source_numbers(source,q,{})
+        assert report['erased_administrative']==2
+        assert report['erased_labels']==1
+        add_question_pages(output,source,q,1)
+        text=output[0].get_text()
+        assert 'Option A -' not in text and 'continued' not in text
+        assert 'Explain why option A is correct.' in text and 'A. The first option' in text
+    assert obsolete_option_line('Option B: Engineering physics [15 marks]')
+    assert obsolete_option_line('Answer all questions from one of the options.')
+    assert obsolete_option_line('Answer all of the questions from one of the options.')
+    assert not obsolete_option_line('Which option gives the correct SI unit?')
+    assert not obsolete_option_line('Option A - momentum is conserved')
+
+
+def test_scanned_option_heading_and_number_are_removed_without_losing_the_question():
+    with fitz.open() as native:
+        page=native.new_page()
+        page.insert_text((50,100),'Option D - Astrophysics',fontsize=16)
+        page.insert_text((50,140),'5. Calculate the orbital velocity.',fontsize=16)
+        page.insert_text((65,180),'A. The first option is correct.',fontsize=16)
+        png=page.get_pixmap(matrix=fitz.Matrix(2,2)).tobytes('png')
+    with fitz.open() as source,fitz.open() as output:
+        page=source.new_page();page.insert_image(page.rect,stream=png)
+        q=question([dict(page=0,rect=[30,75,565,230])])
+        report=erase_source_numbers(source,q,{})
+        assert report['erased_administrative']==1 and report['erased_labels']==1
+        add_question_pages(output,source,q,1)
+        page=output[0];tp=page.get_textpage_ocr(language='eng',dpi=200,full=True)
+        text=page.get_text(textpage=tp)
+        assert 'Option D' not in text and not re.search(r'(?m)^5\.',text)
+        assert 'orbital velocity' in text and 'first option' in text
