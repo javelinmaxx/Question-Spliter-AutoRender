@@ -3,6 +3,7 @@ from io import BytesIO
 
 import fitz
 from PIL import Image
+from source_origin import origin_label
 
 
 def paper_family(question):
@@ -76,7 +77,11 @@ class PaperLayout:
         self.cursor = self.TOP
 
     def reference(self, question):
-        text = f"Source: {question['filename'][:55].encode('ascii', 'replace').decode()} | {question['year']} | {question['paper']}"
+        filename = question['filename'][:55].encode('ascii', 'replace').decode()
+        suffix = f" | {question['year']} | {question['paper']} | {origin_label(question)}"
+        while filename and fitz.get_text_length('Source: ' + filename + suffix, fontsize=8) > 495:
+            filename = filename[:-1]
+        text = 'Source: ' + filename + suffix
         self.pdf[self.page_index].insert_text((50, self.cursor + 10), text, fontsize=8)
         self.cursor += self.REFERENCE
 

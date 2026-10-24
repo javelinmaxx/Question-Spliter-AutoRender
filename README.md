@@ -261,3 +261,15 @@ The saved baseline is in [`TEST SAMPLES/results/`](<TEST SAMPLES/results/README.
 ```
 
 Omit `--output` to target `TEST SAMPLES/results/`. Existing changed files are preserved; regenerate into a fresh directory to review changes. Add `--language-report /path/to/language-report.json` to include actual recorded model-review results. Full-page OCR caches, working databases and generated practice PDFs are not copied into the committed baseline.
+
+## Subject extension interfaces
+
+See [Adding another subject](docs/subject-extensions.md) for the versioned Python analysis, curriculum, assessment and rendering ports, reusable PDF/OCR engine, canonical analysis data, adapter registration, validation CLI and discovery APIs. Physics now uses these analysis/rendering seams, and saved records carry `subject_id`. The interactive bank remains Physics-only; the guide identifies the remaining work before enabling another subject's UI. `GET /api/subjects` advertises which adapters are actually bank-enabled.
+
+## Official IB and self-made sources
+
+Imports can use **Automatic from saved text**, **Official IB**, **Self-made** or **Unspecified**. Automatic source analysis checks the first four saved pages, using OCR text first, with saved PDF text as a fallback when OCR has not run. It requires explicit copyright/session evidence or an explicit self-made-paper label; filenames alone do not establish provenance. Conflicting/missing evidence remains Unspecified.
+
+Every startup reruns this source analysis for every saved paper, even when an older origin result exists. It reads the saved page data without running OCR or re-splitting PDFs. The audit stores matched quotations, page numbers, text source, content hash, detector version and time. Automatic document labels propagate to inherited bank questions; explicit document labels and individual question overrides survive startup. Existing unlabelled papers are classified only when saved text provides evidence.
+
+Under **Import & review**, **Apply source origin** updates a paper and its inherited questions. Choose **Automatic from saved text** to restore automatic classification. A reviewed question can **Inherit paper source** or hold an explicit individual label. Reuploading an identical PDF reuses its existing labels; use these controls to change them. Library and paper-builder source filters distinguish Official IB, Self-made and Unspecified. Source availability diagnostics explain exclusions. Generated covers and question references also show the source label. These labels record provenance/classification, not an independent authenticity certification.

@@ -7,8 +7,10 @@ from topic_scope import scope_decision
 from year_filter import matches_year
 from level_filter import exclusion as level_exclusion
 from paper_types import matches_paper
+from source_origin import ORIGINS
 
 REASONS = {
+    'origin': ('Source origin does not match', 'Choose All sources, Official IB, Self-made or Unspecified to match the saved source labels.'),
     'sl_review': ('SL suitability needs review', 'This HL question has unknown or mixed-depth topics. Review its content and confirm SL suitability in question review before including it for SL.'),
     'year': ('Year is outside the selected range or unknown', 'Widen or clear the year range, or review a question with an unknown year.'),
     'analysis_outdated': ('Question needs review after reanalysis', 'Current rules no longer detect this imported question. Review its boundaries and tags, then save it explicitly before using it in a paper.'),
@@ -28,7 +30,7 @@ REASONS = {
 }
 
 
-def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode, target, source_ids, document_ids=(), year_min=None, year_max=None):
+def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode, target, source_ids, document_ids=(), year_min=None, year_max=None, origin=None):
     """Return fitting original parents and a mutually exclusive exclusion breakdown."""
     fitting, excluded, matching_minutes, minimums = [], {}, [], []
     allowed_budget = math.floor(target * 10 + 1e-8) / 10
@@ -45,6 +47,7 @@ def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode,
     seen_content = set()
     for q in bank:
         code = level_exclusion(q,level) or ('syllabus' if q['syllabus'] != syllabus else
+                'origin' if origin and q.get('origin', 'unknown') != origin else
                 'year' if not matches_year(q.get('year'), year_min, year_max) else
                 'paper' if not matches_paper(q['paper'], paper) else
                 'document' if document_ids and q['document_id'] not in document_ids else
@@ -86,7 +89,8 @@ def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode,
     report = dict(summary=summary, total_saved=len(bank), uploaded_documents=len(documents),
                   analyzed_not_imported=unsaved, matching_filters=len(minimums), fitting_budget=len(fitting),
                   shortest_valid_minutes=shortest, available_minutes=round(sum(matching_minutes), 2),
-                  requested=dict(level=level, syllabus=syllabus, paper=paper or 'Any', topics=topics, render_mode=mode, minutes=target, document_ids=list(document_ids), year_min=year_min, year_max=year_max),
+                  requested=dict(level=level, syllabus=syllabus, paper=paper or 'Any', topics=topics, render_mode=mode, minutes=target, document_ids=list(document_ids), year_min=year_min, year_max=year_max, origin=origin),
+                  bank_origins=dict(Counter(ORIGINS.get(q.get('origin'),'Unspecified') for q in bank)),
                   bank_levels=dict(Counter(q['level'] for q in bank)), bank_syllabuses=dict(Counter(q['syllabus'] for q in bank)),
                   bank_papers=dict(Counter(q['paper'] for q in bank)), exclusions=list(excluded.values()))
     return fitting, report

@@ -15,6 +15,7 @@ from flask import Flask, g, jsonify, render_template, request, send_file
 from physics import TOPICS, choose_questions, extract, render_question, validate_regions, suggest, custom_tags, HL_ONLY_TOPICS, validate_level_topics, document_metadata
 from ocr import region_text
 from paper_types import PAPERS, matches_paper
+from source_origin import ORIGINS, validate_origin, analyze_origin
 from language_review import review_disagreement, context_hash, status as model_status
 from subquestions import propose_parts, question_hash, validate_layout, validate_graph, approved_map, short_variants, render_variant, choose_short
 from dependency_review import analyze_dependencies
@@ -31,9 +32,26 @@ from assessment_timing import estimate as time_estimate, refresh as refresh_timi
 from level_filter import normalize_mode, sl_mode, exclusion as level_exclusion, suitability, LABELS as LEVEL_LABELS
 from watermarks import prepare as prepare_watermarks, filter_analysis as filter_watermarks, rejected as watermark_rejected, page_records as watermark_records
 from upload_filter import markscheme_name, markscheme_heading
+from subjects import registry as subject_registry, ACTIVE_SUBJECT_ID, API_VERSION as SUBJECT_API_VERSION
+from subjects.pipeline import analyze as analyze_subject
+
+SUBJECT = subject_registry.get(ACTIVE_SUBJECT_ID)
+# Live extension seams; the existing names remain compatible with integrations.
+suggest = SUBJECT.analysis.suggest
+custom_tags = SUBJECT.analysis.custom_tags
+render_question = SUBJECT.rendering.render_question
+add_practice_cover = SUBJECT.rendering.add_cover
+erase_source_numbers = SUBJECT.rendering.clean_source
 
 
-def create_app(data_dir=None):
+def extract(path, filename, ocr_mode='auto', page_records=None, ocr_cache=None):
+    return analyze_subject(SUBJECT, path, filename, ocr_mode=ocr_mode, page_records=page_records, ocr_cache=ocr_cache)
+
+
+def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
+    subject = subject_registry.get(subject_id)
+    if subject.id != ACTIVE_SUBJECT_ID:
+        raise ValueError('This interactive bank currently enables IB DP Physics. Use the subject adapter ports for other subjects; see docs/subject-extensions.md.')
     app = Flask(__name__)
     app.config['MAX_CONTENT_LENGTH'] = 40 * 1024 * 1024
     root = Path(data_dir or os.environ.get('QUESTION_BANK_DATA', Path(__file__).parent / 'instance')).resolve()
@@ -58,6 +76,10 @@ def create_app(data_dir=None):
         CREATE TABLE IF NOT EXISTS source_fingerprints (sha256 TEXT PRIMARY KEY, document_id TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS application_settings (key TEXT PRIMARY KEY, data TEXT NOT NULL);
         ''')
+        stored = conn.execute("SELECT data FROM application_settings WHERE key='bank_subject'").fetchone()
+        if stored and json.loads(stored['data'])['id'] != subject.id:
+            raise ValueError('This data directory belongs to another subject. Use a separate QUESTION_BANK_DATA directory.')
+        conn.execute("INSERT OR IGNORE INTO application_settings VALUES ('bank_subject', ?)", (json.dumps(dict(id=subject.id)),))
 
     def saved_prerequisites(conn):
         row = conn.execute("SELECT data FROM application_settings WHERE key='topic_prerequisites'").fetchone()
@@ -65,6 +87,14 @@ def create_app(data_dir=None):
 
     @app.before_request
     def load_prerequisites():
+        supplied_subject = request.args.get('subject_id')
+        body = request.get_json(silent=True) if request.is_json else None
+        if isinstance(body, dict) and 'subject_id' in body:
+            supplied_subject = body['subject_id']
+        if request.endpoint == 'upload' and 'subject_id' in request.form:
+            supplied_subject = request.form['subject_id']
+        if supplied_subject is not None and supplied_subject != subject.id:
+            raise ValueError('This request belongs to another subject bank.')
         with db() as conn:
             policy = effective_policy(saved_prerequisites(conn))
         g.prerequisite_token = active_policy.set(policy)
@@ -85,10 +115,18 @@ def create_app(data_dir=None):
                 mapping['source_hash'] = question_hash(question)
 
     with db() as conn:
-        source_levels, source_papers = {}, {}
+        source_levels, source_papers, source_origins = {}, {}, {}
         for row in conn.execute('SELECT id,filename,data FROM documents').fetchall():
             value = json.loads(row['data'])
+            if value.get('subject_id', subject.id) != subject.id:
+                raise ValueError('A saved document belongs to another subject. Use a separate subject data directory.')
+            value['subject_id'] = subject.id
             metadata = value.setdefault('metadata', {})
+            value['origin_analysis'] = analyze_origin(value.get('text_pages', []))
+            if value.get('origin_mode') != 'manual':
+                value['origin'] = value['origin_analysis']['origin']
+                value['origin_mode'] = 'automatic'
+            source_origins[row['id']] = value.get('origin', 'unknown')
             if metadata.get('paper', 'Unknown') == 'Unknown':
                 text = '\n'.join(p.get('native') or p.get('text', '') for p in value.get('text_pages', [])[:4])
                 if document_metadata(text, row['filename'])['paper'] == 'Paper 3':
@@ -96,6 +134,9 @@ def create_app(data_dir=None):
             source_papers[row['id']] = metadata.get('paper', 'Unknown')
             source_levels[row['id']] = value.get('metadata', {}).get('level', 'Unknown')
             for candidate in value.get('questions', []):
+                candidate['subject_id'] = subject.id
+                if not candidate.get('origin_override'):
+                    candidate['origin'] = value['origin']
                 upgrade_unknown_paper(candidate, source_papers[row['id']])
                 candidate['source_level'] = source_levels[row['id']]
                 refresh_timing(candidate)
@@ -106,7 +147,12 @@ def create_app(data_dir=None):
                 conn.execute('INSERT OR IGNORE INTO source_fingerprints VALUES (?, ?)', (source_hash(path), row['id']))
         for row in conn.execute('SELECT id, document_id, data FROM questions').fetchall():
             value = json.loads(row['data'])
+            if value.get('subject_id', subject.id) != subject.id:
+                raise ValueError('A saved question belongs to another subject.')
+            value['subject_id'] = subject.id
             upgrade_unknown_paper(value, source_papers.get(row['document_id']))
+            if not value.get('origin_override'):
+                value['origin'] = source_origins.get(row['document_id'], 'unknown')
             original_level = source_levels.get(row['document_id'])
             value.setdefault('source_level', original_level if original_level in ('HL','SL') else value.get('level'))
             refresh_timing(value)
@@ -265,9 +311,24 @@ def create_app(data_dir=None):
 
     @app.get('/api/catalog')
     def catalog():
-        return jsonify(topics=TOPICS, hl_only_topics=sorted(HL_ONLY_TOPICS), prerequisite_policy=current_policy(),
+        return jsonify(topics=TOPICS, hl_only_topics=sorted(HL_ONLY_TOPICS), prerequisite_policy=current_policy(), source_origins=ORIGINS,
+                       subject=dict(id=subject.id, name=subject.name, adapter_version=subject.version), subject_api_version=SUBJECT_API_VERSION,
                        level_modes=LEVEL_LABELS, timing_source=TIMING_SOURCE,
                        timing_profiles=[dict(syllabus=s,level=l,paper=p,minutes=m,marks=k,minutes_per_mark=m/k) for (s,l,p),(m,k) in TIME_PROFILES.items()])
+
+    @app.get('/api/subjects')
+    def subjects():
+        return jsonify(schema_version=SUBJECT_API_VERSION, active_subject=subject.id,
+                       subjects=[dict(id=item.id,name=item.name,adapter_version=item.version,bank_enabled=item.id==ACTIVE_SUBJECT_ID,
+                                      ports=['analysis','curriculum','assessment','rendering']) for item in subject_registry.list()])
+
+    @app.get('/api/subjects/<subject_id>/catalog')
+    def subject_catalog(subject_id):
+        try:
+            adapter = subject_registry.get(subject_id)
+        except ValueError as error:
+            return jsonify(error=str(error)), 404
+        return jsonify(adapter.catalog())
 
     @app.get('/api/prerequisites')
     def get_prerequisites():
@@ -296,6 +357,9 @@ def create_app(data_dir=None):
 
     @app.post('/api/documents')
     def upload():
+        declared_origin = request.form.get('origin', 'auto')
+        if declared_origin != 'auto':
+            validate_origin(declared_origin)
         uploaded = request.files.get('file')
         if not uploaded or not uploaded.filename.lower().endswith('.pdf'):
             raise ValueError('Choose a PDF file.')
@@ -348,6 +412,12 @@ def create_app(data_dir=None):
             path.unlink(missing_ok=True)
             return skipped_markscheme()
         pending = [q for q in result['questions'] if q.get('ocr_comparison', {}).get('status') == 'disagreement']
+        result['origin_analysis'] = analyze_origin(result.get('text_pages', []))
+        result['origin_mode'] = 'automatic' if declared_origin == 'auto' else 'manual'
+        origin = result['origin_analysis']['origin'] if declared_origin == 'auto' else declared_origin
+        result['origin'] = origin
+        for candidate in result['questions']:
+            candidate['origin'] = origin
         result['analysis'] = dict(version=1, rules_hash=rules_hash(), source_sha256=digest, status='complete', completed_at=datetime.now(timezone.utc).isoformat(),
                                   ocr_mode=request.form.get('ocr_mode', 'auto'), auto_import=request.form.get('auto_import') == '1',
                                   language_review_status='pending' if pending else 'complete')
@@ -371,6 +441,36 @@ def create_app(data_dir=None):
         if request.form.get('auto_import') == '1':
             response['import_result'] = import_document_questions(doc_id)
         return jsonify(response), 201
+
+    @app.post('/api/documents/<doc_id>/origin')
+    def set_document_origin(doc_id):
+        declared_origin = (request.get_json() or {}).get('origin')
+        if declared_origin != 'auto':
+            validate_origin(declared_origin)
+        updated, preserved = 0, 0
+        with db() as conn:
+            conn.execute('BEGIN IMMEDIATE')
+            row = conn.execute('SELECT data FROM documents WHERE id=?', (doc_id,)).fetchone()
+            if row is None:
+                raise ValueError('Document not found.')
+            data = json.loads(row['data'])
+            previous = data.get('origin', 'unknown')
+            data['origin_analysis'] = analyze_origin(data.get('text_pages', []))
+            data['origin_mode'] = 'automatic' if declared_origin == 'auto' else 'manual'
+            origin = data['origin_analysis']['origin'] if declared_origin == 'auto' else declared_origin
+            data['origin'] = origin
+            for candidate in data.get('questions', []):
+                candidate['origin'] = origin
+            conn.execute('UPDATE documents SET data=? WHERE id=?', (json.dumps(data), doc_id))
+            for row in conn.execute('SELECT id,data FROM questions WHERE document_id=?', (doc_id,)).fetchall():
+                question = json.loads(row['data'])
+                if question.get('origin_override') or question.get('origin', 'unknown') not in (previous, 'unknown'):
+                    preserved += 1
+                    continue
+                question['origin'] = origin
+                conn.execute('UPDATE questions SET data=? WHERE id=?', (json.dumps(question), row['id']))
+                updated += 1
+        return jsonify(document_id=doc_id, origin=origin, updated=updated, preserved=preserved)
 
     @app.get('/api/documents/<doc_id>')
     def get_document(doc_id):
@@ -399,6 +499,11 @@ def create_app(data_dir=None):
         path = source_path(doc_id)
         mode = old.get('analysis', {}).get('ocr_mode', 'auto')
         result = extract(path, old['filename'], ocr_mode=mode, page_records=old['text_pages'])
+        result['origin_analysis'] = analyze_origin(result.get('text_pages', []))
+        result['origin_mode'] = old.get('origin_mode', 'automatic')
+        result['origin'] = old.get('origin', 'unknown') if result['origin_mode'] == 'manual' else result['origin_analysis']['origin']
+        for candidate in result['questions']:
+            candidate['origin'] = result['origin']
         if old.get('watermark'):
             filter_watermarks(result, old['watermark'])
         previous = {q['number']: q for q in old['questions']}
@@ -473,6 +578,8 @@ def create_app(data_dir=None):
 
     def persist_question(value, imported=False):
         doc = document(value['document_id'])
+        if value.get('subject_id', subject.id) != subject.id or doc.get('subject_id', subject.id) != subject.id:
+            raise ValueError('Question and document must belong to this subject bank.')
         number = int(value['number'])
         if not 1 <= number <= 999:
             raise ValueError('Question number must be between 1 and 999.')
@@ -519,11 +626,14 @@ def create_app(data_dir=None):
         prior = next((q.get('language_review') for q in doc['questions'] if q['number'] == number), None)
         language_result = current_review(doc, dict(regions=regions, paper=paper), prior)
         saved = dict(number=number, year=year, level=level, syllabus=syllabus, paper=paper,
+                     subject_id=subject.id,
+                     origin=doc.get('origin', 'unknown') if value.get('origin','inherit')=='inherit' or imported else validate_origin(value['origin']),
                      topics=topics, minutes=minutes, difficulty=difficulty, marks=marks,
                      tags=tags, commands=commands, regions=regions, text=text,
                      filename=doc['filename'], topic_evidence=suggestions['topic_evidence'],
                      ocr_comparison=comparison, level_conflicts=suggestions['level_conflicts'], review_status='imported' if imported else 'reviewed', language_review=language_result)
         original_level = doc.get('metadata', {}).get('level')
+        saved['origin_override'] = not imported and value.get('origin','inherit')!='inherit'
         saved['source_level'] = original_level if original_level in ('HL','SL') else level
         saved['watermark_key'] = doc.get('watermark', {}).get('key')
         sl_suitability = value.get('sl_suitability', 'automatic')
@@ -606,6 +716,9 @@ def create_app(data_dir=None):
     @app.get('/api/questions')
     def search():
         items = questions()
+        origin = validate_origin(request.args.get('origin'), filtering=True)
+        if origin:
+            items = [q for q in items if q.get('origin', 'unknown') == origin]
         mode = normalize_mode(request.args.get('level'))
         lower, upper = year_range(request.args)
         items = [q for q in items if matches_year(q.get('year'), lower, upper)]
@@ -714,7 +827,7 @@ def create_app(data_dir=None):
         eligible, diagnostics = diagnose_selection(questions(), analyzed, level=level, syllabus=syllabus,
                                                    paper=value.get('paper'), topics=selected_topics, mode=mode,
                                                    target=target, source_ids=source_ids, document_ids=document_ids,
-                                                   year_min=lower, year_max=upper)
+                                                   year_min=lower, year_max=upper, origin=validate_origin(value.get('origin'), filtering=True))
         return eligible, diagnostics
 
     def automatic_choice(eligible, target, topics, mode):
@@ -867,6 +980,11 @@ def create_app(data_dir=None):
                 filter_watermarks(result, report)
             if previous.get('deleted_question_ids'):
                 result['watermark']['deleted_question_ids'] = previous['deleted_question_ids']
+            result['origin'] = doc.get('origin', 'unknown')
+            result['origin_mode'] = doc.get('origin_mode', 'automatic')
+            result['origin_analysis'] = analyze_origin(result.get('text_pages', []))
+            for candidate in result.get('questions', []):
+                candidate['origin'] = result['origin']
             with db() as conn:
                 conn.execute('UPDATE documents SET data=? WHERE id=?', (json.dumps(result), doc_id))
         deleted, updated = [], []
