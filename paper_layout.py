@@ -62,6 +62,7 @@ class PaperLayout:
     """Flow complete question groups into remaining space at a readable scale."""
     TOP, BOTTOM = 35, 780
     HEADING, REFERENCE, QUESTION_GAP, CROP_GAP = 25, 14, 18, 6
+    MIN_SCALE = .90  # Modest reduction only; retain readable exam text/diagrams.
 
     def __init__(self, pdf):
         self.pdf = pdf
@@ -85,12 +86,26 @@ class PaperLayout:
         if not clips:
             return 0
         heights = [clip.height * 495 / clip.width for _, clip in clips]
-        total = self.HEADING + sum(heights) + self.CROP_GAP * (len(clips) - 1) + self.REFERENCE
+        body_height = sum(heights)
+        overhead = self.HEADING + self.CROP_GAP * (len(clips) - 1) + self.REFERENCE
+        scale = 1.
+        # Reserve the inter-question gap when sizing a half-page group. Size
+        # the first group too, so two slightly oversized halves can both fit.
+        half_page = (self.BOTTOM - self.TOP - self.QUESTION_GAP) / 2
+        half_scale = (half_page - overhead) / body_height
+        if self.MIN_SCALE <= half_scale < 1:
+            scale = half_scale
+        family = paper_family(question)
+        if self.page_index is not None and self.family == family:
+            remaining_scale = (self.BOTTOM - self.cursor - overhead) / body_height
+            if self.MIN_SCALE <= remaining_scale < scale:
+                scale = remaining_scale
+        heights = [height * scale for height in heights]
+        total = overhead + sum(heights)
         # If a whole parent will fit on a fresh page, do not split it simply
         # because another question has already used some of the current page.
         # Larger parents also start fresh, keeping their continuations together.
-        family = paper_family(question)
-        if self.page_index is None or self.family != family or self.cursor + total > self.BOTTOM:
+        if self.page_index is None or self.family != family or self.cursor + total > self.BOTTOM + .01:
             self.new_page()
         self.family = family
         used_pages = set()
@@ -111,7 +126,7 @@ class PaperLayout:
                 needs_heading = False
             else:
                 self.cursor += self.CROP_GAP
-            page.show_pdf_page(fitz.Rect(50, self.cursor, 545, self.cursor + height),
+            page.show_pdf_page(fitz.Rect(50, self.cursor, 50 + 495 * scale, self.cursor + height),
                                source, page_number, clip=clip)
             self.cursor += height
             used_pages.add(self.page_index)

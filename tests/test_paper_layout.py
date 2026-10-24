@@ -149,3 +149,61 @@ def test_short_crops_of_same_parent_combine_without_duplicate_continuation_heade
         text=output[0].get_text()
         assert text.count('Question 3')==1 and '(continued)' not in text
         assert text.index('(a)')<text.index('(b)')
+
+
+def test_two_slightly_oversized_half_page_questions_share_a_page_without_splitting():
+    with fitz.open() as source, fitz.open() as output:
+        page=source.new_page()
+        page.insert_text((50,100),'HALF_PAGE_BODY: Calculate the velocity.',fontsize=12)
+        page.draw_rect(fitz.Rect(70,140,430,455))
+        q=question([dict(page=0,rect=[30,75,565,480])])
+        clips=list(question_clips(source,q['regions']))
+        nominal=sum(c.height*495/c.width for _,c in clips)+PaperLayout.HEADING+PaperLayout.REFERENCE
+        assert nominal>(PaperLayout.BOTTOM-PaperLayout.TOP-PaperLayout.QUESTION_GAP)/2
+        layout=PaperLayout(output)
+        for number in (1,2):
+            assert layout.add_question(source,q,number)==1
+        assert len(output)==1
+        text=output[0].get_text()
+        assert text.count('HALF_PAGE_BODY')==2
+        assert re.findall(r'Question (\d+)\n',text)==['1','2'] and '(continued)' not in text
+        spans=[s for b in output[0].get_text('dict')['blocks'] for l in b.get('lines',[]) for s in l['spans']]
+        bodies=[s for s in spans if 'HALF_PAGE_BODY' in s['text']]
+        nominal_font=12*495/535
+        assert all(nominal_font*.90-.01<=s['size']<nominal_font for s in bodies)
+        assert all(abs(s['size']-12)<.01 for s in spans if s['text'].startswith('Question '))
+        assert all(abs(s['size']-8)<.01 for s in spans if s['text'].startswith('Source:'))
+        assert max(b[3] for b in output[0].get_text('blocks'))<=PaperLayout.BOTTOM
+        diagrams=[d['rect'] for d in output[0].get_drawings()]
+        assert len(diagrams)==2
+        assert all(abs(rect.width/rect.height-360/315)<.001 for rect in diagrams)
+
+
+def test_half_page_sizing_does_not_shrink_short_questions_or_exceed_ten_percent():
+    with fitz.open() as source, fitz.open() as output:
+        page=source.new_page();page.insert_text((50,100),'SHORT_BODY',fontsize=12)
+        page=source.new_page();page.insert_text((50,100),'LARGE_BODY',fontsize=12)
+        page.draw_rect(fitz.Rect(70,140,430,530))
+        layout=PaperLayout(output)
+        short=question([dict(page=0,rect=[30,75,565,200])])
+        large=question([dict(page=1,rect=[30,75,565,550])])
+        layout.add_question(source,short,1)
+        layout.add_question(source,large,2)
+        for p in output:
+            for b in p.get_text('dict')['blocks']:
+                for line in b.get('lines',[]):
+                    for span in line['spans']:
+                        if '_BODY' in span['text']:
+                            assert abs(span['size']-12*495/535)<.01
+
+
+def test_reduced_half_page_questions_still_start_paper_two_on_a_new_page():
+    with fitz.open() as source, fitz.open() as output:
+        page=source.new_page();page.insert_text((50,100),'Half page diagram question.',fontsize=12)
+        page.draw_rect(fitz.Rect(70,140,430,455))
+        q=question([dict(page=0,rect=[30,75,565,480])])
+        layout=PaperLayout(output)
+        layout.add_question(source,dict(q,paper='Paper 1A'),1)
+        layout.add_question(source,q,2)
+        assert len(output)==2
+        assert 'Question 2' not in output[0].get_text() and 'Question 2' in output[1].get_text()
