@@ -768,7 +768,7 @@ def create_app(data_dir=None):
         numbering_cache, numbering_results = {}, {}
         original_questions = {q['id']: q for q in questions()}
         with fitz.open() as pdf:
-            add_practice_cover(pdf, level=level, syllabus=syllabus, target=target, chosen=chosen, mode=mode)
+            add_practice_cover(pdf, level=level, syllabus=syllabus, target=target, chosen=chosen, mode=mode, topics=selected_topics)
             layout = PaperLayout(pdf)
             for i, q in enumerate(chosen, 1):
                 # Keep every crop of the parent together and in source order.

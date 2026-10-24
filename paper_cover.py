@@ -1,5 +1,6 @@
 """Original practice-paper cover using familiar examination page conventions."""
 import fitz
+from physics import TOPICS
 
 
 BLACK = (0.08, 0.08, 0.08)
@@ -17,7 +18,7 @@ def duration_label(minutes):
     return ' '.join(pieces)
 
 
-def add_practice_cover(pdf, *, level, syllabus, target, chosen, mode):
+def add_practice_cover(pdf, *, level, syllabus, target, chosen, mode, topics=()):
     page = pdf.new_page(width=595, height=842)
     paper_types = sorted({q['paper'] for q in chosen})
     paper_label = paper_types[0] if len(paper_types) == 1 else 'Mixed-paper practice'
@@ -66,6 +67,14 @@ def add_practice_cover(pdf, *, level, syllabus, target, chosen, mode):
     if actual < target:
         details.append(f'The selected questions are {target - actual:g} estimated minutes below the requested length.')
     page.insert_textbox(fitz.Rect(56, top + 34, 539, top + 150), '\n'.join(details), fontsize=10, lineheight=1.5, color=GRAY)
+    page.insert_text((56, top + 163), 'Topics', fontname='hebo', fontsize=10, color=BLACK)
+    topic_text = '; '.join(f'{code} {TOPICS[code]}' for code in dict.fromkeys(topics)) if topics else 'All topics'
+    for size in (10, 9.5, 9):
+        if page.insert_textbox(fitz.Rect(56, top + 174, 539, 720), topic_text,
+                               fontsize=size, lineheight=1.3, color=BLACK) >= 0:
+            break
+    else:
+        raise ValueError('Selected topic titles do not fit the cover page.')
     page.insert_textbox(fitz.Rect(56, 734, 539, 777),
                         'Generated practice material. Not an official IB examination.\nTime estimates are approximate. This application is not affiliated with the International Baccalaureate.',
                         fontsize=8, lineheight=1.4, color=GRAY)
