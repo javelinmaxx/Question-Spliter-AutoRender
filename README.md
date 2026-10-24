@@ -174,7 +174,7 @@ For an approved, fully tagged part map, topic filtering removes tasks containing
 - **Topics, command terms and custom tags:** Custom tags combine the assigned topic/theme labels with literal matched concepts in the extracted text. MCQ command terms remain empty when no imperative prompt is identified. Contextual, rule-based topic suggestions across the 24 syllabus subtopics plus A.0, with visible matched evidence. Checks distinguish air resistance from circuits, latent heat of fusion from nuclear fusion, angular widths from rotation, and relativistic travel from stellar physics. MCQ wording is not labeled with imperative command terms. OCR/PDF topic agreement and disagreement are shown separately; agreement does **not** establish semantic correctness. Check missing topics, false matches and HL-only content. There is no automatic calibrated classifier or official syllabus verification.
 - **Time:** Uses the source-paper IB duration divided by its maximum marks (table above), or a fallback when marks/format are unknown. Paper 1A questions receive one mark each. Structured-paper marks are extracted from brackets or explicit totals. A cover-total audit warns when the question marks do not add up; OCR can omit or misread brackets. Review marks before trusting time budgets. These are editable heuristics, not official examination timing.
 - **Difficulty:** Starts as **Unrated**; set Easy, Medium or Hard during review. Automatic calibrated difficulty scoring is not implemented.
-- **Scans:** OCR text is saved and remains searchable after crop review and application restart. Equations, superscripts, tiny mark brackets and diagrams may be recognized incorrectly. If English OCR data is missing or OCR fails, a page-specific warning is shown; manual crops and tags remain available. Password-protected PDFs must be unlocked first. OCR is serialized within the application because the native Leptonica bridge cannot run concurrently in multiple threads.
+- **Scans:** OCR text is saved and remains searchable after crop review and application restart. Equations, superscripts, tiny mark brackets and diagrams may be recognized incorrectly. If English OCR data is missing or OCR fails, a page-specific warning is shown; manual crops and tags remain available. Password-protected PDFs must be unlocked first. Pages needing OCR run in separate worker processes, each with an independent PDF/Tesseract instance; results retain their original page order. The process pool is shared across uploads and reused until the server stops. Single-page OCR runs directly, and environments that cannot start workers fall back to serial processing.
 - **Paper output:** Preserves selected crop order and content, including multi-page groups. Very tall crops may be tiled across consecutive pages. It does not synthesize new questions, create markschemes, balance assessment objectives, or insert standardized answer spaces.
 
 The application imports local PDFs rather than downloading papers. User-supplied regression PDFs are included in `TEST SAMPLES/`.
@@ -194,6 +194,16 @@ The application is not affiliated with or endorsed by the International Baccalau
 ## Lightweight language-model review
 
 Disagreements between PDF and OCR topic suggestions can be adjudicated by a local **Qwen2.5 1.5B Instruct, Q4_K_M** model using `llama-cpp-python`. This is an optional CPU inference dependency; the standard splitter does not require model weights. Paper text is not sent to an external inference service.
+
+OCR defaults to one worker per available CPU core. Qwen uses the available CPU cores for both prompt evaluation and token generation, replacing the previous four-thread cap. CPU affinity and Linux container quotas are respected. Each OCR worker limits Tesseract to one OpenMP thread to avoid multiplying the worker count by its internal thread count. Qwen requests share one model context and remain queued safely; the inference inside each request is multithreaded. Existing OCR/model caches are still reused.
+
+To leave CPU capacity for other work, set `QUESTION_BANK_OCR_WORKERS` and/or `QUESTION_BANK_MODEL_THREADS` to positive integers before starting the app, then restart. For example:
+
+```sh
+QUESTION_BANK_OCR_WORKERS=4 QUESTION_BANK_MODEL_THREADS=4 .venv/bin/python app.py
+```
+
+Values are capped at the available CPU count; `QUESTION_BANK_OCR_WORKERS=1` selects serial OCR. More cores do not guarantee proportional model speedups, since token generation also depends on memory bandwidth.
 
 ```sh
 # Linux build tools: GCC/G++, with CMake provided by the package build if needed.

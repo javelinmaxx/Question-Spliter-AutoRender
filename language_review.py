@@ -7,6 +7,7 @@ import re
 from threading import Lock
 
 from curriculum_context import curriculum_context, OCR_PROMPT_VERSION
+from cpu_runtime import cpu_setting
 
 PROMPT_VERSION = OCR_PROMPT_VERSION
 MAX_SOURCE_CHARS = 6000
@@ -48,7 +49,8 @@ def verified_model():
     expected = manifest['sha256']
     if not isinstance(expected, str) or not re.fullmatch(r'[0-9a-f]{64}', expected):
         raise ValueError('Model manifest requires an authoritative SHA-256 checksum.')
-    identity = (str(path), path.stat().st_size, path.stat().st_mtime_ns, expected)
+    threads = cpu_setting('QUESTION_BANK_MODEL_THREADS')
+    identity = (str(path), path.stat().st_size, path.stat().st_mtime_ns, expected, threads)
     if _loaded and _loaded[0] == identity:
         return _loaded[1], expected
     with path.open('rb') as file:
@@ -56,7 +58,7 @@ def verified_model():
     if digest != expected:
         raise ValueError('Local model checksum verification failed.')
     from llama_cpp import Llama
-    model = Llama(model_path=str(path), n_ctx=4096, n_threads=min(4, os.cpu_count() or 1),
+    model = Llama(model_path=str(path), n_ctx=4096, n_threads=threads, n_threads_batch=threads,
                   n_gpu_layers=0, seed=0, verbose=False)
     _loaded = (identity, model)
     return model, expected

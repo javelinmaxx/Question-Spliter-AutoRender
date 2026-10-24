@@ -7,6 +7,7 @@ import pytest
 from app import create_app
 from physics import extract, suggest
 from ocr import read_pages
+import ocr
 
 
 def scanned_question(tmp_path):
@@ -56,6 +57,77 @@ def test_ocr_failure_is_visible_and_keeps_native_text(tmp_path, monkeypatch):
     assert data['ocr_pages'] == 0
     assert any('OCR failed' in message for message in data['warnings'])
     assert not data['questions']
+
+
+@pytest.mark.skipif(not shutil.which('tesseract'), reason='Requires Tesseract English OCR runtime')
+def test_separate_ocr_workers_preserve_order_unsaved_changes_and_cache(tmp_path, monkeypatch):
+    from concurrent.futures import ProcessPoolExecutor
+    import multiprocessing
+    path = tmp_path / 'multiple.pdf'
+    with fitz.open() as pdf:
+        for word in ('velocity', 'momentum', 'resistance'):
+            page = pdf.new_page()
+            page.insert_text((50, 90), 'Calculate the ' + word + '.', fontsize=18)
+        pdf.save(path)
+    monkeypatch.setattr(ocr, 'cpu_setting', lambda _: 2)
+    with ProcessPoolExecutor(max_workers=2, mp_context=multiprocessing.get_context('spawn'),
+                             initializer=ocr._initialize_worker) as pool:
+        monkeypatch.setattr(ocr, '_process_pool', lambda: pool)
+        with fitz.open(path) as pdf:
+            # A worker must see the current document, not reopen a stale source.
+            pdf[0].insert_text((50, 130), 'Unsaved update', fontsize=18)
+            parallel, warnings = read_pages(pdf, 'verify')
+        assert not warnings
+        assert len(pool._processes) == 2
+        assert [r['page'] for r in parallel] == [0, 1, 2]
+        assert all(word in r['text'] for word, r in zip(('velocity', 'momentum', 'resistance'), parallel))
+        assert 'Unsaved update' in parallel[0]['text']
+        with fitz.open(path) as pdf:
+            cached, warnings = read_pages(pdf, 'verify', tmp_path / 'cache')
+        assert not warnings and all(r['ocr_ran'] for r in cached)
+    monkeypatch.setattr(ocr, '_process_pool', lambda: pytest.fail('Saved OCR cache must skip workers'))
+    with fitz.open(path) as pdf:
+        assert read_pages(pdf, 'verify', tmp_path / 'cache') == (cached, [])
+
+
+def test_worker_start_failure_falls_back_to_serial_ocr(tmp_path, monkeypatch):
+    path = tmp_path / 'native.pdf'
+    with fitz.open() as pdf:
+        for word in ('velocity', 'momentum'):
+            page = pdf.new_page()
+            page.insert_text((50, 90), 'Calculate ' + word + '.')
+        pdf.save(path)
+    monkeypatch.setattr(ocr, 'cpu_setting', lambda _: 2)
+    monkeypatch.setattr(ocr, '_process_pool', lambda: (_ for _ in ()).throw(OSError('Cannot spawn')))
+    monkeypatch.setattr(ocr, '_recognize', lambda page: dict(text=page.get_text(), lines=[], ocr_ran=True))
+    with fitz.open(path) as pdf:
+        records, warnings = read_pages(pdf, 'verify')
+    assert not warnings
+    assert 'velocity' in records[0]['text'] and 'momentum' in records[1]['text']
+
+
+def test_crashed_worker_finishes_pages_serially_and_allows_pool_recreation(tmp_path, monkeypatch):
+    from concurrent.futures import Future
+    from concurrent.futures.process import BrokenProcessPool
+    class CrashedPool:
+        stopped = False
+        def submit(self, *args):
+            result = Future()
+            result.set_exception(BrokenProcessPool('Worker stopped'))
+            return result
+        def shutdown(self, **kwargs):
+            self.stopped = True
+    pool = CrashedPool()
+    monkeypatch.setattr(ocr, '_pool', pool)
+    monkeypatch.setattr(ocr, 'cpu_setting', lambda _: 2)
+    monkeypatch.setattr(ocr, '_recognize', lambda page: dict(text=page.get_text(), lines=[], ocr_ran=True))
+    with fitz.open() as pdf:
+        for word in ('velocity', 'momentum'):
+            page = pdf.new_page()
+            page.insert_text((50, 90), 'Calculate ' + word + '.')
+        records, warnings = read_pages(pdf, 'verify')
+    assert not warnings and all(r['ocr_ran'] for r in records)
+    assert pool.stopped and ocr._pool is None
 
 
 def test_number_repair_requires_adjacent_evidence(tmp_path):

@@ -1,13 +1,61 @@
 """Page-local English OCR. Treat recognized document text as data only."""
 from threading import Lock
+from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures.process import BrokenProcessPool
 import hashlib
 import json
+import multiprocessing
+import os
 from pathlib import Path
+from tempfile import TemporaryDirectory
 import uuid
 
 import fitz
+from cpu_runtime import cpu_setting
 
 _ocr_lock = Lock()  # MuPDF's Leptonica bridge cannot run in two threads at once.
+_pool_lock = Lock()
+_pool = None
+
+
+def _initialize_worker():
+    # Each process handles one page. Nested Tesseract OpenMP threads would
+    # otherwise multiply the CPU budget by the number of page workers.
+    os.environ['OMP_THREAD_LIMIT'] = '1'
+    os.environ['OMP_NUM_THREADS'] = '1'
+
+
+def _process_pool():
+    global _pool
+    with _pool_lock:
+        if _pool is None:
+            # Spawn avoids forking Flask threads or a loaded llama.cpp context.
+            _pool = ProcessPoolExecutor(max_workers=cpu_setting('QUESTION_BANK_OCR_WORKERS'),
+                mp_context=multiprocessing.get_context('spawn'), initializer=_initialize_worker)
+        return _pool
+
+
+def _discard_broken_pool(pool):
+    global _pool
+    with _pool_lock:
+        if _pool is pool:
+            _pool = None
+    pool.shutdown(wait=False, cancel_futures=True)
+
+
+def _recognize(page):
+    try:
+        with _ocr_lock:
+            tp = page.get_textpage_ocr(language='eng', dpi=200, full=True)
+            return dict(text=page.get_text(textpage=tp), lines=lines_from(page, tp), ocr_ran=True)
+    except (RuntimeError, fitz.mupdf.FzErrorBase) as error:
+        return dict(ocr_error=str(error))
+
+
+def _recognize_file(path, index):
+    # No Document / Page object crosses a process boundary.
+    with fitz.open(path) as pdf:
+        return _recognize(pdf[index])
 
 
 def lines_from(page, textpage=None):
@@ -33,21 +81,51 @@ def read_pages(pdf, mode='auto', cache_dir=None):
                     return cached['pages'], []
             except (ValueError, KeyError, TypeError):
                 pass  # Recompute incomplete/invalid local caches.
-    pages, warnings = [], []
+    pages, warnings, pending = [], [], []
     for i, page in enumerate(pdf):
         native = page.get_text()
         record = dict(page=i, width=page.rect.width, height=page.rect.height,
                       native=native, native_lines=lines_from(page), text='', lines=[])
         if mode == 'verify' or (mode == 'auto' and len(native.strip()) < 50):
-            try:
-                # Render actual pixels, including on text PDFs, for independent verification.
-                with _ocr_lock:
-                    tp = page.get_textpage_ocr(language='eng', dpi=200, full=True)
-                    record.update(text=page.get_text(textpage=tp), lines=lines_from(page, tp), ocr_ran=True)
-            except (RuntimeError, fitz.mupdf.FzErrorBase) as error:
-                record['ocr_error'] = str(error)
-                warnings.append(f'Page {i + 1}: OCR failed; native text or manual review is required.')
+            pending.append(i)
         pages.append(record)
+    if len(pending) > 1 and cpu_setting('QUESTION_BANK_OCR_WORKERS') > 1:
+        # Snapshot includes unsaved PDF changes and supports in-memory inputs.
+        # Workers share a file path instead of copying a whole PDF per page.
+        with TemporaryDirectory(prefix='physics-ocr-') as directory:
+            snapshot = str(Path(directory) / 'pages.pdf')
+            pdf.save(snapshot)
+            futures, pool = [], None
+            try:
+                pool = _process_pool()
+                for i in pending:
+                    futures.append((i, pool.submit(_recognize_file, snapshot, i)))
+                for i, future in futures:
+                    pages[i].update(future.result())
+            except (RuntimeError, OSError) as error:
+                # Restricted process creation / failed worker: finish safely in
+                # the caller, without discarding native text or cached results.
+                for i, future in futures:
+                    if not future.done():
+                        future.cancel()
+                if isinstance(error, BrokenProcessPool) and pool is not None:
+                    _discard_broken_pool(pool)
+                for i in pending:
+                    if not pages[i].get('ocr_ran') and 'ocr_error' not in pages[i]:
+                        pages[i].update(_recognize(pdf[i]))
+            finally:
+                # Keep the snapshot until even uncancellable tasks have stopped.
+                for _, future in futures:
+                    try:
+                        future.result()
+                    except Exception:
+                        pass
+    else:
+        for i in pending:
+            pages[i].update(_recognize(pdf[i]))
+    for record in pages:
+        if 'ocr_error' in record:
+            warnings.append(f"Page {record['page'] + 1}: OCR failed; native text or manual review is required.")
     if cache_path is not None and not warnings:
         cache_path.parent.mkdir(parents=True, exist_ok=True)
         temporary = cache_path.with_suffix('.' + uuid.uuid4().hex + '.tmp')

@@ -1,0 +1,32 @@
+{
+  "source": "Physics_SL_-_November_2008 p1.pdf",
+  "cpu_budget": 4,
+  "runs": [
+    {
+      "workers": 1,
+      "pages": 16,
+      "seconds": 15.08
+    },
+    {
+      "workers": 4,
+      "pages": 16,
+      "seconds": 4.74
+    }
+  ],
+  "outputs_identical": true,
+  "speedup": 3.18,
+  "source_sha256": "22e700539cc07b93df68dbfbbe5c3eaf8f245baa055be0c766d30bc8be967a64",
+  "engine": "PyMuPDF 1.26.5",
+  "mode": "verify",
+  "dpi": 200,
+  "cache_used": false,
+  "parallel_time_includes_worker_startup": true,
+  "notes": "One local run on a four-CPU-budget Linux container; timings vary by hardware and paper. Both runs read all 16 pages and returned identical OCR text in page order.",
+  "qwen_smoke": {
+    "model": "Qwen2.5 1.5B Q4_K_M",
+    "n_threads": 4,
+    "n_threads_batch": 4,
+    "inference_completed": true,
+    "notes": "Runtime smoke test only; no model speedup or tagging-accuracy claim. Constructor tests additionally verify a 12-CPU budget and a three-thread override."
+  }
+}
