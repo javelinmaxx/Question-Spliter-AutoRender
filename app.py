@@ -662,10 +662,19 @@ def create_app(data_dir=None):
         eligible, diagnostics = paper_pool(request.get_json())
         config = diagnostics['requested']
         candidates = []
+        page_data = {}
         for q in eligible:
             variants = question_variants(q, config['topics'], config['render_mode'])
+            if q['document_id'] not in page_data:
+                page_data[q['document_id']] = document(q['document_id']).get('text_pages', [])
+            records = page_data[q['document_id']]
+            # Prefer saved OCR for each crop, falling back to extracted PDF text
+            # on pages where OCR was unnecessary. Match the preview's variant.
+            text = '\n'.join(region_text(records, [r], 'ocr' if records[r['page']].get('lines') else 'selected')
+                             for r in variants[0]['regions']) if records else q.get('text', '')
             candidates.append(dict(id=q['id'], document_id=q['document_id'], number=q['number'],
                                    filename=q['filename'], topics=scoped_question(q, config['topics'])['topics'],
+                                   text=text,
                                    preferred_minutes=variants[0]['minutes'], minimum_minutes=min(v['minutes'] for v in variants),
                                    omitted_parts=variants[0]['omitted_parts']))
         return jsonify(questions=candidates, diagnostics=diagnostics)

@@ -1,5 +1,7 @@
 from io import BytesIO
+import json
 import re
+import sqlite3
 
 import fitz
 import pytest
@@ -24,6 +26,7 @@ def test_preview_and_manual_selection_share_filters_and_preserve_order(bank):
     options=dict(level='HL',minutes=20,topics=[])
     preview=client.post('/api/papers/preview',json=options)
     assert preview.status_code == 200 and len(preview.json['questions']) == 2
+    assert 'Calculate the velocity' in next(q['text'] for q in preview.json['questions'] if q['id']==first['id'])
     selected=[second['id'],first['id']]
     generated=client.post('/api/papers',json=dict(options,question_ids=selected))
     assert generated.status_code == 201,generated.json
@@ -33,6 +36,36 @@ def test_preview_and_manual_selection_share_filters_and_preserve_order(bank):
     assert 'Enable Fill paper' in generated.json['diagnostics']['summary']
     assert generated.json['numbering'][second['id']]['erased_labels'] == 1
     assert '1.' in fitz.open(root/'documents'/(doc['id']+'.pdf'))[0].get_text()
+
+
+def test_picker_prefers_saved_ocr_and_falls_back_per_page_without_rerunning_it(bank, monkeypatch):
+    client,root,doc,first,second=bank
+    with sqlite3.connect(root/'bank.sqlite3') as conn:
+        raw=conn.execute('SELECT data FROM documents WHERE id=?',(doc['id'],)).fetchone()[0]
+        data=json.loads(raw)
+        data['text_pages'][0]['lines']=[dict(line,text='OCR recognized: '+line['text'])
+                                      for line in data['text_pages'][0]['native_lines']]
+        conn.execute('UPDATE documents SET data=? WHERE id=?',(json.dumps(data),doc['id']))
+    monkeypatch.setattr('physics.read_pages',lambda *args:pytest.fail('Picker must use saved recognition data'))
+    result=client.post('/api/papers/preview',json=dict(level='HL',minutes=20,topics=[]))
+    assert result.status_code==200,result.json
+    by_id={q['id']:q for q in result.json['questions']}
+    assert 'OCR recognized: 1.' in by_id[first['id']]['text']
+    assert '(b) Explain the change in momentum' in by_id[first['id']]['text']
+    assert 'resistance' not in by_id[first['id']]['text']
+    assert 'Determine the resistance' in by_id[second['id']]['text']
+
+
+def test_picker_recognition_text_matches_short_preview_parts(tmp_path):
+    client=create_app(tmp_path).test_client()
+    question=saved_parent(client)
+    approve(client,question)
+    options=dict(level='HL',minutes=20,topics=[])
+    full=client.post('/api/papers/preview',json=dict(options,render_mode='full')).json['questions'][0]
+    short=client.post('/api/papers/preview',json=dict(options,render_mode='short')).json['questions'][0]
+    assert all(token in full['text'] for token in ('ALPHA_SPEED','BETA_ENERGY','GAMMA_UNIT'))
+    assert 'ALPHA_SPEED' in short['text'] and 'BETA_ENERGY' in short['text']
+    assert short['omitted_parts']==['c'] and 'GAMMA_UNIT' not in short['text']
 
 
 def test_manual_over_budget_is_not_silently_reduced(bank):

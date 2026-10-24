@@ -251,19 +251,36 @@ $('#preview-questions').addEventListener('click',async()=>{
   pickerQuestions=result.questions;teacherSelection=new Set([...teacherSelection].filter(id=>pickerQuestions.some(q=>q.id===id)));
   pickerSignature=signature;$('#manual-selection').checked=true;$('#question-picker').hidden=false;$('#paper-candidates').replaceChildren();
   for(const q of pickerQuestions){
-   const card=el('article',undefined,'card'),label=el('label',undefined,'check'),check=el('input');check.type='checkbox';check.checked=teacherSelection.has(q.id);check.dataset.questionId=q.id;
-   check.addEventListener('change',()=>{check.checked?teacherSelection.add(q.id):teacherSelection.delete(q.id);pickerSummary();});
-   label.append(check,el('span',`Source Q${q.number} · ${q.filename}`));card.append(label,el('p',`${q.minimum_minutes.toFixed(1)}–${q.preferred_minutes.toFixed(1)} minutes · ${q.topics.map(t=>`${t} ${catalog[t]}`).join(', ')}`,'muted'));
-   const params=new URLSearchParams({mode:options.render_mode});for(const topic of options.topics)params.append('topic',topic);
-   const details=el('details'),summary=el('summary','Preview question'),image=el('img');image.src=`/api/questions/${q.id}/image?${params}`;image.alt=`Source question ${q.number}`;image.loading='lazy';details.append(summary,image);card.append(details);$('#paper-candidates').append(card);
+   const row=el('article',undefined,'paper-candidate'),select=el('button',undefined,'pick-question'),text=el('span',q.text?.trim()||'No recognized text available. Preview this question.','pick-question-text');
+   select.type='button';select.dataset.questionId=q.id;select.setAttribute('aria-pressed',String(teacherSelection.has(q.id)));select.append(text);
+   select.addEventListener('click',()=>{teacherSelection.has(q.id)?teacherSelection.delete(q.id):teacherSelection.add(q.id);select.setAttribute('aria-pressed',String(teacherSelection.has(q.id)));pickerSummary();});
+   const preview=el('button','Preview','secondary question-preview');preview.type='button';preview.setAttribute('aria-haspopup','dialog');preview.setAttribute('aria-controls','paper-preview-dialog');preview.setAttribute('aria-label',`Preview source question ${q.number}`);
+   preview.addEventListener('click',()=>openPaperPreview(q,options));row.append(select,preview);$('#paper-candidates').append(row);
   }
   pickerSummary();$('#paper-result').replaceChildren();showPaperDiagnostics(result.diagnostics);
   status(`${pickerQuestions.length} matching question groups. Select the questions to include. Short mode may choose smaller safe variants to fit the budget.`);
  }catch(error){status(error.message,true);}finally{button.disabled=false;}
 });
-function chooseAllQuestions(selected){teacherSelection=new Set(selected?pickerQuestions.map(q=>q.id):[]);for(const check of $('#paper-candidates').querySelectorAll('input[type=checkbox]'))check.checked=selected;pickerSummary();}
+function chooseAllQuestions(selected){teacherSelection=new Set(selected?pickerQuestions.map(q=>q.id):[]);for(const button of $('#paper-candidates').querySelectorAll('.pick-question'))button.setAttribute('aria-pressed',String(selected));pickerSummary();}
 $('#select-all-questions').addEventListener('click',()=>chooseAllQuestions(true));
 $('#clear-selected-questions').addEventListener('click',()=>chooseAllQuestions(false));
+function openPaperPreview(question,options){
+ const dialog=$('#paper-preview-dialog'),image=$('#paper-preview-image'),message=$('#paper-preview-status');
+ $('#paper-preview-source').textContent=`Source Q${question.number} · ${question.filename}`;
+ image.hidden=true;image.alt=`Preview of source question ${question.number}`;message.textContent='Loading question…';
+ image.onload=()=>{if(dialog.open){image.hidden=false;message.textContent='';}};
+ image.onerror=()=>{if(dialog.open){image.hidden=true;message.textContent='Could not load this question preview. Close and try again.';}};
+ dialog.showModal();
+ const params=new URLSearchParams({mode:options.render_mode});for(const topic of options.topics)params.append('topic',topic);
+ image.src=`/api/questions/${question.id}/image?${params}`;
+}
+$('#paper-preview-close').addEventListener('click',()=>$('#paper-preview-dialog').close());
+const paperPreviewDialog=$('#paper-preview-dialog');
+let paperPreviewOutsideDown=false;
+function outsidePaperPreview(event){const r=paperPreviewDialog.getBoundingClientRect();return event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom;}
+paperPreviewDialog.addEventListener('pointerdown',event=>{paperPreviewOutsideDown=outsidePaperPreview(event);});
+paperPreviewDialog.addEventListener('click',event=>{if(paperPreviewOutsideDown&&outsidePaperPreview(event))paperPreviewDialog.close();paperPreviewOutsideDown=false;});
+paperPreviewDialog.addEventListener('close',()=>{$('#paper-preview-image').removeAttribute('src');$('#paper-preview-image').hidden=true;$('#paper-preview-status').textContent='';paperPreviewOutsideDown=false;});
 function showPaperDiagnostics(report){
  if(!report)return;
  const box=el('section',undefined,'notice');box.append(el('h3','Question availability'),el('p',report.summary));
