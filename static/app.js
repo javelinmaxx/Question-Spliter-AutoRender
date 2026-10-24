@@ -236,34 +236,90 @@ function paperOptions(){
  value.document_ids=[...$('#source-documents').selectedOptions].map(option=>option.value);
  return value;
 }
+let pickerView='all', replacementTarget=null, replacementPreviousView='selected', pickerOptions=null, pickerLoading=false;
 function pickerSummary(){
  const chosen=pickerQuestions.filter(q=>teacherSelection.has(q.id));
  const preferred=chosen.reduce((sum,q)=>sum+q.preferred_minutes,0),minimum=chosen.reduce((sum,q)=>sum+q.minimum_minutes,0);
- $('#picker-status').textContent=`${chosen.length} selected · ${minimum.toFixed(1)}–${preferred.toFixed(1)} estimated minutes · budget ${$('#generate').elements.minutes.value} minutes.`+(pickerSignature?'':' Filters changed; refresh the question list.');
+ const replacing=pickerQuestions.find(q=>q.id===replacementTarget);
+ $('#picker-status').textContent=(replacing?`Replacing source Q${replacing.number}: choose an alternative below. `:'')+`${chosen.length} selected · ${minimum.toFixed(1)}–${preferred.toFixed(1)} estimated minutes · budget ${$('#generate').elements.minutes.value} minutes.`+(pickerSignature?'':' Filters changed; refresh the question list.');
+ $('#selection-controls').hidden=!$('#manual-selection').checked||!pickerOptions;
+ $('.paper-controls').classList.toggle('has-selection',$('#manual-selection').checked&&!!pickerOptions);
+ $('#cancel-replacement').hidden=!replacementTarget;
+ $('#show-all-candidates').hidden=!!replacementTarget;
+ $('#show-all-candidates').textContent=pickerView==='selected'?`Show all matching questions (${pickerQuestions.length})`:`Show selected only (${chosen.length})`;
+ $('#generate button[type=submit]').textContent=!$('#manual-selection').checked?'Review automatic selection':$('#fill-paper').checked?'Review filled selection':'Generate PDF';
 }
-$('#manual-selection').addEventListener('change',()=>{$('#question-picker').hidden=!$('#manual-selection').checked;pickerSummary();});
-$('#generate').addEventListener('input',event=>{if(event.target.matches('[name]')){pickerSignature=null;pickerSummary();}});
-$('#preview-questions').addEventListener('click',async()=>{
- const button=$('#preview-questions');button.disabled=true;
- try{
-  const options=paperOptions(),signature=JSON.stringify(options);const result=await post('/api/papers/preview',options);
-  if(signature!==JSON.stringify(paperOptions()))throw new Error('Filters changed during loading. Refresh the question list.');
-  pickerQuestions=result.questions;teacherSelection=new Set([...teacherSelection].filter(id=>pickerQuestions.some(q=>q.id===id)));
-  pickerSignature=signature;$('#manual-selection').checked=true;$('#question-picker').hidden=false;$('#paper-candidates').replaceChildren();
-  for(const q of pickerQuestions){
-   const row=el('article',undefined,'paper-candidate'),select=el('button',undefined,'pick-question'),text=el('span',q.text?.trim()||'No recognized text available. Preview this question.','pick-question-text');
-   select.type='button';select.dataset.questionId=q.id;select.setAttribute('aria-pressed',String(teacherSelection.has(q.id)));select.append(text);
-   select.addEventListener('click',()=>{teacherSelection.has(q.id)?teacherSelection.delete(q.id):teacherSelection.add(q.id);select.setAttribute('aria-pressed',String(teacherSelection.has(q.id)));pickerSummary();});
-   const preview=el('button','Preview','secondary question-preview');preview.type='button';preview.setAttribute('aria-haspopup','dialog');preview.setAttribute('aria-controls','paper-preview-dialog');preview.setAttribute('aria-label',`Preview source question ${q.number}`);
-   preview.addEventListener('click',()=>openPaperPreview(q,options));row.append(select,preview);$('#paper-candidates').append(row);
+function selectionChanged(focusId){
+ $('#paper-result').replaceChildren();renderPaperCandidates();pickerSummary();
+ if(focusId)($('#paper-candidates').querySelector(`.pick-question[data-question-id="${CSS.escape(focusId)}"]`)||$('#show-all-candidates')).focus();
+}
+function replacementFits(candidate){
+ const others=pickerQuestions.filter(q=>teacherSelection.has(q.id)&&q.id!==replacementTarget);
+ return !teacherSelection.has(candidate.id)&&others.reduce((sum,q)=>sum+q.minimum_minutes,0)+candidate.minimum_minutes<=Number($('#generate').elements.minutes.value)+1e-6;
+}
+function renderPaperCandidates(){
+ const list=$('#paper-candidates');list.replaceChildren();
+ const visible=pickerQuestions.filter(q=>replacementTarget?replacementFits(q):pickerView==='all'||teacherSelection.has(q.id));
+ for(const q of visible){
+  const chosen=teacherSelection.has(q.id),row=el('article',undefined,'paper-candidate'),select=el('button',undefined,'pick-question'),text=el('span',q.text?.trim()||'No recognized text available. Preview this question.','pick-question-text');
+  select.type='button';select.dataset.questionId=q.id;select.setAttribute('aria-pressed',String(chosen));select.append(text);
+  if(replacementTarget)select.setAttribute('aria-label',`Use as replacement: ${q.text?.trim()||'source question '+q.number}`);
+  select.addEventListener('click',()=>{
+   if(pickerLoading)return;
+   if(replacementTarget){
+    const oldIndex=pickerQuestions.findIndex(item=>item.id===replacementTarget),newIndex=pickerQuestions.findIndex(item=>item.id===q.id);
+    [pickerQuestions[oldIndex],pickerQuestions[newIndex]]=[pickerQuestions[newIndex],pickerQuestions[oldIndex]];
+    teacherSelection.delete(replacementTarget);teacherSelection.add(q.id);replacementTarget=null;pickerView=replacementPreviousView;
+    selectionChanged(q.id);status('Question replaced. Review the selection, then generate the PDF.');
+   }else{
+    chosen?teacherSelection.delete(q.id):teacherSelection.add(q.id);selectionChanged(q.id);
+   }
+  });
+  const actions=el('div',undefined,'candidate-actions'),preview=el('button','Preview','secondary question-preview');preview.type='button';preview.setAttribute('aria-haspopup','dialog');preview.setAttribute('aria-controls','paper-preview-dialog');preview.setAttribute('aria-label',`Preview source question ${q.number}`);
+  preview.addEventListener('click',()=>openPaperPreview(q,pickerOptions));actions.append(preview);
+  if(chosen&&!replacementTarget){
+   const replace=el('button','Replace','secondary replace-question');replace.type='button';replace.setAttribute('aria-label',`Replace source question ${q.number}`);
+   replace.addEventListener('click',()=>{replacementPreviousView=pickerView;replacementTarget=q.id;renderPaperCandidates();pickerSummary();$('#cancel-replacement').focus();});
+   const remove=el('button','Remove','secondary remove-question');remove.type='button';remove.setAttribute('aria-label',`Remove source question ${q.number}`);
+   remove.addEventListener('click',()=>{teacherSelection.delete(q.id);selectionChanged();$('#show-all-candidates').focus();});actions.append(replace,remove);
   }
-  pickerSummary();$('#paper-result').replaceChildren();showPaperDiagnostics(result.diagnostics);
-  status(`${pickerQuestions.length} matching question groups. Select the questions to include. Short mode may choose smaller safe variants to fit the budget.`);
- }catch(error){status(error.message,true);}finally{button.disabled=false;}
-});
-function chooseAllQuestions(selected){teacherSelection=new Set(selected?pickerQuestions.map(q=>q.id):[]);for(const button of $('#paper-candidates').querySelectorAll('.pick-question'))button.setAttribute('aria-pressed',String(selected));pickerSummary();}
+  row.append(select,actions);list.append(row);
+ }
+ if(!visible.length)list.append(el('p',replacementTarget?'No unselected matching question fits the remaining time. Cancel replacement, increase the time budget, or change the filters.':pickerView==='selected'?'No questions selected. Show all matching questions to add some, or use Auto-select questions.':'No matching questions. Adjust the filters or import more papers.','picker-empty'));
+ list.scrollTop=0;
+}
+async function loadPaperCandidates(automatic=false,fill=false){
+ if(pickerLoading)return;
+ pickerLoading=true;for(const id of ['auto-select-questions','preview-questions'])$('#'+id).disabled=true;
+ try{
+  const options=paperOptions(),signature=JSON.stringify(options),payload={...options,auto_select:automatic};
+  if(fill){payload.question_ids=pickerQuestions.filter(q=>teacherSelection.has(q.id)).map(q=>q.id);payload.fill_paper=true;}
+  const result=await post('/api/papers/preview',payload);
+  if(signature!==JSON.stringify(paperOptions()))throw new Error('Filters changed during loading. Refresh the question list.');
+  pickerQuestions=result.questions;pickerOptions=options;replacementTarget=null;
+  if(automatic){
+   const order=new Map(result.selected_question_ids.map((id,index)=>[id,index]));
+   pickerQuestions.sort((a,b)=>(order.get(a.id)??Infinity)-(order.get(b.id)??Infinity));
+   teacherSelection=new Set(result.selected_question_ids);pickerView='selected';$('#fill-paper').checked=false;
+  }else{teacherSelection=new Set([...teacherSelection].filter(id=>pickerQuestions.some(q=>q.id===id)));pickerView='all';}
+  pickerSignature=signature;$('#manual-selection').checked=true;$('#question-picker').hidden=false;
+  $('#paper-result').replaceChildren();renderPaperCandidates();pickerSummary();showPaperDiagnostics(result.diagnostics);
+  status(automatic?`${result.selected_question_ids.length} questions automatically selected (${result.estimated_minutes} estimated minutes). Remove or replace any question, then click Generate PDF.`:`${pickerQuestions.length} matching question groups. Click question text to select, then generate the PDF.`);
+ }catch(error){showPaperDiagnostics(error.diagnostics);throw error;}
+ finally{pickerLoading=false;for(const id of ['auto-select-questions','preview-questions'])$('#'+id).disabled=false;}
+}
+$('#manual-selection').addEventListener('change',()=>{$('#question-picker').hidden=!$('#manual-selection').checked;replacementTarget=null;renderPaperCandidates();pickerSummary();});
+$('#generate').addEventListener('input',event=>{if(event.target.matches('[name]')){pickerSignature=null;replacementTarget=null;pickerSummary();}});
+$('#fill-paper').addEventListener('change',pickerSummary);
+$('#preview-questions').addEventListener('click',()=>loadPaperCandidates().catch(error=>status(error.message,true)));
+$('#auto-select-questions').addEventListener('click',()=>loadPaperCandidates(true).catch(error=>status(error.message,true)));
+function chooseAllQuestions(selected){replacementTarget=null;teacherSelection=new Set(selected?pickerQuestions.map(q=>q.id):[]);selectionChanged();}
 $('#select-all-questions').addEventListener('click',()=>chooseAllQuestions(true));
 $('#clear-selected-questions').addEventListener('click',()=>chooseAllQuestions(false));
+$('#show-all-candidates').addEventListener('click',()=>{pickerView=pickerView==='selected'?'all':'selected';renderPaperCandidates();pickerSummary();});
+function cancelReplacement(){replacementTarget=null;pickerView=replacementPreviousView;renderPaperCandidates();pickerSummary();$('#show-all-candidates').focus();}
+$('#cancel-replacement').addEventListener('click',cancelReplacement);
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&replacementTarget&&!$('#paper-preview-dialog').open){event.preventDefault();cancelReplacement();}});
 function openPaperPreview(question,options){
  const dialog=$('#paper-preview-dialog'),image=$('#paper-preview-image'),message=$('#paper-preview-status');
  $('#paper-preview-source').textContent=`Source Q${question.number} · ${question.filename}`;
@@ -272,6 +328,7 @@ function openPaperPreview(question,options){
  image.onerror=()=>{if(dialog.open){image.hidden=true;message.textContent='Could not load this question preview. Close and try again.';}};
  dialog.showModal();
  const params=new URLSearchParams({mode:options.render_mode});for(const topic of options.topics)params.append('topic',topic);
+ if(options.render_mode==='short')for(const part of question.omitted_parts||[])params.append('omit',part);
  image.src=`/api/questions/${question.id}/image?${params}`;
 }
 $('#paper-preview-close').addEventListener('click',()=>$('#paper-preview-dialog').close());
@@ -307,21 +364,25 @@ function showPaperDiagnostics(report){
  $('#paper-result').append(box);
 }
 $('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,async()=>{
+ if(pickerLoading)throw new Error('Wait for the question selection to finish loading.');
+ if(!$('#manual-selection').checked){await loadPaperCandidates(true);return;}
+ if(replacementTarget)throw new Error('Choose a replacement or cancel replacement before generating.');
  $('#paper-result').replaceChildren();const value=paperOptions();
  if($('#manual-selection').checked){
   if(pickerSignature!==JSON.stringify(value))throw new Error('Refresh the filtered question list after changing filters or analysis.');
   value.question_ids=pickerQuestions.filter(q=>teacherSelection.has(q.id)).map(q=>q.id);
-  value.fill_paper=$('#fill-paper').checked;
+  if($('#fill-paper').checked){await loadPaperCandidates(true,true);return;}
+  value.fill_paper=false;
  }
  try{
   const result=await post('/api/papers',value);const link=el('a','Download practice paper PDF');link.href=`/api/papers/${result.id}/download`;
   $('#paper-result').append(el('p',`${result.count} question groups · ${result.render_mode||'full'} · Estimated ${result.actual_minutes} / ${result.target_minutes} minutes · ${result.shortfall_minutes} minutes unfilled.`),link);
   showPaperDiagnostics(result.diagnostics);
   const numberingWarnings=Object.values(result.numbering||{}).flatMap(info=>info.warnings||[]);if(numberingWarnings.length)$('#paper-result').append(el('p',numberingWarnings.join(' '),'notice'));
-  status(`Practice paper generated. ${result.filled_question_ids?.length||0} extra questions added by Fill paper. ${result.selections?.reduce((n,s)=>n+s.omitted_parts.length,0)||0} parts omitted. ${result.short_fallbacks?.length||0} questions retained whole because no approved dependency map was available.`);
+  status(`Practice paper generated from ${result.count} reviewed question groups. ${result.selections?.reduce((n,s)=>n+s.omitted_parts.length,0)||0} parts omitted. ${result.short_fallbacks?.length||0} questions retained whole because no approved dependency map was available.`);
  }catch(error){showPaperDiagnostics(error.diagnostics);throw error;}
 });});
-async function init() { const value=await api('/api/catalog'); catalog=value.topics; timingProfiles=value.timing_profiles||[]; hlOnlyTopics=new Set(value.hl_only_topics||[]); prerequisitePolicy=value.prerequisite_policy||{}; document.querySelectorAll('.topic-list,.topic-filter').forEach(select=>{ for(const [code,name] of Object.entries(catalog)) select.add(new Option(`${code} · ${name}`,code)); enhanceTopicSelect(select); }); for(const id of ['question','generate','search'])applyTopicLevel($('#'+id)); await Promise.all([search(),listDocuments()]); }
+async function init() { const value=await api('/api/catalog'); catalog=value.topics; timingProfiles=value.timing_profiles||[]; hlOnlyTopics=new Set(value.hl_only_topics||[]); prerequisitePolicy=value.prerequisite_policy||{}; document.querySelectorAll('.topic-list,.topic-filter').forEach(select=>{ for(const [code,name] of Object.entries(catalog)) select.add(new Option(`${code} · ${name}`,code)); enhanceTopicSelect(select); }); for(const id of ['question','generate','search'])applyTopicLevel($('#'+id)); showTopicScope($('#generate'),'#generate-scope'); await Promise.all([search(),listDocuments()]); }
 init().catch(e=>status(e.message,true));
 
 function showLanguageReview(result) {

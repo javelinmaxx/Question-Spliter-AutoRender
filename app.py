@@ -586,7 +586,13 @@ def create_app(data_dir=None):
         if scoped is None:
             raise ValueError('This question requires content outside the requested topic scope.')
         if mode == 'short' or scoped.get('omitted_parts'):
-            variant = short_variants(q, scoped.get('omitted_parts', []), topics)[0] if mode == 'short' else scoped
+            if mode == 'short' and 'omit' in request.args:
+                variant = render_variant(q, set(request.args.getlist('omit')) | set(scoped.get('omitted_parts', [])))
+                if topics and approved_map(q) and not any(p['id'] in variant['kept_parts'] and set(p.get('topics', [])) & set(topics)
+                                                         for p in q['subquestions']['parts']):
+                    raise ValueError('Keep at least one part that assesses a selected target topic.')
+            else:
+                variant = short_variants(q, scoped.get('omitted_parts', []), topics)[0] if mode == 'short' else scoped
             with fitz.open(source_path(q['document_id'])) as pdf:
                 png = render_question(pdf, variant['regions'])
             return send_file(BytesIO(png), mimetype='image/png')
@@ -657,34 +663,9 @@ def create_app(data_dir=None):
         ids = choose_questions(scoped, target)
         return [q for q in scoped if q['id'] in ids]
 
-    @app.post('/api/papers/preview')
-    def preview_paper_selection():
-        eligible, diagnostics = paper_pool(request.get_json())
-        config = diagnostics['requested']
-        candidates = []
-        page_data = {}
-        for q in eligible:
-            variants = question_variants(q, config['topics'], config['render_mode'])
-            if q['document_id'] not in page_data:
-                page_data[q['document_id']] = document(q['document_id']).get('text_pages', [])
-            records = page_data[q['document_id']]
-            # Prefer saved OCR for each crop, falling back to extracted PDF text
-            # on pages where OCR was unnecessary. Match the preview's variant.
-            text = '\n'.join(region_text(records, [r], 'ocr' if records[r['page']].get('lines') else 'selected')
-                             for r in variants[0]['regions']) if records else q.get('text', '')
-            candidates.append(dict(id=q['id'], document_id=q['document_id'], number=q['number'],
-                                   filename=q['filename'], topics=scoped_question(q, config['topics'])['topics'],
-                                   text=text,
-                                   preferred_minutes=variants[0]['minutes'], minimum_minutes=min(v['minutes'] for v in variants),
-                                   omitted_parts=variants[0]['omitted_parts']))
-        return jsonify(questions=candidates, diagnostics=diagnostics)
-
-    @app.post('/api/papers')
-    def generate():
-        value = request.get_json()
-        eligible, diagnostics = paper_pool(value)
-        config = diagnostics['requested']
-        target, mode, level, syllabus, selected_topics = (config[key] for key in ('minutes', 'render_mode', 'level', 'syllabus', 'topics'))
+    def planned_questions(eligible, config, value):
+        """One selection algorithm shared by editable plans and PDF output."""
+        target, selected_topics, mode = (config[key] for key in ('minutes', 'topics', 'render_mode'))
         requested_ids = value.get('question_ids')
         fill = value.get('fill_paper', False)
         if not isinstance(fill, bool):
@@ -695,12 +676,12 @@ def create_app(data_dir=None):
                 raise ValueError('Select at least one unique question, or use automatic selection.')
             by_id = {q['id']: q for q in eligible}
             if set(requested_ids) - set(by_id):
-                return jsonify(error='Some selected questions no longer fit these filters or duration. Refresh the matching questions.', diagnostics=diagnostics), 400
+                return [], [], 'Some selected questions no longer fit these filters or duration. Refresh the matching questions.'
             required = [by_id[i] for i in requested_ids]
             chosen = select_required(required, target, selected_topics, mode)
             if required and not chosen:
                 minimum = sum(min(v['minutes'] for v in question_variants(q, selected_topics, mode)) for q in required)
-                return jsonify(error=f'The selected {len(required)} questions need at least {minimum:g} estimated minutes; the budget is {target:g}. Increase the budget or deselect questions.', diagnostics=diagnostics), 400
+                return [], [], f'The selected {len(required)} questions need at least {minimum:g} estimated minutes; the budget is {target:g}. Increase the budget or deselect questions.'
             if fill:
                 remaining = round(target - sum(q['minutes'] for q in chosen), 6)
                 extras = automatic_choice([q for q in eligible if q['id'] not in set(requested_ids)], remaining, selected_topics, mode)
@@ -709,6 +690,53 @@ def create_app(data_dir=None):
         else:
             chosen = automatic_choice(eligible, target, selected_topics, mode)
         chosen = group_questions(chosen)
+        return chosen, filled_ids, None
+
+    @app.post('/api/papers/preview')
+    def preview_paper_selection():
+        value = request.get_json()
+        eligible, diagnostics = paper_pool(value)
+        config = diagnostics['requested']
+        auto_select = value.get('auto_select', False)
+        if not isinstance(auto_select, bool):
+            raise ValueError('Auto-select must be true or false.')
+        chosen, filled_ids = [], []
+        if auto_select:
+            chosen, filled_ids, error = planned_questions(eligible, config, value)
+            if error or not chosen:
+                return jsonify(error=error or diagnostics['summary'], diagnostics=diagnostics), 400
+        selected = {q['id']: q for q in chosen}
+        candidates = []
+        page_data = {}
+        for q in eligible:
+            variants = question_variants(q, config['topics'], config['render_mode'])
+            if q['document_id'] not in page_data:
+                page_data[q['document_id']] = document(q['document_id']).get('text_pages', [])
+            records = page_data[q['document_id']]
+            preferred = selected.get(q['id'], variants[0])
+            # Prefer saved OCR for each crop, falling back to extracted PDF text
+            # on pages where OCR was unnecessary. Match the preview's variant.
+            text = '\n'.join(region_text(records, [r], 'ocr' if records[r['page']].get('lines') else 'selected')
+                             for r in preferred['regions']) if records else q.get('text', '')
+            candidates.append(dict(id=q['id'], document_id=q['document_id'], number=q['number'],
+                                   filename=q['filename'], topics=scoped_question(q, config['topics'])['topics'],
+                                   text=text,
+                                   preferred_minutes=preferred['minutes'], minimum_minutes=min(v['minutes'] for v in variants),
+                                   omitted_parts=preferred['omitted_parts']))
+        return jsonify(questions=candidates, diagnostics=diagnostics,
+                       selected_question_ids=[q['id'] for q in chosen], filled_question_ids=filled_ids,
+                       estimated_minutes=round(sum(q['minutes'] for q in chosen), 1))
+
+    @app.post('/api/papers')
+    def generate():
+        value = request.get_json()
+        eligible, diagnostics = paper_pool(value)
+        config = diagnostics['requested']
+        target, mode, level, syllabus, selected_topics = (config[key] for key in ('minutes', 'render_mode', 'level', 'syllabus', 'topics'))
+        requested_ids, fill = value.get('question_ids'), value.get('fill_paper', False)
+        chosen, filled_ids, error = planned_questions(eligible, config, value)
+        if error:
+            return jsonify(error=error, diagnostics=diagnostics), 400
         ids = [q['id'] for q in chosen]
         if not chosen:
             return jsonify(error=diagnostics['summary'], diagnostics=diagnostics), 400

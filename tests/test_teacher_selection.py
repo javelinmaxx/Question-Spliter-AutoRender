@@ -68,6 +68,68 @@ def test_picker_recognition_text_matches_short_preview_parts(tmp_path):
     assert short['omitted_parts']==['c'] and 'GAMMA_UNIT' not in short['text']
 
 
+def test_automatic_plan_matches_generator_without_creating_a_pdf(bank):
+    client,root,_,_,_=bank
+    options=dict(level='HL',minutes=13,topics=[])
+    plan=client.post('/api/papers/preview',json=dict(options,auto_select=True))
+    assert plan.status_code==200,plan.json
+    assert len(plan.json['selected_question_ids'])==2 and plan.json['estimated_minutes']==13
+    assert list((root/'papers').iterdir())==[]
+    generated=client.post('/api/papers',json=options)
+    assert generated.status_code==201,generated.json
+    assert generated.json['question_ids']==plan.json['selected_question_ids']
+
+
+def test_automatic_selection_can_be_replaced_and_removed_before_generation(bank):
+    client,_,_,first,second=bank
+    with fitz.open() as pdf:
+        page=pdf.new_page()
+        page.insert_text((50,45),'Physics HL Paper 2 2025')
+        page.insert_text((50,100),'1. Calculate the velocity of a train travelling north. [3]')
+        doc=upload(client,pdf.tobytes())
+    third=save(client,doc,minutes=6)
+    options=dict(level='HL',minutes=13,topics=[])
+    plan=client.post('/api/papers/preview',json=dict(options,auto_select=True)).json
+    assert first['id'] in plan['selected_question_ids']
+    old=next(qid for qid in plan['selected_question_ids'] if qid!=first['id'])
+    replacement=next(q['id'] for q in (second,third) if q['id']!=old)
+    edited=[replacement if qid==old else qid for qid in plan['selected_question_ids']]
+    replaced=client.post('/api/papers',json=dict(options,question_ids=edited))
+    assert replaced.status_code==201,replaced.json
+    assert replaced.json['question_ids']==edited and old not in replaced.json['question_ids']
+    removed=client.post('/api/papers',json=dict(options,question_ids=[replacement]))
+    assert removed.status_code==201 and removed.json['question_ids']==[replacement]
+    assert len(client.get('/api/questions').json)==3
+
+
+def test_fill_can_be_reviewed_without_creating_pdf_and_stale_ids_are_rejected(bank):
+    client,root,_,first,second=bank
+    options=dict(level='HL',minutes=13,topics=[],auto_select=True,question_ids=[first['id']],fill_paper=True)
+    plan=client.post('/api/papers/preview',json=options)
+    assert plan.status_code==200,plan.json
+    assert plan.json['selected_question_ids']==[first['id'],second['id']]
+    assert plan.json['filled_question_ids']==[second['id']]
+    assert list((root/'papers').iterdir())==[]
+    stale=client.post('/api/papers/preview',json=dict(options,question_ids=['missing']))
+    assert stale.status_code==400 and 'no longer fit' in stale.json['error']
+    over=client.post('/api/papers/preview',json=dict(options,minutes=10,question_ids=[first['id'],second['id']]))
+    assert over.status_code==400 and 'need at least 13' in over.json['error']
+
+
+def test_short_automatic_plan_and_image_use_actual_budget_variant(tmp_path):
+    client=create_app(tmp_path).test_client()
+    question=saved_parent(client);approve(client,question)
+    plan=client.post('/api/papers/preview',json=dict(level='HL',minutes=6,topics=[],render_mode='short',auto_select=True))
+    assert plan.status_code==200,plan.json
+    candidate=plan.json['questions'][0]
+    assert plan.json['estimated_minutes']==5 and set(candidate['omitted_parts'])=={'b','c'}
+    assert 'ALPHA_SPEED' in candidate['text'] and 'BETA_ENERGY' not in candidate['text']
+    preview=client.get(f"/api/questions/{question['id']}/image?mode=short&omit=b&omit=c")
+    expected=client.post(f"/api/questions/{question['id']}/render",json=dict(mode='short',omitted_parts=['b','c']))
+    assert preview.status_code==expected.status_code==200 and preview.data==expected.data
+    assert client.get(f"/api/questions/{question['id']}/image?mode=short&omit=stem").status_code==400
+
+
 def test_manual_over_budget_is_not_silently_reduced(bank):
     client,_,_,first,second=bank
     result=client.post('/api/papers',json=dict(level='HL',minutes=10,topics=[],question_ids=[first['id'],second['id']]))
