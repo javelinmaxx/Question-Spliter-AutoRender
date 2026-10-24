@@ -164,6 +164,12 @@ Topics with both SL and additional HL content (including gravity, waves and atom
 
 ## Content-based prerequisite roadmap and topic scope
 
+Open the **Prerequisites** tab to edit the active roadmap. Choose a target topic, then toggle its **direct prerequisites**. The preview lists all allowed earlier topics, including inherited links. **Save roadmap** applies edits to library searches, scoped previews, manual/automatic paper selection and Fill paper, and persists them for the next startup. Refresh an existing paper selection after saving. Edits preserve question tags, crops, HL/SL restrictions and approved subquestion dependency maps; OCR does not need to run again.
+
+**Clear direct prerequisites** edits only the selected target. **Restore default roadmap** loads the bundled map into the draft; click Save to apply it. **Discard edits / reload saved** restores the last saved state. Circular, self-referencing, duplicate and unknown-topic links are rejected. A revision check prevents an older browser window from overwriting a newer saved map. Settings live in the bank's SQLite `application_settings` table and remain separate for each data directory. The bundled curriculum JSON, generated roadmap PDF and guide-based model context retain their original content summaries/default roadmap.
+
+API: `GET /api/prerequisites` returns the active `policy` and default `requires` map. `POST /api/prerequisites` accepts a complete `requires` map and the policy's current `revision`. A stale revision returns HTTP 409. Generated paper metadata records the policy revision used.
+
 [IB Physics Prerequisite Roadmap.pdf](<IB Physics Prerequisite Roadmap.pdf>) is saved in the repository root. It summarizes all five themes, 24 syllabus subtopics and the added A.0 skills category, deduces core prerequisites and separates conditional extensions. It does **not** use the IB example teaching route. Rebuild it with `python tools/build_roadmap.py`; PyMuPDF is already a project dependency.
 
 The uploaded *Physics teacher support material*, first assessment 2025 (updated November 2024), supplies the content overview and conceptual examples, printed pp. 2–17. This is support material rather than an exhaustive subject guide. The PDF identifies details inferred from standard physics when the source is brief. The inferred graph is an application policy, not an official IB prerequisite specification. Source identity, content summaries and edge rationales are recorded in `curriculum_prerequisites.json`.

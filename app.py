@@ -10,7 +10,7 @@ from io import BytesIO
 from pathlib import Path
 
 import fitz
-from flask import Flask, jsonify, render_template, request, send_file
+from flask import Flask, g, jsonify, render_template, request, send_file
 
 from physics import TOPICS, choose_questions, extract, render_question, validate_regions, suggest, custom_tags, HL_ONLY_TOPICS, validate_level_topics, document_metadata
 from ocr import region_text
@@ -18,7 +18,8 @@ from paper_types import PAPERS, matches_paper
 from language_review import review_disagreement, context_hash, status as model_status
 from subquestions import propose_parts, question_hash, validate_layout, validate_graph, approved_map, short_variants, render_variant, choose_short
 from dependency_review import analyze_dependencies
-from topic_scope import scoped_question, topic_closure, POLICY
+from topic_scope import scoped_question, topic_closure
+from prerequisite_policy import DEFAULT_POLICY, active_policy, current_policy, effective_policy, validate_requires
 from paper_diagnostics import diagnose_selection, finish_diagnostics
 from paper_cover import add_practice_cover, finalize_practice_cover
 from paper_selection import question_variants, select_required
@@ -55,7 +56,24 @@ def create_app(data_dir=None):
         CREATE TABLE IF NOT EXISTS questions (id TEXT PRIMARY KEY, document_id TEXT NOT NULL, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS papers (id TEXT PRIMARY KEY, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS source_fingerprints (sha256 TEXT PRIMARY KEY, document_id TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS application_settings (key TEXT PRIMARY KEY, data TEXT NOT NULL);
         ''')
+
+    def saved_prerequisites(conn):
+        row = conn.execute("SELECT data FROM application_settings WHERE key='topic_prerequisites'").fetchone()
+        return json.loads(row['data']) if row else None
+
+    @app.before_request
+    def load_prerequisites():
+        with db() as conn:
+            policy = effective_policy(saved_prerequisites(conn))
+        g.prerequisite_token = active_policy.set(policy)
+
+    @app.teardown_request
+    def release_prerequisites(error):
+        token = g.pop('prerequisite_token', None)
+        if token is not None:
+            active_policy.reset(token)
 
     # Upgrade earlier local banks once; preserve all saved annotations.
     def upgrade_unknown_paper(question, source_paper):
@@ -247,9 +265,29 @@ def create_app(data_dir=None):
 
     @app.get('/api/catalog')
     def catalog():
-        return jsonify(topics=TOPICS, hl_only_topics=sorted(HL_ONLY_TOPICS), prerequisite_policy=POLICY,
+        return jsonify(topics=TOPICS, hl_only_topics=sorted(HL_ONLY_TOPICS), prerequisite_policy=current_policy(),
                        level_modes=LEVEL_LABELS, timing_source=TIMING_SOURCE,
                        timing_profiles=[dict(syllabus=s,level=l,paper=p,minutes=m,marks=k,minutes_per_mark=m/k) for (s,l,p),(m,k) in TIME_PROFILES.items()])
+
+    @app.get('/api/prerequisites')
+    def get_prerequisites():
+        return jsonify(policy=current_policy(), defaults=DEFAULT_POLICY['requires'])
+
+    @app.post('/api/prerequisites')
+    def save_prerequisites():
+        value = request.get_json()
+        if not isinstance(value, dict):
+            raise ValueError('Provide a prerequisite map and its current revision.')
+        requires = validate_requires(value.get('requires'))
+        with db() as conn:
+            conn.execute('BEGIN IMMEDIATE')
+            previous = saved_prerequisites(conn)
+            current = effective_policy(previous)
+            if value.get('revision') != current['revision']:
+                return jsonify(error='The prerequisite roadmap changed in another window. Reload the saved map before saving.'), 409
+            saved = dict(requires=requires, updated_at=datetime.now(timezone.utc).isoformat())
+            conn.execute("INSERT OR REPLACE INTO application_settings VALUES ('topic_prerequisites', ?)", (json.dumps(saved),))
+        return jsonify(policy=effective_policy(saved), defaults=DEFAULT_POLICY['requires'])
 
     @app.get('/api/documents')
     def documents():
@@ -794,7 +832,8 @@ def create_app(data_dir=None):
                                        topic_omitted_parts=q.get('topic_omitted_parts', []),
                                        topics=q['topics'],
                                        estimated_minutes=round(q['minutes'], 2), render_mode=q['render_mode']) for i, q in enumerate(chosen, 1)],
-                      topic_scope=dict(requested=selected_topics, allowed=sorted(topic_closure(selected_topics)), policy_version=POLICY['version']),
+                      topic_scope=dict(requested=selected_topics, allowed=sorted(topic_closure(selected_topics)), policy_version=current_policy()['version'],
+                                       policy_revision=current_policy()['revision']),
                       short_fallbacks=[q['id'] for q in chosen if mode == 'short' and not q['dependency_approved']])
         with db() as conn:
             conn.execute('INSERT INTO papers VALUES (?, ?)', (paper_id, json.dumps(result)))

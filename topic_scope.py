@@ -1,17 +1,16 @@
 """Directional curriculum scope and dependency-safe topic cropping."""
-import json
-from pathlib import Path
-
 from physics import TOPICS
 from subquestions import approved_map, render_variant
+from prerequisite_policy import DEFAULT_POLICY, current_policy
 
-POLICY = json.loads((Path(__file__).parent / 'curriculum_prerequisites.json').read_text())
+POLICY = DEFAULT_POLICY  # Public bundled default, also used by standalone tools.
 
 
 def topic_closure(selected):
     if not isinstance(selected, (list, tuple)) or any(code not in TOPICS for code in selected):
         raise ValueError('Select valid syllabus topics.')
     allowed, visiting = set(), set()
+    policy = current_policy()
     def visit(code):
         if code in visiting:
             raise ValueError('Circular curriculum prerequisite policy.')
@@ -20,7 +19,7 @@ def topic_closure(selected):
         if code not in TOPICS:
             raise ValueError('Unknown topic in curriculum prerequisite policy.')
         visiting.add(code)
-        for prerequisite in POLICY['requires'].get(code, []):
+        for prerequisite in policy['requires'].get(code, []):
             visit(prerequisite)
         visiting.remove(code)
         allowed.add(code)
@@ -69,7 +68,9 @@ def scope_decision(question, selected):
     result = render_variant(question, [p['id'] for p in parts if p['id'] not in keep])
     result['topics'] = effective_topics(question, result['kept_parts'])
     result['topic_omitted_parts'] = result['omitted_parts']
-    result['topic_scope'] = dict(requested=sorted(selected), allowed=sorted(allowed), policy_version=POLICY['version'])
+    policy = current_policy()
+    result['topic_scope'] = dict(requested=sorted(selected), allowed=sorted(allowed), policy_version=policy['version'],
+                                policy_revision=policy.get('revision'))
     if result['omitted_parts']:
         result['render_mode'] = 'topic_filtered'
         result['text'] = '\n'.join(p['text'] for p in parts if p['id'] in keep)

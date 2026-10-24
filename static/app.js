@@ -292,10 +292,10 @@ async function loadPaperCandidates(automatic=false,fill=false){
  if(pickerLoading)return;
  pickerLoading=true;for(const id of ['auto-select-questions','preview-questions'])$('#'+id).disabled=true;
  try{
-  const options=paperOptions(),signature=JSON.stringify(options),payload={...options,auto_select:automatic};
+  const options=paperOptions(),signature=JSON.stringify(options),policyRevision=prerequisitePolicy.revision,payload={...options,auto_select:automatic};
   if(fill){payload.question_ids=pickerQuestions.filter(q=>teacherSelection.has(q.id)).map(q=>q.id);payload.fill_paper=true;}
   const result=await post('/api/papers/preview',payload);
-  if(signature!==JSON.stringify(paperOptions()))throw new Error('Filters changed during loading. Refresh the question list.');
+  if(signature!==JSON.stringify(paperOptions())||policyRevision!==prerequisitePolicy.revision)throw new Error('Filters or prerequisites changed during loading. Refresh the question list.');
   pickerQuestions=result.questions;pickerOptions=options;replacementTarget=null;
   if(automatic){
    const order=new Map(result.selected_question_ids.map((id,index)=>[id,index]));
@@ -382,7 +382,7 @@ $('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,as
   status(`Practice paper generated from ${result.count} reviewed question groups. ${result.selections?.reduce((n,s)=>n+s.omitted_parts.length,0)||0} parts omitted. ${result.short_fallbacks?.length||0} questions retained whole because no approved dependency map was available.`);
  }catch(error){showPaperDiagnostics(error.diagnostics);throw error;}
 });});
-async function init() { const value=await api('/api/catalog'); catalog=value.topics; timingProfiles=value.timing_profiles||[]; hlOnlyTopics=new Set(value.hl_only_topics||[]); prerequisitePolicy=value.prerequisite_policy||{}; document.querySelectorAll('.topic-list,.topic-filter').forEach(select=>{ for(const [code,name] of Object.entries(catalog)) select.add(new Option(`${code} · ${name}`,code)); enhanceTopicSelect(select); }); for(const id of ['question','generate','search'])applyTopicLevel($('#'+id)); showTopicScope($('#generate'),'#generate-scope'); await Promise.all([search(),listDocuments()]); }
+async function init() { const value=await api('/api/catalog'); catalog=value.topics; timingProfiles=value.timing_profiles||[]; hlOnlyTopics=new Set(value.hl_only_topics||[]); prerequisitePolicy=value.prerequisite_policy||{}; document.querySelectorAll('.topic-list,.topic-filter').forEach(select=>{ for(const [code,name] of Object.entries(catalog)) select.add(new Option(`${code} · ${name}`,code)); enhanceTopicSelect(select); }); for(const id of ['question','generate','search'])applyTopicLevel($('#'+id)); showTopicScope($('#generate'),'#generate-scope'); await Promise.all([search(),listDocuments(),loadPrerequisites()]); }
 init().catch(e=>status(e.message,true));
 
 function showLanguageReview(result) {
@@ -477,4 +477,49 @@ $('#clean-watermarks').addEventListener('click',async()=>{
  await openDocument(id);await search();pickerSignature=null;
  status(`Watermark cleanup saved. ${result.cleaned_pages?.length||0} pages cleaned; ${result.updated_question_ids.length} questions updated; ${result.deleted_question_ids.length} questions deleted because a watermark could not be removed safely.`+(result.warnings?.length?' '+result.warnings.join(' '):''),!!result.warnings?.length);
  }catch(error){status(error.message,true);}finally{button.disabled=false;}
+});
+
+let prerequisiteDraft=null,prerequisiteSaved=null,prerequisiteDefaults=null,prerequisiteRevision=null,prerequisiteSaving=false;
+function normalizedPrerequisites(value){return Object.fromEntries(Object.keys(catalog).map(code=>[code,[...(value[code]||[])].sort()]));}
+function draftPrerequisitesClosure(start){
+ const allowed=new Set(),path=[];
+ function visit(code){if(path.includes(code))throw new Error('Circular prerequisites: '+[...path.slice(path.indexOf(code)),code].join(' → ')+'. Remove a link before saving.');if(allowed.has(code))return;path.push(code);for(const earlier of prerequisiteDraft[code])visit(earlier);path.pop();allowed.add(code);}
+ for(const code of start)visit(code);return allowed;
+}
+function renderPrerequisites(){
+ if(!prerequisiteDraft)return;
+ const target=$('#prerequisite-target').value,chosen=prerequisiteDraft[target],list=$('#prerequisite-choices');list.replaceChildren();
+ $('#prerequisite-description').textContent=prerequisitePolicy.topic_analysis?.[target]?.summary||'';
+ for(const [code,title] of Object.entries(catalog)){
+  if(code===target)continue;
+  const button=el('button',`${code} · ${title}`,'topic-toggle');button.type='button';button.dataset.topic=code;button.setAttribute('aria-pressed',String(chosen.includes(code)));button.disabled=prerequisiteSaving;
+  button.addEventListener('click',()=>{prerequisiteDraft[target]=chosen.includes(code)?chosen.filter(value=>value!==code):[...chosen,code].sort();renderPrerequisites();$('#prerequisite-choices').querySelector(`[data-topic="${code}"]`)?.focus();});list.append(button);
+ }
+ filterPrerequisites();
+ let error='';try{draftPrerequisitesClosure(Object.keys(catalog));const earlier=[...draftPrerequisitesClosure([target])].filter(code=>code!==target).sort();$('#prerequisite-allowed').textContent=earlier.length?'Allowed earlier topics, including inherited links: '+earlier.map(code=>`${code} ${catalog[code]}`).join('; '):'No earlier topics are allowed for this target.';}catch(value){error=value.message;$('#prerequisite-allowed').textContent=error;}
+ const dirty=JSON.stringify(prerequisiteDraft)!==JSON.stringify(prerequisiteSaved);
+ $('#prerequisite-status').textContent=error|| (dirty?'Unsaved changes. Save the roadmap to apply them.':prerequisitePolicy.customized?'Your saved roadmap is active.':'The default roadmap is active.');
+ $('#prerequisite-status').classList.toggle('error',!!error);
+ $('#prerequisite-editor [type=submit]').disabled=prerequisiteSaving||!dirty||!!error;
+ for(const id of ['prerequisite-target','prerequisite-defaults','prerequisite-clear','prerequisite-reload'])$('#'+id).disabled=prerequisiteSaving;
+}
+function filterPrerequisites(){const query=$('#prerequisite-find').value.trim().toLowerCase();for(const button of $('#prerequisite-choices').children)button.hidden=!button.textContent.toLowerCase().includes(query);}
+async function loadPrerequisites(){
+ const result=await api('/api/prerequisites');const changed=prerequisitePolicy.revision&&prerequisitePolicy.revision!==result.policy.revision;prerequisitePolicy=result.policy;prerequisiteRevision=result.policy.revision;prerequisiteDraft=normalizedPrerequisites(result.policy.requires);prerequisiteSaved=structuredClone(prerequisiteDraft);prerequisiteDefaults=normalizedPrerequisites(result.defaults);
+ const select=$('#prerequisite-target'),target=select.value;select.replaceChildren(...Object.entries(catalog).map(([code,title])=>new Option(`${code} · ${title}`,code)));if(catalog[target])select.value=target;renderPrerequisites();
+ if(changed){pickerSignature=null;replacementTarget=null;$('#paper-result').replaceChildren();pickerSummary();showTopicScope($('#search'),'#search-scope');showTopicScope($('#generate'),'#generate-scope');await search();}
+}
+$('#prerequisite-target').addEventListener('change',()=>{$('#prerequisite-find').value='';renderPrerequisites();});
+$('#prerequisite-find').addEventListener('input',filterPrerequisites);
+$('#prerequisite-clear').addEventListener('click',()=>{prerequisiteDraft[$('#prerequisite-target').value]=[];renderPrerequisites();});
+$('#prerequisite-defaults').addEventListener('click',()=>{prerequisiteDraft=structuredClone(prerequisiteDefaults);renderPrerequisites();});
+$('#prerequisite-reload').addEventListener('click',()=>loadPrerequisites().catch(error=>{$('#prerequisite-status').textContent=error.message;}));
+$('#prerequisite-editor').addEventListener('submit',async event=>{
+ event.preventDefault();if(!prerequisiteDraft||prerequisiteSaving)return;let saveError='';prerequisiteSaving=true;renderPrerequisites();
+ try{
+  const result=await post('/api/prerequisites',{requires:prerequisiteDraft,revision:prerequisiteRevision});prerequisitePolicy=result.policy;prerequisiteRevision=result.policy.revision;prerequisiteDraft=normalizedPrerequisites(result.policy.requires);prerequisiteSaved=structuredClone(prerequisiteDraft);pickerSignature=null;replacementTarget=null;
+  $('#paper-result').replaceChildren();pickerSummary();showTopicScope($('#search'),'#search-scope');showTopicScope($('#generate'),'#generate-scope');await search();
+  status('Prerequisite roadmap saved. Filters now use these rules. Refresh any paper selection before generating.');
+ }catch(error){saveError=error.message;status(error.message,true);}
+ finally{prerequisiteSaving=false;renderPrerequisites();if(saveError){$('#prerequisite-status').textContent=saveError;$('#prerequisite-status').classList.add('error');}}
 });
