@@ -286,6 +286,7 @@ function renderPaperCandidates(){
   });
   const actions=el('div',undefined,'candidate-actions'),preview=el('button','Preview','secondary question-preview');preview.type='button';preview.setAttribute('aria-haspopup','dialog');preview.setAttribute('aria-controls','paper-preview-dialog');preview.setAttribute('aria-label',`Preview source question ${q.number}`);
   preview.addEventListener('click',()=>openPaperPreview(q,pickerOptions));actions.append(preview);
+  if(chosen) actions.append(el('span',`Used in ${q.usage_count ?? 0} generated ${(q.usage_count ?? 0)===1?'paper':'papers'}`,'muted'));
   if(chosen&&!replacementTarget){
    const replace=el('button','Replace','secondary replace-question');replace.type='button';replace.setAttribute('aria-label',`Replace source question ${q.number}`);
    replace.addEventListener('click',()=>{replacementPreviousView=pickerView;replacementTarget=q.id;renderPaperCandidates();pickerSummary();$('#cancel-replacement').focus();});
@@ -385,6 +386,7 @@ $('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,as
  }
  try{
   const result=await post('/api/papers',value);const link=el('a','Download practice paper PDF');link.href=`/api/papers/${result.id}/download`;
+  const generatedIds=new Set(result.question_ids);for(const q of pickerQuestions)if(generatedIds.has(q.id))q.usage_count=(q.usage_count??0)+1;renderPaperCandidates();
   $('#paper-result').append(el('p',`${result.count} question groups · ${result.render_mode||'full'} · Estimated ${result.actual_minutes} / ${result.target_minutes} minutes · ${result.shortfall_minutes} minutes unfilled.`),link);
   showPaperDiagnostics(result.diagnostics);
   const numberingWarnings=Object.values(result.numbering||{}).flatMap(info=>info.warnings||[]);if(numberingWarnings.length)$('#paper-result').append(el('p',numberingWarnings.join(' '),'notice'));

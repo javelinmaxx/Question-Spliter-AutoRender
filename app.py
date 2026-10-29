@@ -195,13 +195,17 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             return [dict(id=r['id'], document_id=r['document_id'], **json.loads(r['data']))
                     for r in conn.execute('SELECT * FROM questions ORDER BY rowid DESC')]
 
-    @app.get('/api/question-usage')
-    def question_usage():
+    def question_usage_counts():
         counts = {}
         with db() as conn:
             for row in conn.execute('SELECT data FROM papers'):
                 for qid in set(json.loads(row['data']).get('question_ids', [])):
                     counts[qid] = counts.get(qid, 0) + 1
+        return counts
+
+    @app.get('/api/question-usage')
+    def question_usage():
+        counts = question_usage_counts()
         items = [dict(id=q['id'], number=q['number'], filename=q['filename'],
                       paper=q.get('paper', 'Unknown'), text=q.get('text', ''),
                       count=counts.get(q['id'], 0)) for q in questions()]
@@ -901,6 +905,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         selected = {q['id']: q for q in chosen}
         candidates = []
         page_data = {}
+        usage_counts = question_usage_counts()
         for q in eligible:
             variants = question_variants(q, config['topics'], config['render_mode'])
             if q['document_id'] not in page_data:
@@ -914,6 +919,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             candidates.append(dict(id=q['id'], document_id=q['document_id'], number=q['number'],
                                    filename=q['filename'], topics=scoped_question(q, config['topics'])['topics'],
                                    text=text,
+                                   usage_count=usage_counts.get(q['id'], 0),
                                    preferred_minutes=preferred['minutes'], minimum_minutes=min(v['minutes'] for v in variants),
                                    omitted_parts=preferred['omitted_parts']))
         return jsonify(questions=candidates, diagnostics=diagnostics,

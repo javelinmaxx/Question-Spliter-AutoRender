@@ -49,6 +49,8 @@ def test_usage_counts_generated_papers_not_previews_and_persists(bank):
     reopened = create_app(root).test_client()
     counts = {q['id']: q['count'] for q in reopened.get('/api/question-usage').json}
     assert counts == {first['id']: 2, second['id']: 1}
+    preview = reopened.post('/api/papers/preview', json=options)
+    assert {q['id']: q['usage_count'] for q in preview.json['questions']} == counts
 
 
 def test_picker_prefers_saved_ocr_and_falls_back_per_page_without_rerunning_it(bank, monkeypatch):
