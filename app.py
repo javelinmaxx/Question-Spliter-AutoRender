@@ -195,6 +195,19 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             return [dict(id=r['id'], document_id=r['document_id'], **json.loads(r['data']))
                     for r in conn.execute('SELECT * FROM questions ORDER BY rowid DESC')]
 
+    @app.get('/api/question-usage')
+    def question_usage():
+        counts = {}
+        with db() as conn:
+            for row in conn.execute('SELECT data FROM papers'):
+                for qid in set(json.loads(row['data']).get('question_ids', [])):
+                    counts[qid] = counts.get(qid, 0) + 1
+        items = [dict(id=q['id'], number=q['number'], filename=q['filename'],
+                      paper=q.get('paper', 'Unknown'), text=q.get('text', ''),
+                      count=counts.get(q['id'], 0)) for q in questions()]
+        items.sort(key=lambda q: (-q['count'], q['filename'].casefold(), q['number']))
+        return jsonify(items)
+
     def question_by_id(qid):
         q = next((q for q in questions() if q['id'] == qid), None)
         if q is None:

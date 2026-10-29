@@ -38,6 +38,19 @@ def test_preview_and_manual_selection_share_filters_and_preserve_order(bank):
     assert '1.' in fitz.open(root/'documents'/(doc['id']+'.pdf'))[0].get_text()
 
 
+def test_usage_counts_generated_papers_not_previews_and_persists(bank):
+    client, root, _, first, second = bank
+    options = dict(level='HL', minutes=20, topics=[])
+    client.post('/api/papers/preview', json=options)
+    assert {q['count'] for q in client.get('/api/question-usage').json} == {0}
+    for ids in ([first['id'], second['id']], [first['id']]):
+        response = client.post('/api/papers', json=dict(options, question_ids=ids))
+        assert response.status_code == 201
+    reopened = create_app(root).test_client()
+    counts = {q['id']: q['count'] for q in reopened.get('/api/question-usage').json}
+    assert counts == {first['id']: 2, second['id']: 1}
+
+
 def test_picker_prefers_saved_ocr_and_falls_back_per_page_without_rerunning_it(bank, monkeypatch):
     client,root,doc,first,second=bank
     with sqlite3.connect(root/'bank.sqlite3') as conn:

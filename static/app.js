@@ -10,7 +10,16 @@ function el(tag, text, className) { const node=document.createElement(tag); if(t
 async function api(url, options={}) { const response=await fetch(url, options); const value=await response.json(); if(!response.ok){const error=new Error(value.error || 'Request failed');error.diagnostics=value.diagnostics;throw error;} return value; }
 function post(url, value) { return api(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(value)}); }
 async function busy(form, work) { const button=form.querySelector('[type=submit]'); button.disabled=true; try { await work(); } catch(error) { status(error.message,true); } finally { button.disabled=false; } }
-document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>{ document.querySelectorAll('.tab').forEach(section=>section.hidden=section.id!==button.dataset.tab); document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b===button)); status(''); if(button.dataset.tab==='library') search().catch(e=>status(e.message,true)); }));
+document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>{ document.querySelectorAll('.tab').forEach(section=>section.hidden=section.id!==button.dataset.tab); document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b===button)); status(''); if(button.dataset.tab==='library') search().catch(e=>status(e.message,true)); if(button.dataset.tab==='usage') loadUsage().catch(e=>status(e.message,true)); }));
+let usageItems=[];
+async function loadUsage() { usageItems=await api('/api/question-usage'); renderUsage(); }
+function renderUsage() {
+ const query=$('#usage-search').value.trim().toLowerCase(), box=$('#usage-results'); box.replaceChildren();
+ const items=usageItems.filter(q=>`${q.filename} ${q.paper} ${q.number} ${q.text}`.toLowerCase().includes(query));
+ if(!items.length){box.append(el('p','No matching saved questions.'));return;}
+ for(const q of items){const card=el('article',undefined,'panel');card.append(el('h3',`${q.filename} · ${q.paper} · Question ${q.number}`),el('p',`Used in ${q.count} generated ${q.count===1?'paper':'papers'}`),el('p',q.text||'No recognized text available.','muted'));box.append(card);}
+}
+$('#usage-search').addEventListener('input',renderUsage);
 function enhanceTopicSelect(select) {
  if(select._syncTopics)return;
  select.hidden=true;
