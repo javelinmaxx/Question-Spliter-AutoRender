@@ -4,6 +4,7 @@ let catalog = {}, currentDoc = null, currentQuestion = null;
 let previewUrl;
 let pendingImportIds = [], importing = false;
 let pickerQuestions=[], teacherSelection=new Set(), pickerSignature=null;
+let pickerSeed=null;
 document.addEventListener('DOMContentLoaded',()=>$('#preview-question').addEventListener('click',async()=>{ const button=$('#preview-question'); button.disabled=true; try { const response=await fetch(`/api/documents/${currentDoc.id}/preview`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({regions:currentQuestion.regions,paper:$('#question [name=paper]').value})}); if(!response.ok) throw new Error((await response.json()).error); if(previewUrl) URL.revokeObjectURL(previewUrl); previewUrl=URL.createObjectURL(await response.blob()); $('#crop-image').src=previewUrl; $('#crop-preview').hidden=false; } catch(error){status(error.message,true);} finally{button.disabled=false;} }));
 function status(message, error=false) { $('#status').textContent=message; $('#status').classList.toggle('error',error); }
 function el(tag, text, className) { const node=document.createElement(tag); if(text!==undefined) node.textContent=text; if(className) node.className=className; return node; }
@@ -93,7 +94,7 @@ async function listDocuments() {
  const docs=await api('/api/documents');$('#documents').replaceChildren(new Option('Choose an uploaded paper',''));
  const source=$('#source-documents'), selected=new Set([...source.selectedOptions].map(option=>option.value));source.replaceChildren();
  for(const doc of docs){$('#documents').add(new Option(doc.filename,doc.id));const option=new Option(doc.filename,doc.id);option.selected=selected.has(doc.id);source.add(option);}
- pickerSignature=null;
+ pickerSignature=null;pickerSeed=null;
 }
 async function openDocument(id) { currentDoc=await api('/api/documents/'+id); $('#document-origin').value=currentDoc.origin_mode==='manual'?currentDoc.origin:'auto'; $('#origin-analysis').textContent=`Saved source: ${{ib_official:'Official IB',self_made:'Self-made',unknown:'Unspecified'}[currentDoc.origin]||'Unspecified'} · ${currentDoc.origin_mode==='manual'?'manual label':'automatic'}. ${currentDoc.origin_analysis?.reason||''} `+(currentDoc.origin_analysis?.evidence||[]).map(item=>`Page ${item.page+1} (${item.source}): ${item.quote}`).join(' · '); setImportTargets([id]); const analysis=currentDoc.analysis; $('#analysis-status').textContent='Analysis saved on this computer'+(analysis?.completed_at?' · '+new Date(analysis.completed_at).toLocaleString():'')+'. Available after restarting the app.'+(currentDoc.rules_changed?' Analysis rules changed; use Reanalyse saved text to update tags without OCR.':'')+(analysis?.language_review_status==='pending'?' Some optional model checks did not finish; completed results are preserved.':''); $('#review').hidden=false; $('#question').hidden=true; $('#documents').value=id; $('#warnings').replaceChildren(...currentDoc.warnings.map(w=>el('p',w))); renderCandidates(); $('#source-page').replaceChildren(...currentDoc.pages.map((p,i)=>new Option(`Page ${i+1}`,i))); showPage(0); }
 function renderCandidates() { $('#candidates').replaceChildren(); for(const q of currentDoc.questions) { const button=el('button',`Question ${q.number}${currentDoc.saved_numbers.includes(q.number)?' · saved':''}`); button.type='button'; button.addEventListener('click',()=>selectQuestion(q)); $('#candidates').append(button); } }
@@ -306,7 +307,7 @@ async function loadPaperCandidates(automatic=false,fill=false){
   if(fill){payload.question_ids=pickerQuestions.filter(q=>teacherSelection.has(q.id)).map(q=>q.id);payload.fill_paper=true;}
   const result=await post('/api/papers/preview',payload);
   if(signature!==JSON.stringify(paperOptions())||policyRevision!==prerequisitePolicy.revision)throw new Error('Filters or prerequisites changed during loading. Refresh the question list.');
-  pickerQuestions=result.questions;pickerOptions=options;replacementTarget=null;
+  pickerQuestions=result.questions;pickerOptions=options;replacementTarget=null;pickerSeed=automatic?result.selection_seed:null;
   if(automatic){
    const order=new Map(result.selected_question_ids.map((id,index)=>[id,index]));
    pickerQuestions.sort((a,b)=>(order.get(a.id)??Infinity)-(order.get(b.id)??Infinity));
@@ -319,7 +320,7 @@ async function loadPaperCandidates(automatic=false,fill=false){
  finally{pickerLoading=false;for(const id of ['auto-select-questions','preview-questions'])$('#'+id).disabled=false;}
 }
 $('#manual-selection').addEventListener('change',()=>{$('#question-picker').hidden=!$('#manual-selection').checked;replacementTarget=null;renderPaperCandidates();pickerSummary();});
-$('#generate').addEventListener('input',event=>{if(event.target.matches('[name]')){pickerSignature=null;replacementTarget=null;pickerSummary();}});
+$('#generate').addEventListener('input',event=>{if(event.target.matches('[name]')){pickerSignature=null;pickerSeed=null;replacementTarget=null;pickerSummary();}});
 $('#fill-paper').addEventListener('change',pickerSummary);
 $('#preview-questions').addEventListener('click',()=>loadPaperCandidates().catch(error=>status(error.message,true)));
 $('#auto-select-questions').addEventListener('click',()=>loadPaperCandidates(true).catch(error=>status(error.message,true)));
@@ -381,13 +382,16 @@ $('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,as
  if($('#manual-selection').checked){
   if(pickerSignature!==JSON.stringify(value))throw new Error('Refresh the filtered question list after changing filters or analysis.');
   value.question_ids=pickerQuestions.filter(q=>teacherSelection.has(q.id)).map(q=>q.id);
+  if(pickerSeed!==null&&pickerSeed!==undefined)value.selection_seed=pickerSeed;
   if($('#fill-paper').checked){await loadPaperCandidates(true,true);return;}
   value.fill_paper=false;
  }
  try{
-  const result=await post('/api/papers',value);const link=el('a','Download practice paper PDF');link.href=`/api/papers/${result.id}/download`;
+  const result=await post('/api/papers',value);const link=el('a','Download print-ready PDF (300 dpi)');link.href=`/api/papers/${result.id}/print-safe-download`;
+  const original=el('a','Download original searchable PDF');original.href=`/api/papers/${result.id}/download`;
   const generatedIds=new Set(result.question_ids);for(const q of pickerQuestions)if(generatedIds.has(q.id))q.usage_count=(q.usage_count??0)+1;renderPaperCandidates();
-  $('#paper-result').append(el('p',`${result.count} question groups · ${result.render_mode||'full'} · Estimated ${result.actual_minutes} / ${result.target_minutes} minutes · ${result.shortfall_minutes} minutes unfilled.`),link);
+  const seedLabel=result.selection_seed!==null&&result.selection_seed!==undefined?' · Random seed '+result.selection_seed:'';
+  $('#paper-result').append(el('p',result.count+' question groups · '+(result.render_mode||'full')+' · Estimated '+result.actual_minutes+' / '+result.target_minutes+' minutes · '+result.shortfall_minutes+' minutes unfilled'+seedLabel+'.'),link,el('span',' · '),original);
   showPaperDiagnostics(result.diagnostics);
   const numberingWarnings=Object.values(result.numbering||{}).flatMap(info=>info.warnings||[]);if(numberingWarnings.length)$('#paper-result').append(el('p',numberingWarnings.join(' '),'notice'));
   status(`Practice paper generated from ${result.count} reviewed question groups. ${result.selections?.reduce((n,s)=>n+s.omitted_parts.length,0)||0} parts omitted. ${result.short_fallbacks?.length||0} questions retained whole because no approved dependency map was available.`);
@@ -485,7 +489,7 @@ $('#clean-watermarks').addEventListener('click',async()=>{
  if(!currentDoc)return;const button=$('#clean-watermarks');button.disabled=true;
  try{const id=currentDoc.id;status('Checking watermark layers and red image text. Original PDFs are retained.');
  const result=await post(`/api/documents/${id}/clean-watermarks`,{watermark_text:$('#watermark-text').value});
- await openDocument(id);await search();pickerSignature=null;
+ await openDocument(id);await search();pickerSignature=null;pickerSeed=null;
  status(`Watermark cleanup saved. ${result.cleaned_pages?.length||0} pages cleaned; ${result.updated_question_ids.length} questions updated; ${result.deleted_question_ids.length} questions deleted because a watermark could not be removed safely.`+(result.warnings?.length?' '+result.warnings.join(' '):''),!!result.warnings?.length);
  }catch(error){status(error.message,true);}finally{button.disabled=false;}
 });
@@ -518,7 +522,7 @@ function filterPrerequisites(){const query=$('#prerequisite-find').value.trim().
 async function loadPrerequisites(){
  const result=await api('/api/prerequisites');const changed=prerequisitePolicy.revision&&prerequisitePolicy.revision!==result.policy.revision;prerequisitePolicy=result.policy;prerequisiteRevision=result.policy.revision;prerequisiteDraft=normalizedPrerequisites(result.policy.requires);prerequisiteSaved=structuredClone(prerequisiteDraft);prerequisiteDefaults=normalizedPrerequisites(result.defaults);
  const select=$('#prerequisite-target'),target=select.value;select.replaceChildren(...Object.entries(catalog).map(([code,title])=>new Option(`${code} · ${title}`,code)));if(catalog[target])select.value=target;renderPrerequisites();
- if(changed){pickerSignature=null;replacementTarget=null;$('#paper-result').replaceChildren();pickerSummary();showTopicScope($('#search'),'#search-scope');showTopicScope($('#generate'),'#generate-scope');await search();}
+ if(changed){pickerSignature=null;pickerSeed=null;replacementTarget=null;$('#paper-result').replaceChildren();pickerSummary();showTopicScope($('#search'),'#search-scope');showTopicScope($('#generate'),'#generate-scope');await search();}
 }
 $('#prerequisite-target').addEventListener('change',()=>{$('#prerequisite-find').value='';renderPrerequisites();});
 $('#prerequisite-find').addEventListener('input',filterPrerequisites);
@@ -528,11 +532,11 @@ $('#prerequisite-reload').addEventListener('click',()=>loadPrerequisites().catch
 $('#prerequisite-editor').addEventListener('submit',async event=>{
  event.preventDefault();if(!prerequisiteDraft||prerequisiteSaving)return;let saveError='';prerequisiteSaving=true;renderPrerequisites();
  try{
-  const result=await post('/api/prerequisites',{requires:prerequisiteDraft,revision:prerequisiteRevision});prerequisitePolicy=result.policy;prerequisiteRevision=result.policy.revision;prerequisiteDraft=normalizedPrerequisites(result.policy.requires);prerequisiteSaved=structuredClone(prerequisiteDraft);pickerSignature=null;replacementTarget=null;
+  const result=await post('/api/prerequisites',{requires:prerequisiteDraft,revision:prerequisiteRevision});prerequisitePolicy=result.policy;prerequisiteRevision=result.policy.revision;prerequisiteDraft=normalizedPrerequisites(result.policy.requires);prerequisiteSaved=structuredClone(prerequisiteDraft);pickerSignature=null;pickerSeed=null;replacementTarget=null;
   $('#paper-result').replaceChildren();pickerSummary();showTopicScope($('#search'),'#search-scope');showTopicScope($('#generate'),'#generate-scope');await search();
   status('Prerequisite roadmap saved. Filters now use these rules. Refresh any paper selection before generating.');
  }catch(error){saveError=error.message;status(error.message,true);}
  finally{prerequisiteSaving=false;renderPrerequisites();if(saveError){$('#prerequisite-status').textContent=saveError;$('#prerequisite-status').classList.add('error');}}
 });
 
-$('#set-document-origin').addEventListener('click',async()=>{const button=$('#set-document-origin');button.disabled=true;try{const id=currentDoc.id,result=await post(`/api/documents/${id}/origin`,{origin:$('#document-origin').value});await openDocument(id);await search();pickerSignature=null;status(`Source origin saved. ${result.updated} bank questions updated; ${result.preserved} individual overrides preserved.`);}catch(error){status(error.message,true);}finally{button.disabled=false;}});
+$('#set-document-origin').addEventListener('click',async()=>{const button=$('#set-document-origin');button.disabled=true;try{const id=currentDoc.id,result=await post(`/api/documents/${id}/origin`,{origin:$('#document-origin').value});await openDocument(id);await search();pickerSignature=null;pickerSeed=null;status(`Source origin saved. ${result.updated} bank questions updated; ${result.preserved} individual overrides preserved.`);}catch(error){status(error.message,true);}finally{button.disabled=false;}});

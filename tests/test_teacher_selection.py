@@ -240,3 +240,14 @@ def test_fill_paper_can_fill_an_empty_manual_selection(bank):
     assert set(result.json['question_ids']) == {first['id'],second['id']}
     assert set(result.json['filled_question_ids']) == {first['id'],second['id']}
     assert result.json['actual_minutes'] == 13
+
+def test_automatic_selector_prefers_questions_with_lower_saved_usage(bank):
+    client,_,doc,first,second=bank
+    save(client,doc,minutes=6)
+    manual=client.post('/api/papers',json=dict(level='HL',minutes=6,topics=[],question_ids=[first['id']]))
+    assert manual.status_code==201,manual.json
+    preview=client.post('/api/papers/preview',json=dict(level='HL',minutes=6,topics=[],auto_select=True))
+    assert preview.status_code==200,preview.json
+    assert preview.json['selected_question_ids']==[second['id']]
+    counts={q['id']:q['usage_count'] for q in preview.json['questions']}
+    assert counts[first['id']]==1 and counts[second['id']]==0
