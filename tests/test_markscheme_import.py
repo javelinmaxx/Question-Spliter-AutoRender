@@ -2,6 +2,7 @@ from io import BytesIO
 from pathlib import Path
 
 import fitz
+import pytest
 
 import app as application
 from app import create_app
@@ -90,3 +91,28 @@ def test_real_paper_question_matches_imported_markscheme_and_generates_answer_pd
     with fitz.open(stream=download.data, filetype="pdf") as print_pdf:
         assert len(print_pdf) >= 1
         assert all(len(page.get_images(full=True)) == 1 for page in print_pdf)
+
+
+
+@pytest.mark.parametrize(
+    "filename,paper,expected_count",
+    [
+        ("Physics_paper_2__TZ1_HL_markscheme.pdf", "Paper 2", 8),
+        ("Physics_paper_3__TZ1_HL_markscheme.pdf", "Paper 3", 20),
+    ],
+)
+def test_structured_sample_markschemes_store_question_specific_page_regions(tmp_path, monkeypatch, filename, paper, expected_count):
+    client = create_app(tmp_path).test_client()
+    monkeypatch.setattr(
+        application, "review_disagreement",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("Markscheme OCR must not be sent to the language model")),
+    )
+    response = post_pdf(client, "/api/markschemes", ROOT / filename)
+    assert response.status_code == 201, response.json
+    assert response.json["identity"]["paper"] == paper
+    assert set(range(1, expected_count + 1)).issubset(set(response.json["question_numbers"]))
+    with fitz.open(tmp_path / "markschemes" / (response.json["id"] + ".pdf")) as source:
+        entries = response.json["entries"]
+        for number in range(1, expected_count + 1):
+            assert entries[str(number)]["regions"], f"Question {number} has no source-page crop"
+            assert all(0 <= region["page"] < len(source) for region in entries[str(number)]["regions"])

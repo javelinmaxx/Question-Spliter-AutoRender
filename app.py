@@ -34,7 +34,7 @@ from level_filter import normalize_mode, sl_mode, exclusion as level_exclusion, 
 from watermarks import prepare as prepare_watermarks, filter_analysis as filter_watermarks, rejected as watermark_rejected, page_records as watermark_records
 from upload_filter import markscheme_name, markscheme_heading
 from exam_identity import normalize_timezone, parse_exam_identity, match_question_to_markscheme
-from markscheme_data import extract_markscheme_entries, render_selected_markscheme
+from markscheme_data import extract_markscheme_entries, extract_markscheme_regions, render_selected_markscheme
 from subjects import registry as subject_registry, ACTIVE_SUBJECT_ID, API_VERSION as SUBJECT_API_VERSION
 from subjects.pipeline import analyze as analyze_subject
 
@@ -230,13 +230,18 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                                      timezone=question.get('timezone')))
             else:
                 markscheme = candidates[0]
-                lines = markscheme.get('entries', {}).get(str(question['number']), [])
+                entry = markscheme.get('entries', {}).get(str(question['number']), {})
+                if isinstance(entry, list):
+                    entry = dict(lines=entry, regions=[])
+                lines = entry.get('lines', [])
                 if not lines:
                     missing.append(dict(question_id=question['id'], number=question['number'],
                                         year=question.get('year'), paper=question.get('paper'),
                                         timezone=question.get('timezone'), reason='entry_not_extracted'))
                     continue
                 matched.append(dict(question_id=question['id'], number=question['number'], lines=lines,
+                                    regions=entry.get('regions', []),
+                                    source_path=str(root / 'markschemes' / (markscheme['id'] + '.pdf')),
                                     year=question['year'], paper=question['paper'], timezone=question['timezone'],
                                     source_filename=markscheme['filename'], markscheme_id=markscheme['id']))
         return matched, missing, ambiguous
@@ -460,7 +465,9 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                     raise ValueError('Could not identify the markscheme year, paper and time zone. Check that its IB document code or cover text is readable.')
             else:
                 raise ValueError('Could not identify the markscheme year, paper and time zone.')
-            entries = extract_markscheme_entries(page_texts, identity['paper'])
+            with fitz.open(path) as pdf:
+                regions = extract_markscheme_regions(pdf, identity['paper'])
+            entries = extract_markscheme_entries(page_texts, identity['paper'], regions)
             if not entries:
                 raise ValueError('No question-numbered markscheme entries could be extracted. Check the PDF text/OCR and try again.')
             data = dict(identity=identity, question_numbers=sorted(entries),
