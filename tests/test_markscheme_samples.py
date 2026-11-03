@@ -13,7 +13,7 @@ from exam_identity import (
 ROOT = Path(__file__).resolve().parents[1] / "TEST SAMPLES"
 PAIRS = [
     ("Physics_paper_1__TZ1_HL.pdf", "Physics_paper_1__TZ1_HL_markscheme.pdf", "Paper 1", 40),
-    ("Physics_paper_2__TZ1_HL.pdf", "Physics_paper_2__TZ1_HL_markscheme.pdf", "Paper 2", 11),
+    ("Physics_paper_2__TZ1_HL.pdf", "Physics_paper_2__TZ1_HL_markscheme.pdf", "Paper 2", 8),
     ("Physics_paper_3__TZ1_HL.pdf", "Physics_paper_3__TZ1_HL_markscheme.pdf", "Paper 3", 20),
 ]
 

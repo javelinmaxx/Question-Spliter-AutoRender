@@ -5,6 +5,7 @@ import fitz
 
 import app as application
 from app import create_app
+from exam_identity import match_question_to_markscheme
 
 ROOT = Path(__file__).resolve().parents[1] / "TEST SAMPLES"
 
@@ -62,6 +63,10 @@ def test_real_paper_question_matches_imported_markscheme_and_generates_answer_pd
     marks_path = ROOT / "Physics_paper_1__TZ1_HL_markscheme.pdf"
     marks_response = post_pdf(client, "/api/markschemes", marks_path)
     assert marks_response.status_code == 201, marks_response.json
+    markscheme = client.get("/api/markschemes").json[0]
+    direct_match = match_question_to_markscheme(
+        question, markscheme["identity"], markscheme["question_numbers"])
+    assert direct_match["matched"], direct_match
 
     generated = client.post("/api/papers", json={
         "level": "HL", "syllabus": "Legacy", "minutes": 45, "topics": [],
@@ -69,7 +74,7 @@ def test_real_paper_question_matches_imported_markscheme_and_generates_answer_pd
         "question_ids": [question["id"]],
     })
     assert generated.status_code == 201, generated.json
-    assert generated.json["markscheme"]["generated"] is True
+    assert generated.json["markscheme"]["generated"] is True, generated.json["markscheme"]
     assert generated.json["markscheme"]["matched_questions"] == 1
     assert generated.json["markscheme"]["missing_questions"] == []
     assert generated.json["markscheme"]["ambiguous_questions"] == []
