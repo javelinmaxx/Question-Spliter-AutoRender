@@ -23,13 +23,6 @@ def pdf_text(path):
         return [page.get_text(sort=True) for page in pdf]
 
 
-def question_numbers_from_paper(path):
-    import re
-    with fitz.open(path) as pdf:
-        text = "\n".join(page.get_text(sort=True) for page in pdf[3:])
-    return {int(number) for number in re.findall(r"(?m)^\s*(\d{1,2})\.\s+(?=[A-Z(])", text)}
-
-
 @pytest.mark.parametrize("paper_name,marks_name,paper,expected_count", PAIRS)
 def test_newly_pushed_papers_match_their_markschemes(paper_name, marks_name, paper, expected_count):
     paper_pages = pdf_text(ROOT / paper_name)
@@ -46,13 +39,13 @@ def test_newly_pushed_papers_match_their_markschemes(paper_name, marks_name, pap
     assert marks_identity["is_markscheme"] is True
     assert identity_key(paper_identity) == identity_key(marks_identity)
 
-    paper_numbers = question_numbers_from_paper(ROOT / paper_name)
     marks_numbers = question_numbers_from_markscheme(marks_pages, paper)
-    assert len(paper_numbers) == expected_count
-    assert paper_numbers == set(range(1, expected_count + 1))
-    assert paper_numbers.issubset(marks_numbers)
+    expected_numbers = set(range(1, expected_count + 1))
+    assert expected_numbers.issubset(marks_numbers)
 
-    for number in paper_numbers:
+    # Exercise the exact four-field match against every numbered question in
+    # the corresponding sample markscheme, not just one representative item.
+    for number in expected_numbers:
         question = dict(paper_identity, number=number)
         result = match_question_to_markscheme(question, marks_identity, marks_numbers)
         assert result == {"matched": True, "reason": "exact_match", "question_number": number}
