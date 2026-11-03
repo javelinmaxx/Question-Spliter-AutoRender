@@ -450,10 +450,15 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             with fitz.open(path) as pdf:
                 if pdf.needs_pass:
                     raise ValueError('Password-protected markschemes are not supported.')
+                native_pages = [page.get_text(sort=True) for page in pdf]
                 records, warnings = read_pages(pdf, request.form.get('ocr_mode', 'auto'), root / 'ocr-cache')
                 page_count = len(pdf)
-            page_texts = [record.get('native', '') if len(record.get('native', '').strip()) >= 50
-                          else record.get('text', '') for record in records]
+            page_texts = []
+            for index, record in enumerate(records):
+                native = native_pages[index] if index < len(native_pages) else ''
+                ocr = record.get('text', '')
+                page_texts.append(native if not ocr.strip() or ocr.strip() == native.strip()
+                                  else native + '\\n' + ocr)
             all_text = '\n'.join(page_texts)
             identity = parse_exam_identity(all_text, uploaded.filename)
             named = markscheme_name(uploaded.filename) or any(markscheme_heading(text) for text in page_texts[:4])
