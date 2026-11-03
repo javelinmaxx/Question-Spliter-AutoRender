@@ -127,6 +127,12 @@ $('#upload-type').addEventListener('change',()=>{
  setUploadType();
  if($('#upload-type').value==='folder')chooseFolder();
 });
+function setImportKind(){
+ const markscheme=$('#import-kind').value==='markscheme';
+ for(const id of ['upload-origin','watermark-text','auto-import'])$('#'+id).closest('label').hidden=markscheme;
+}
+$('#import-kind').addEventListener('change',setImportKind);
+setImportKind();
 function chooseFolder(){
  if(importing)return;
  const input=$('#pdf-folder');
@@ -183,13 +189,15 @@ $('#upload').addEventListener('submit',e=>{
    await listMarkschemes();
    if(uploaded.length) await openDocument(uploaded[0]);
    if(autoImport)await search();
-   status(importKind==='markscheme'
+   const summary=importKind==='markscheme'
     ? `${importedMarkschemes} of ${files.length} markschemes imported. OCR was processed locally; no language-model review was run.`
-    : `${uploaded.length} of ${files.length} PDFs uploaded. ${skippedMarkschemes} markschemes ignored. `+(autoImport?`${automaticallyAdded} questions automatically saved; ${importFailures} import failures.`:uploaded.length?'Use Confirm import to add their questions without individual review.':'No question papers were added.'),(uploaded.length===0&&skippedMarkschemes<files.length)||importFailures>0);
+    : `${uploaded.length} of ${files.length} PDFs uploaded. ${skippedMarkschemes} markschemes ignored. `+(autoImport?`${automaticallyAdded} questions automatically saved; ${importFailures} import failures.`:uploaded.length?'Use Confirm import to add their questions without individual review.':'No question papers were added.');
+   const failed=importKind==='markscheme'?importedMarkschemes===0:(uploaded.length===0&&skippedMarkschemes<files.length)||importFailures>0;
+   status(summary,failed);
   }finally{
    importing=false; $('#documents').disabled=false;
    for(const control of e.target.querySelectorAll('input,select,#choose-folder'))control.disabled=false;
-   setUploadType(); setImportTargets(uploaded);
+   setUploadType(); setImportKind(); setImportTargets(uploaded);
   }
  });
 });
