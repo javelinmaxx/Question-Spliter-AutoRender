@@ -1,6 +1,9 @@
 name: Inspect markscheme sample PDFs
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - feature/markscheme-import-match
