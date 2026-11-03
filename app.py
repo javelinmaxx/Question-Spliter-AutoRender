@@ -14,7 +14,7 @@ import fitz
 from flask import Flask, g, jsonify, render_template, request, send_file
 
 from physics import TOPICS, choose_questions, extract, render_question, validate_regions, suggest, custom_tags, HL_ONLY_TOPICS, validate_level_topics, document_metadata
-from ocr import region_text
+from ocr import region_text, read_pages
 from paper_types import PAPERS, matches_paper
 from source_origin import ORIGINS, validate_origin, analyze_origin
 from language_review import review_disagreement, context_hash, status as model_status
@@ -33,6 +33,8 @@ from assessment_timing import estimate as time_estimate, refresh as refresh_timi
 from level_filter import normalize_mode, sl_mode, exclusion as level_exclusion, suitability, LABELS as LEVEL_LABELS
 from watermarks import prepare as prepare_watermarks, filter_analysis as filter_watermarks, rejected as watermark_rejected, page_records as watermark_records
 from upload_filter import markscheme_name, markscheme_heading
+from exam_identity import normalize_timezone, parse_exam_identity, match_question_to_markscheme
+from markscheme_data import extract_markscheme_entries, render_selected_markscheme
 from subjects import registry as subject_registry, ACTIVE_SUBJECT_ID, API_VERSION as SUBJECT_API_VERSION
 from subjects.pipeline import analyze as analyze_subject
 
@@ -57,7 +59,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
     app.config['MAX_CONTENT_LENGTH'] = 40 * 1024 * 1024
     root = Path(data_dir or os.environ.get('QUESTION_BANK_DATA', Path(__file__).parent / 'instance')).resolve()
     root.mkdir(parents=True, exist_ok=True)
-    for folder in ('documents', 'images', 'papers'):
+    for folder in ('documents', 'images', 'papers', 'markschemes'):
         (root / folder).mkdir(exist_ok=True)
 
     @app.get('/api/health')
@@ -74,6 +76,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         CREATE TABLE IF NOT EXISTS documents (id TEXT PRIMARY KEY, filename TEXT NOT NULL, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS questions (id TEXT PRIMARY KEY, document_id TEXT NOT NULL, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS papers (id TEXT PRIMARY KEY, data TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS markschemes (id TEXT PRIMARY KEY, filename TEXT NOT NULL, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS source_fingerprints (sha256 TEXT PRIMARY KEY, document_id TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS application_settings (key TEXT PRIMARY KEY, data TEXT NOT NULL);
         ''')
@@ -116,7 +119,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                 mapping['source_hash'] = question_hash(question)
 
     with db() as conn:
-        source_levels, source_papers, source_origins = {}, {}, {}
+        source_levels, source_papers, source_origins, source_timezones = {}, {}, {}, {}
         for row in conn.execute('SELECT id,filename,data FROM documents').fetchall():
             value = json.loads(row['data'])
             if value.get('subject_id', subject.id) != subject.id:
@@ -132,14 +135,19 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                 text = '\n'.join(p.get('native') or p.get('text', '') for p in value.get('text_pages', [])[:4])
                 if document_metadata(text, row['filename'])['paper'] == 'Paper 3':
                     metadata['paper'] = 'Paper 3'
+            if not metadata.get('timezone'):
+                identity_text = '\n'.join(p.get('native') or p.get('text', '') for p in value.get('text_pages', []))
+                metadata['timezone'] = document_metadata(identity_text, row['filename']).get('timezone')
             source_papers[row['id']] = metadata.get('paper', 'Unknown')
             source_levels[row['id']] = value.get('metadata', {}).get('level', 'Unknown')
+            source_timezones[row['id']] = metadata.get('timezone')
             for candidate in value.get('questions', []):
                 candidate['subject_id'] = subject.id
                 if not candidate.get('origin_override'):
                     candidate['origin'] = value['origin']
                 upgrade_unknown_paper(candidate, source_papers[row['id']])
                 candidate['source_level'] = source_levels[row['id']]
+                candidate.setdefault('timezone', source_timezones[row['id']])
                 refresh_timing(candidate)
             conn.execute('UPDATE documents SET data=? WHERE id=?', (json.dumps(value), row['id']))
         for row in conn.execute('SELECT id FROM documents WHERE id NOT IN (SELECT document_id FROM source_fingerprints)').fetchall():
@@ -156,6 +164,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                 value['origin'] = source_origins.get(row['document_id'], 'unknown')
             original_level = source_levels.get(row['document_id'])
             value.setdefault('source_level', original_level if original_level in ('HL','SL') else value.get('level'))
+            value.setdefault('timezone', source_timezones.get(row['document_id']))
             refresh_timing(value)
             image = root / 'images' / (row['id'] + '.png')
             if not value.get('content_hash') and image.is_file():
@@ -195,6 +204,42 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         with db() as conn:
             return [dict(id=r['id'], document_id=r['document_id'], **json.loads(r['data']))
                     for r in conn.execute('SELECT * FROM questions ORDER BY rowid DESC')]
+
+    def saved_markschemes():
+        with db() as conn:
+            return [dict(id=row['id'], filename=row['filename'], **json.loads(row['data']))
+                    for row in conn.execute('SELECT id, filename, data FROM markschemes ORDER BY rowid DESC')]
+
+    def match_markscheme_entries(selected_questions):
+        available = saved_markschemes()
+        matched, missing, ambiguous = [], [], []
+        for question in selected_questions:
+            candidates = []
+            for markscheme in available:
+                result = match_question_to_markscheme(
+                    question, markscheme['identity'], markscheme.get('question_numbers', []))
+                if result['matched']:
+                    candidates.append(markscheme)
+            if len(candidates) > 1:
+                ambiguous.append(dict(question_id=question['id'], number=question['number'],
+                                      year=question.get('year'), paper=question.get('paper'),
+                                      timezone=question.get('timezone'), filenames=[m['filename'] for m in candidates]))
+            elif not candidates:
+                missing.append(dict(question_id=question['id'], number=question['number'],
+                                     year=question.get('year'), paper=question.get('paper'),
+                                     timezone=question.get('timezone')))
+            else:
+                markscheme = candidates[0]
+                lines = markscheme.get('entries', {}).get(str(question['number']), [])
+                if not lines:
+                    missing.append(dict(question_id=question['id'], number=question['number'],
+                                        year=question.get('year'), paper=question.get('paper'),
+                                        timezone=question.get('timezone'), reason='entry_not_extracted'))
+                    continue
+                matched.append(dict(question_id=question['id'], number=question['number'], lines=lines,
+                                    year=question['year'], paper=question['paper'], timezone=question['timezone'],
+                                    source_filename=markscheme['filename'], markscheme_id=markscheme['id']))
+        return matched, missing, ambiguous
 
     def question_usage_counts():
         counts = {}
@@ -380,6 +425,57 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
     def documents():
         with db() as conn:
             return jsonify([dict(id=r['id'], filename=r['filename']) for r in conn.execute('SELECT id, filename FROM documents ORDER BY rowid DESC')])
+
+    @app.get('/api/markschemes')
+    def list_markschemes():
+        return jsonify([dict(id=m['id'], filename=m['filename'], identity=m['identity'],
+                             question_numbers=m['question_numbers'], pages=m['pages'],
+                             language_model_review=m.get('language_model_review', 'not_run'))
+                        for m in saved_markschemes()])
+
+    @app.post('/api/markschemes')
+    def upload_markscheme():
+        uploaded = request.files.get('file')
+        if not uploaded or not uploaded.filename.lower().endswith('.pdf'):
+            raise ValueError('Choose a PDF markscheme.')
+        markscheme_id = uuid.uuid4().hex
+        path = root / 'markschemes' / (markscheme_id + '.pdf')
+        uploaded.save(path)
+        try:
+            with fitz.open(path) as pdf:
+                if pdf.needs_pass:
+                    raise ValueError('Password-protected markschemes are not supported.')
+                records, warnings = read_pages(pdf, request.form.get('ocr_mode', 'auto'), root / 'ocr-cache')
+                page_count = len(pdf)
+            page_texts = [record.get('native', '') if len(record.get('native', '').strip()) >= 50
+                          else record.get('text', '') for record in records]
+            all_text = '\n'.join(page_texts)
+            identity = parse_exam_identity(all_text, uploaded.filename)
+            named = markscheme_name(uploaded.filename) or any(markscheme_heading(text) for text in page_texts[:4])
+            if not identity.get('is_markscheme') and not named:
+                raise ValueError('This PDF does not appear to be a markscheme. Check its filename or cover page.')
+            identity['is_markscheme'] = True
+            if identity_key := (identity.get('year'), identity.get('paper'), identity.get('timezone')):
+                if not all(identity_key):
+                    raise ValueError('Could not identify the markscheme year, paper and time zone. Check that its IB document code or cover text is readable.')
+            else:
+                raise ValueError('Could not identify the markscheme year, paper and time zone.')
+            entries = extract_markscheme_entries(page_texts, identity['paper'])
+            if not entries:
+                raise ValueError('No question-numbered markscheme entries could be extracted. Check the PDF text/OCR and try again.')
+            data = dict(identity=identity, question_numbers=sorted(entries),
+                        entries={str(number): lines for number, lines in entries.items()}, pages=page_count,
+                        ocr_warnings=warnings, ocr_mode=request.form.get('ocr_mode', 'auto'),
+                        imported_at=datetime.now(timezone.utc).isoformat(), language_model_review='not_run')
+            with db() as conn:
+                conn.execute('INSERT INTO markschemes VALUES (?, ?, ?)',
+                             (markscheme_id, Path(uploaded.filename).name, json.dumps(data)))
+            return jsonify(id=markscheme_id, filename=Path(uploaded.filename).name, **data), 201
+        except Exception as error:
+            path.unlink(missing_ok=True)
+            if isinstance(error, ValueError):
+                raise
+            raise ValueError('Could not read markscheme PDF: ' + str(error)) from error
 
     @app.post('/api/documents')
     def upload():
@@ -630,6 +726,12 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         year = None if imported and value.get('year') is None else int(value['year'])
         if year is not None and not 1970 <= year <= 2100:
             raise ValueError('Enter a valid paper year.')
+        raw_timezone = value.get('timezone')
+        if raw_timezone in (None, '', 'Unknown'):
+            raw_timezone = doc.get('metadata', {}).get('timezone')
+        timezone = normalize_timezone(raw_timezone)
+        if raw_timezone not in (None, '', 'Unknown') and timezone is None:
+            raise ValueError('Choose a valid examination time zone (TZ0–TZ3).')
         marks = int(value['marks']) if value.get('marks') not in (None, '') else None
         if marks is not None and not 1 <= marks <= 200:
             raise ValueError('Marks must be between 1 and 200.')
@@ -651,7 +753,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         comparison = dict(status=('agreement' if set(suggestions['topics']) == set(ocr_topics) else 'disagreement') if ocr_text.strip() and native_present else 'ocr_only' if ocr_text.strip() else 'not_run', topics=ocr_topics)
         prior = next((q.get('language_review') for q in doc['questions'] if q['number'] == number), None)
         language_result = current_review(doc, dict(regions=regions, paper=paper), prior)
-        saved = dict(number=number, year=year, level=level, syllabus=syllabus, paper=paper,
+        saved = dict(number=number, year=year, level=level, syllabus=syllabus, paper=paper, timezone=timezone,
                      subject_id=subject.id,
                      origin=doc.get('origin', 'unknown') if value.get('origin','inherit')=='inherit' or imported else validate_origin(value['origin']),
                      topics=topics, minutes=minutes, difficulty=difficulty, marks=marks,
@@ -990,12 +1092,27 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         except Exception as error:
             output_path.unlink(missing_ok=True)
             raise ValueError(f'Generated PDF failed internal validation: {error}') from error
+        matched_markscheme_entries, missing_markscheme_questions, ambiguous_markscheme_questions = match_markscheme_entries(chosen)
+        markscheme_path = root / 'papers' / (paper_id + '-markscheme.pdf')
+        markscheme_generated = False
+        markscheme_error = None
+        if matched_markscheme_entries:
+            try:
+                render_selected_markscheme(markscheme_path, matched_markscheme_entries,
+                                           title=f'Physics {level} selected markscheme')
+                markscheme_generated = True
+            except Exception as error:
+                markscheme_error = str(error)
+                markscheme_path.unlink(missing_ok=True)
         completed_diagnostics = finish_diagnostics(diagnostics, chosen, target)
         if requested_ids is not None and not fill and actual < target:
             completed_diagnostics['summary'] = f'Your selected questions provide {actual:g} estimated minutes, leaving {target - actual:g} minutes. Enable Fill paper to add other matching questions.'
         result = dict(id=paper_id, question_ids=list(ids), target_minutes=target, actual_minutes=actual,
                       shortfall_minutes=round(target - actual, 1), count=len(chosen), render_mode=mode,
                       diagnostics=completed_diagnostics, selection_seed=selection_seed,
+                      markscheme=dict(generated=markscheme_generated, matched_questions=len(matched_markscheme_entries),
+                                      missing_questions=missing_markscheme_questions,
+                                      ambiguous_questions=ambiguous_markscheme_questions, error=markscheme_error),
                       selection_strategy='usage-balanced seeded selection' if requested_ids is None or fill else 'teacher-selected',
                       selection_mode='manual' if requested_ids is not None else 'automatic',
                       requested_question_ids=requested_ids or [], filled_question_ids=filled_ids,
@@ -1017,6 +1134,29 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             if not conn.execute('SELECT id FROM papers WHERE id=?', (paper_id,)).fetchone():
                 raise ValueError('Paper not found.')
         return send_file(root / 'papers' / (paper_id + '.pdf'), as_attachment=True, download_name='physics-practice-paper.pdf')
+
+    @app.get('/api/papers/<paper_id>/markscheme')
+    def download_markscheme(paper_id):
+        with db() as conn:
+            row = conn.execute('SELECT data FROM papers WHERE id=?', (paper_id,)).fetchone()
+        if row is None:
+            raise ValueError('Paper not found.')
+        result = json.loads(row['data'])
+        if not result.get('markscheme', {}).get('generated'):
+            raise ValueError('No matching markscheme entries were available for this generated paper.')
+        source_path = root / 'papers' / (paper_id + '-markscheme.pdf')
+        output = BytesIO()
+        # Flatten the selected markscheme too, keeping the same Ricoh-safe print path.
+        with fitz.open(source_path) as source, fitz.open() as flattened:
+            for source_page in source:
+                pixmap = source_page.get_pixmap(dpi=300, colorspace=fitz.csRGB, alpha=False)
+                page = flattened.new_page(width=source_page.rect.width, height=source_page.rect.height)
+                page.insert_image(page.rect, stream=pixmap.tobytes('png'))
+            flattened.set_metadata(dict(source.metadata or {}))
+            flattened.save(output, garbage=4, deflate=True, clean=True)
+        output.seek(0)
+        return send_file(output, mimetype='application/pdf', as_attachment=True,
+                         download_name='physics-practice-markscheme-print-ready.pdf')
 
     @app.get('/api/papers/<paper_id>/print-safe-download')
     def download_print_safe(paper_id):
