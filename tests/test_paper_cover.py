@@ -26,6 +26,8 @@ def test_practice_cover_has_correct_exam_details_and_actual_page_count(tmp_path)
                          'Not an official IB examination',f'{len(pdf)} pages']:
             assert expected in text,expected
         assert 'Topics' in text and 'All topics' in text
+        for index, page in enumerate(pdf, 1):
+            assert f'Page {index} of {len(pdf)}' in page.get_text()
         assert 'Practice assessment' in pdf.metadata['title']
         assert pdf[0].rect.width == 595 and pdf[0].rect.height == 842
         assert all(0 <= b[0] < b[2] <= 595 and 0 <= b[1] < b[3] <= 842 for b in pdf[0].get_text('blocks'))
@@ -92,3 +94,23 @@ def test_automatic_selection_seed_is_reused_and_printed_with_topics(tmp_path):
         assert 'Topics: A.1' in text
         assert 'Random seed: 314159' in text
         assert 'Seed 314159' in pdf.metadata['title']
+
+
+def test_print_safe_download_flattens_each_page_and_keeps_page_count(tmp_path):
+    client=create_app(tmp_path).test_client()
+    doc=upload(client);save(client,doc);save(client,doc,1)
+    generated_result=client.post('/api/papers',json=dict(level='HL',minutes=90,topics=[]))
+    assert generated_result.status_code==201,generated_result.json
+    paper_id=generated_result.json['id']
+    original=client.get(f'/api/papers/{paper_id}/download')
+    with fitz.open(stream=original.data,filetype='pdf') as source:
+        expected_pages=len(source)
+    response=client.get(f'/api/papers/{paper_id}/print-safe-download')
+    assert response.status_code==200 and response.mimetype=='application/pdf'
+    with fitz.open(stream=response.data,filetype='pdf') as pdf:
+        assert len(pdf)==expected_pages
+        for page in pdf:
+            assert page.get_text().strip()==''  # Flattened copy contains image-only pages.
+            assert len(page.get_images(full=True))==1
+            assert page.rect.width==595 and page.rect.height==842
+            page.get_pixmap(matrix=fitz.Matrix(.15,.15),alpha=False)

@@ -975,7 +975,21 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                     if not rendered:
                         raise ValueError(f"Question {q['number']} in {q['filename']} has no visible content after cleanup. Review its crop before generating a paper.")
             finalize_practice_cover(pdf)
-            pdf.save(root / 'papers' / (paper_id + '.pdf'))
+            output_path = root / 'papers' / (paper_id + '.pdf')
+            expected_pages = len(pdf)
+            pdf.save(output_path, garbage=4, deflate=True, clean=True)
+        # Reopen and render every page before advertising the PDF as complete.
+        # This catches broken cross-references or page resources, but does not
+        # certify compatibility with every printer's PostScript interpreter.
+        try:
+            with fitz.open(output_path) as verification:
+                if len(verification) != expected_pages:
+                    raise ValueError('Generated PDF failed its page-count verification.')
+                for page in verification:
+                    page.get_pixmap(matrix=fitz.Matrix(0.15, 0.15), alpha=False)
+        except Exception as error:
+            output_path.unlink(missing_ok=True)
+            raise ValueError(f'Generated PDF failed internal validation: {error}') from error
         completed_diagnostics = finish_diagnostics(diagnostics, chosen, target)
         if requested_ids is not None and not fill and actual < target:
             completed_diagnostics['summary'] = f'Your selected questions provide {actual:g} estimated minutes, leaving {target - actual:g} minutes. Enable Fill paper to add other matching questions.'
@@ -1003,6 +1017,30 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             if not conn.execute('SELECT id FROM papers WHERE id=?', (paper_id,)).fetchone():
                 raise ValueError('Paper not found.')
         return send_file(root / 'papers' / (paper_id + '.pdf'), as_attachment=True, download_name='physics-practice-paper.pdf')
+
+    @app.get('/api/papers/<paper_id>/print-safe-download')
+    def download_print_safe(paper_id):
+        with db() as conn:
+            if not conn.execute('SELECT id FROM papers WHERE id=?', (paper_id,)).fetchone():
+                raise ValueError('Paper not found.')
+        source_path = root / 'papers' / (paper_id + '.pdf')
+        output = BytesIO()
+        # Flatten each page to a lossless 300-dpi RGB image. This avoids
+        # printer-side interpretation of imported vector content, fonts,
+        # transparency groups and nested PDF resources.
+        with fitz.open(source_path) as source, fitz.open() as flattened:
+            for source_page in source:
+                pixmap = source_page.get_pixmap(dpi=300, colorspace=fitz.csRGB, alpha=False)
+                page = flattened.new_page(width=source_page.rect.width, height=source_page.rect.height)
+                page.insert_image(page.rect, stream=pixmap.tobytes('png'))
+            metadata = dict(source.metadata or {})
+            title = metadata.get('title') or 'Physics practice assessment'
+            metadata['title'] = title + ' - Flattened print copy'
+            flattened.set_metadata(metadata)
+            flattened.save(output, garbage=4, deflate=True, clean=True)
+        output.seek(0)
+        return send_file(output, mimetype='application/pdf', as_attachment=True,
+                         download_name='physics-practice-paper-print-safe.pdf')
 
     def clean_document_watermarks(doc_id, hint=None):
         doc = document(doc_id)

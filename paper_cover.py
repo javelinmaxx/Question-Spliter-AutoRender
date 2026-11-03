@@ -92,6 +92,13 @@ def add_practice_cover(pdf, *, level, syllabus, target, chosen, mode, topics=(),
 
 
 def finalize_practice_cover(pdf):
-    page = pdf[0]
-    page.insert_text((56, 798), f'{len(pdf)} pages', fontsize=9, color=GRAY)
-    page.insert_text((470, 798), 'Practice paper', fontsize=9, color=GRAY)
+    total_pages = len(pdf)
+    cover = pdf[0]
+    cover.insert_text((56, 798), f'{total_pages} pages', fontsize=9, color=GRAY)
+    cover.insert_text((470, 798), 'Practice paper', fontsize=9, color=GRAY)
+    for index, page in enumerate(pdf, 1):
+        remaining = page.insert_textbox(
+            fitz.Rect(240, 798, 355, 815), f'Page {index} of {total_pages}',
+            fontsize=8, align=1, color=GRAY)
+        if remaining < 0:
+            raise ValueError(f'Page number does not fit on page {index}.')
