@@ -11,27 +11,40 @@ FILES = [
     "Physics_paper_3__TZ1_HL.pdf",
     "Physics_paper_3__TZ1_HL_markscheme.pdf",
 ]
+IDENTITY = re.compile(
+    r"\b([MN])(\d{2})/4/PHYSI/(HPM|HP[123]|HPA|HPB)/ENG/TZ([0-3])/XX(?:/M)?\b",
+    re.I,
+)
 
 for name in FILES:
     path = ROOT / name
-    print(f"\\n===== {name} =====")
+    print(f"\n===== {name} =====")
     with fitz.open(path) as pdf:
+        texts = [page.get_text(sort=True) for page in pdf]
+        all_text = "\n".join(texts)
+        identity = IDENTITY.search(all_text)
         print(f"pages={len(pdf)} version={pdf.metadata.get('format')} title={pdf.metadata.get('title')!r}")
-        all_text = "\\n".join(page.get_text(sort=True) for page in pdf)
-        print("metadata_candidates:", {
-            "years": sorted(set(re.findall(r"\\b20\\d{2}\\b", all_text))),
-            "timezones": sorted(set(re.findall(r"\\bTZ\\s*([0-3])\\b", all_text, re.I))),
-            "paper_labels": sorted(set(re.findall(r"\\bPaper\\s*[123][AB]?\\b", all_text, re.I))),
-        })
-        for index, page in enumerate(pdf[:3]):
-            lines = [line.strip() for line in page.get_text(sort=True).splitlines() if line.strip()]
+        print("identifier:", identity.group(0) if identity else "NOT FOUND")
+        if identity:
+            print("identity_fields:", {
+                "session": "May" if identity.group(1).upper() == "M" else "November",
+                "year": 2000 + int(identity.group(2)),
+                "paper_code": identity.group(3).upper(),
+                "timezone": f"TZ{identity.group(4)}",
+                "is_markscheme": bool(re.search(r"/M\b", identity.group(0))),
+            })
+        page_indices = range(min(len(pdf), 7)) if "markscheme" in name.lower() else range(min(len(pdf), 3))
+        for index in page_indices:
+            lines = [line.strip() for line in texts[index].splitlines() if line.strip()]
             print(f"-- page {index + 1} --")
-            for line in lines[:35]:
+            for line in lines[:65]:
                 print(line[:220])
-        if "marks" in name.lower() or "scheme" in name.lower():
-            question_heads = []
+        if "markscheme" in name.lower():
+            mcq = re.findall(r"(?<!\d)(\d{1,2})\s*[.)]\s*([A-D])\b", all_text)
+            structured = []
             for line in all_text.splitlines():
                 value = line.strip()
-                if re.match(r"^(?:Question\\s*)?\\d{1,2}\\s*[.)]?(?:\\s|$)", value, re.I):
-                    question_heads.append(value)
-            print("question_heading_candidates:", question_heads[:80])
+                if re.match(r"^\d{1,2}\s*(?:[.)]|\([a-z]\))", value, re.I):
+                    structured.append(value)
+            print("mcq_answer_pairs:", mcq[:60])
+            print("structured_question_rows:", structured[:100])
