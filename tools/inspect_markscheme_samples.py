@@ -40,6 +40,10 @@ for name in FILES:
             for line in lines[:65]:
                 print(line[:220])
         if name == "Physics_paper_2__TZ1_HL.pdf":
+            print("paper2_body_text:")
+            for page_index in range(2, min(len(pdf), 7)):
+                print(f"-- page {page_index + 1} --")
+                print(texts[page_index][:1800])
             print("numbered_line_candidates:")
             for page_index, page in enumerate(pdf):
                 for block in page.get_text("dict", sort=True)["blocks"]:
