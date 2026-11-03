@@ -1,0 +1,28 @@
+name: Inspect markscheme sample PDFs
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - feature/markscheme-import-match
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install PDF reader
+        run: python -m pip install -r requirements.txt pytest
+      - name: Inspect uploaded paper and markscheme pairs
+        run: |
+          PYTHONPATH=. python tools/inspect_markscheme_samples.py
+          python -m pytest -q tests/test_markscheme_samples.py tests/test_markscheme_import.py

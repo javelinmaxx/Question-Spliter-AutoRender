@@ -12,6 +12,7 @@ from ocr import read_pages, region_text
 from assessment_timing import estimate
 from crop_display import display_regions
 from selection_random import usage_count, weighted_question_order
+from exam_identity import parse_exam_identity
 
 TOPICS = {
     'A.0': 'Measurements and uncertainties',
@@ -247,13 +248,17 @@ def suggest(text, paper=None, level=None, syllabus='2025'):
 
 
 def document_metadata(text, filename):
-    source = filename + '\n' + text[:6000]
+    source = filename + '\n' + text[:12000]
+    identity = parse_exam_identity(source, filename)
     years = re.findall(r'\b(20\d{2})\b', source)
-    year = int(years[0]) if years else None
-    level = 'HL' if re.search(r'\b(HL|higher level)\b', source, re.I) else 'SL' if re.search(r'\b(SL|standard level)\b', source, re.I) else 'Unknown'
-    paper = re.search(r'paper[\s_-]*([123])(?:[\s_-]*([ab])(?![a-z]))?(?![0-9])', source, re.I)
-    suffix = (paper[2] or '').upper() if paper and paper[1] == '1' else ''
-    return dict(year=year, level=level, paper=('Paper ' + paper[1] + suffix) if paper else 'Unknown',
+    year = identity.get('year') or (int(years[0]) if years else None)
+    level = identity.get('level') or ('HL' if re.search(r'\b(HL|higher level)\b', source, re.I) else 'SL' if re.search(r'\b(SL|standard level)\b', source, re.I) else 'Unknown')
+    paper = identity.get('paper')
+    if not paper:
+        match = re.search(r'paper[\s_-]*([123])(?:[\s_-]*([ab])(?![a-z]))?(?![0-9])', source, re.I)
+        suffix = (match[2] or '').upper() if match and match[1] == '1' else ''
+        paper = ('Paper ' + match[1] + suffix) if match else 'Unknown'
+    return dict(year=year, level=level, paper=paper, timezone=identity.get('timezone'),
                 syllabus='2025' if year and year >= 2025 else 'Legacy' if year else 'Unknown')
 
 

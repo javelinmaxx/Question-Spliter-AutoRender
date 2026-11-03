@@ -90,6 +90,11 @@ async function search() {
  }
 }
 $('#search').addEventListener('submit',e=>{ e.preventDefault(); busy(e.target,search); });
+async function listMarkschemes() {
+ const items=await api('/api/markschemes');
+ $('#markscheme-list').replaceChildren(...(items.length?items.map(item=>el('p',
+  item.filename+' · '+item.identity.year+' · '+item.identity.paper+' · '+item.identity.timezone+' · '+item.question_numbers.length+' questions indexed · OCR only; language model not used')):[el('p','No markschemes imported yet.','muted')]));
+}
 async function listDocuments() {
  const docs=await api('/api/documents');$('#documents').replaceChildren(new Option('Choose an uploaded paper',''));
  const source=$('#source-documents'), selected=new Set([...source.selectedOptions].map(option=>option.value));source.replaceChildren();
@@ -98,7 +103,7 @@ async function listDocuments() {
 }
 async function openDocument(id) { currentDoc=await api('/api/documents/'+id); $('#document-origin').value=currentDoc.origin_mode==='manual'?currentDoc.origin:'auto'; $('#origin-analysis').textContent=`Saved source: ${{ib_official:'Official IB',self_made:'Self-made',unknown:'Unspecified'}[currentDoc.origin]||'Unspecified'} · ${currentDoc.origin_mode==='manual'?'manual label':'automatic'}. ${currentDoc.origin_analysis?.reason||''} `+(currentDoc.origin_analysis?.evidence||[]).map(item=>`Page ${item.page+1} (${item.source}): ${item.quote}`).join(' · '); setImportTargets([id]); const analysis=currentDoc.analysis; $('#analysis-status').textContent='Analysis saved on this computer'+(analysis?.completed_at?' · '+new Date(analysis.completed_at).toLocaleString():'')+'. Available after restarting the app.'+(currentDoc.rules_changed?' Analysis rules changed; use Reanalyse saved text to update tags without OCR.':'')+(analysis?.language_review_status==='pending'?' Some optional model checks did not finish; completed results are preserved.':''); $('#review').hidden=false; $('#question').hidden=true; $('#documents').value=id; $('#warnings').replaceChildren(...currentDoc.warnings.map(w=>el('p',w))); renderCandidates(); $('#source-page').replaceChildren(...currentDoc.pages.map((p,i)=>new Option(`Page ${i+1}`,i))); showPage(0); }
 function renderCandidates() { $('#candidates').replaceChildren(); for(const q of currentDoc.questions) { const button=el('button',`Question ${q.number}${currentDoc.saved_numbers.includes(q.number)?' · saved':''}`); button.type='button'; button.addEventListener('click',()=>selectQuestion(q)); $('#candidates').append(button); } }
-function selectQuestion(q) { $('#crop-preview').hidden=true; currentQuestion=structuredClone(q); $('#question').hidden=false; $('#review-number').textContent=q.number; const labels={agreement:'OCR and PDF text suggest the same topics. This is not a semantic accuracy guarantee.',disagreement:'OCR and PDF text suggest different topics. Check the source image and revise tags.',ocr_only:'Tags use OCR only; there is no independent PDF text to compare. Check the source image.',not_run:'OCR verification has not run for this question.'}; $('#ocr-status').textContent=labels[q.ocr_comparison?.status||'not_run']; $('#tag-evidence').textContent=JSON.stringify(q.topic_evidence||{},null,2); for(const name of ['number','year','level','syllabus','paper','marks','minutes','difficulty','origin']) $('#question').elements[name].value=q[name]??''; for(const name of ['commands','tags']) $('#question').elements[name].value=(q[name]||[]).join(', '); for(const opt of $('#question').elements.topics.options) opt.selected=(q.topics||[]).includes(opt.value); applyTopicLevel($('#question')); $('#extracted').textContent=q.text||'No extracted text. Enter tags manually.'; renderRegions(); if(q.regions.length) showPage(q.regions[0].page); showLanguageReview(q.language_review); $('#question').elements.origin.value=q.origin_override?q.origin:'inherit'; $('#question').elements.sl_suitability.value=q.sl_suitability||'automatic'; updateTimingNote(); }
+function selectQuestion(q) { $('#crop-preview').hidden=true; currentQuestion=structuredClone(q); $('#question').hidden=false; $('#review-number').textContent=q.number; const labels={agreement:'OCR and PDF text suggest the same topics. This is not a semantic accuracy guarantee.',disagreement:'OCR and PDF text suggest different topics. Check the source image and revise tags.',ocr_only:'Tags use OCR only; there is no independent PDF text to compare. Check the source image.',not_run:'OCR verification has not run for this question.'}; $('#ocr-status').textContent=labels[q.ocr_comparison?.status||'not_run']; $('#tag-evidence').textContent=JSON.stringify(q.topic_evidence||{},null,2); for(const name of ['number','year','level','syllabus','paper','timezone','marks','minutes','difficulty','origin']) $('#question').elements[name].value=q[name]??''; for(const name of ['commands','tags']) $('#question').elements[name].value=(q[name]||[]).join(', '); for(const opt of $('#question').elements.topics.options) opt.selected=(q.topics||[]).includes(opt.value); applyTopicLevel($('#question')); $('#extracted').textContent=q.text||'No extracted text. Enter tags manually.'; renderRegions(); if(q.regions.length) showPage(q.regions[0].page); showLanguageReview(q.language_review); $('#question').elements.origin.value=q.origin_override?q.origin:'inherit'; $('#question').elements.sl_suitability.value=q.sl_suitability||'automatic'; updateTimingNote(); }
 function showPage(n) { $('#source-page').value=n; const p=currentDoc.pages[n]; $('#page-size').textContent=`${p.width} × ${p.height} PDF points`; $('#source-image').src=`/api/documents/${currentDoc.id}/pages/${n}?watermark=${currentDoc.watermark?.key||''}`; }
 $('#source-page').addEventListener('change',e=>showPage(Number(e.target.value)));
 function renderRegions() { showLanguageReview(null); $('#regions').replaceChildren(); currentQuestion.regions.forEach((region,i)=>{ const row=el('div',undefined,'region'); const pageLabel=el('label','Page'); const page=el('select'); currentDoc.pages.forEach((p,n)=>page.add(new Option(n+1,n))); page.value=region.page; page.addEventListener('change',()=>{ region.page=Number(page.value); const p=currentDoc.pages[region.page]; region.rect=[30,35,p.width-30,p.height-30]; renderRegions(); showPage(region.page); }); pageLabel.append(page); row.append(pageLabel); ['Left','Top','Right','Bottom'].forEach((title,j)=>{ const label=el('label',title), input=el('input'); input.type='number'; input.step='0.1'; input.value=Math.round(region.rect[j]*10)/10; input.required=true; input.addEventListener('input',()=>region.rect[j]=Number(input.value)); label.append(input); row.append(label); }); const view=el('button','View','secondary'); view.type='button'; view.addEventListener('click',()=>showPage(region.page)); const remove=el('button','Remove','secondary'); remove.type='button'; remove.addEventListener('click',()=>{ currentQuestion.regions.splice(i,1); renderRegions(); }); row.append(view,remove); $('#regions').append(row); }); }
@@ -122,6 +127,12 @@ $('#upload-type').addEventListener('change',()=>{
  setUploadType();
  if($('#upload-type').value==='folder')chooseFolder();
 });
+function setImportKind(){
+ const markscheme=$('#import-kind').value==='markscheme';
+ for(const id of ['upload-origin','watermark-text','auto-import'])$('#'+id).closest('label').hidden=markscheme;
+}
+$('#import-kind').addEventListener('change',setImportKind);
+setImportKind();
 function chooseFolder(){
  if(importing)return;
  const input=$('#pdf-folder');
@@ -144,7 +155,8 @@ $('#upload').addEventListener('submit',e=>{
   const files=selected.filter(file=>file.name.toLowerCase().endsWith('.pdf'));
   if(!files.length) throw new Error(input.id==='pdf-folder'?'No PDFs found. Choose a folder containing PDFs; nested subfolders are included.':'No PDF files found in this selection.');
   const mode=e.target.elements.ocr_mode.value, autoImport=$('#auto-import').checked, uploaded=[];
-  let automaticallyAdded=0, importFailures=0, skippedMarkschemes=0;
+  const importKind=$('#import-kind').value;
+  let automaticallyAdded=0, importFailures=0, skippedMarkschemes=0, importedMarkschemes=0;
   importing=true; setImportTargets([]); $('#documents').disabled=true;
   $('#upload-progress').replaceChildren();
   if(selected.length>files.length) $('#upload-progress').append(el('p',`Skipped ${selected.length-files.length} non-PDF files.`,'muted'));
@@ -157,7 +169,12 @@ $('#upload').addEventListener('submit',e=>{
     try {
      if(file.size>40*1024*1024) throw new Error('Exceeds the 40 MB per-file limit.');
      const data=new FormData(); data.append('file',file,file.name); data.append('ocr_mode',mode);data.append('origin',$('#upload-origin').value);data.append('watermark_text',$('#watermark-text').value); data.append('relative_path',file.webkitRelativePath||file.name); if(autoImport)data.append('auto_import','1');
-     const result=await api('/api/documents',{method:'POST',body:data});
+     const result=await api(importKind==='markscheme'?'/api/markschemes':'/api/documents',{method:'POST',body:data});
+     if(importKind==='markscheme'){
+      importedMarkschemes++;
+      row.textContent=`${name}: ${result.identity.year} ${result.identity.paper} ${result.identity.timezone}; ${result.question_numbers.length} question entries indexed. OCR processed locally; language model not used.`;
+      continue;
+     }
      if(result.status==='skipped'&&result.reason==='markscheme'){skippedMarkschemes++;row.textContent=`${name}: ${result.message}`;continue;}
      if(!uploaded.includes(result.id))uploaded.push(result.id); row.textContent=`${name}: ${result.questions.length} detected question groups.`;
      if(result.duplicate_document)row.textContent+=' Reused saved analysis for this duplicate PDF.';
@@ -169,13 +186,18 @@ $('#upload').addEventListener('submit',e=>{
     }catch(error){row.textContent=`${name}: failed — ${error.message}`;row.classList.add('error');}
    }
    await listDocuments();
+   await listMarkschemes();
    if(uploaded.length) await openDocument(uploaded[0]);
    if(autoImport)await search();
-   status(`${uploaded.length} of ${files.length} PDFs uploaded. ${skippedMarkschemes} markschemes ignored. `+(autoImport?`${automaticallyAdded} questions automatically saved; ${importFailures} import failures.`:uploaded.length?'Use Confirm import to add their questions without individual review.':'No question papers were added.'),(uploaded.length===0&&skippedMarkschemes<files.length)||importFailures>0);
+   const summary=importKind==='markscheme'
+    ? `${importedMarkschemes} of ${files.length} markschemes imported. OCR was processed locally; no language-model review was run.`
+    : `${uploaded.length} of ${files.length} PDFs uploaded. ${skippedMarkschemes} markschemes ignored. `+(autoImport?`${automaticallyAdded} questions automatically saved; ${importFailures} import failures.`:uploaded.length?'Use Confirm import to add their questions without individual review.':'No question papers were added.');
+   const failed=importKind==='markscheme'?importedMarkschemes===0:(uploaded.length===0&&skippedMarkschemes<files.length)||importFailures>0;
+   status(summary,failed);
   }finally{
    importing=false; $('#documents').disabled=false;
    for(const control of e.target.querySelectorAll('input,select,#choose-folder'))control.disabled=false;
-   setUploadType(); setImportTargets(uploaded);
+   setUploadType(); setImportKind(); setImportTargets(uploaded);
   }
  });
 });
@@ -392,12 +414,19 @@ $('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,as
   const generatedIds=new Set(result.question_ids);for(const q of pickerQuestions)if(generatedIds.has(q.id))q.usage_count=(q.usage_count??0)+1;renderPaperCandidates();
   const seedLabel=result.selection_seed!==null&&result.selection_seed!==undefined?' · Random seed '+result.selection_seed:'';
   $('#paper-result').append(el('p',result.count+' question groups · '+(result.render_mode||'full')+' · Estimated '+result.actual_minutes+' / '+result.target_minutes+' minutes · '+result.shortfall_minutes+' minutes unfilled'+seedLabel+'.'),link,el('span',' · '),original);
+  if(result.markscheme?.generated){
+   const markLink=el('a','Download matching markscheme (print-ready)');markLink.href=`/api/papers/${result.id}/markscheme`;
+   $('#paper-result').append(el('p',`Matched markscheme entries for ${result.markscheme.matched_questions} selected question(s).`),markLink);
+  }else if(result.markscheme){
+   const count=result.markscheme.missing_questions?.length||0, ambiguous=result.markscheme.ambiguous_questions?.length||0;
+   $('#paper-result').append(el('p',`No complete matching markscheme was generated. ${count} question(s) had no exact match; ${ambiguous} were ambiguous.`,'notice'));
+  }
   showPaperDiagnostics(result.diagnostics);
   const numberingWarnings=Object.values(result.numbering||{}).flatMap(info=>info.warnings||[]);if(numberingWarnings.length)$('#paper-result').append(el('p',numberingWarnings.join(' '),'notice'));
   status(`Practice paper generated from ${result.count} reviewed question groups. ${result.selections?.reduce((n,s)=>n+s.omitted_parts.length,0)||0} parts omitted. ${result.short_fallbacks?.length||0} questions retained whole because no approved dependency map was available.`);
  }catch(error){showPaperDiagnostics(error.diagnostics);throw error;}
 });});
-async function init() { const value=await api('/api/catalog'); catalog=value.topics; timingProfiles=value.timing_profiles||[]; hlOnlyTopics=new Set(value.hl_only_topics||[]); prerequisitePolicy=value.prerequisite_policy||{}; document.querySelectorAll('.topic-list,.topic-filter').forEach(select=>{ for(const [code,name] of Object.entries(catalog)) select.add(new Option(`${code} · ${name}`,code)); enhanceTopicSelect(select); }); for(const id of ['question','generate','search'])applyTopicLevel($('#'+id)); showTopicScope($('#generate'),'#generate-scope'); await Promise.all([search(),listDocuments(),loadPrerequisites()]); }
+async function init() { const value=await api('/api/catalog'); catalog=value.topics; timingProfiles=value.timing_profiles||[]; hlOnlyTopics=new Set(value.hl_only_topics||[]); prerequisitePolicy=value.prerequisite_policy||{}; document.querySelectorAll('.topic-list,.topic-filter').forEach(select=>{ for(const [code,name] of Object.entries(catalog)) select.add(new Option(`${code} · ${name}`,code)); enhanceTopicSelect(select); }); for(const id of ['question','generate','search'])applyTopicLevel($('#'+id)); showTopicScope($('#generate'),'#generate-scope'); await Promise.all([search(),listDocuments(),listMarkschemes(),loadPrerequisites()]); }
 init().catch(e=>status(e.message,true));
 
 function showLanguageReview(result) {
