@@ -39,6 +39,14 @@ for name in FILES:
             print(f"-- page {index + 1} --")
             for line in lines[:65]:
                 print(line[:220])
+        if name == "Physics_paper_2__TZ1_HL.pdf":
+            print("numbered_line_candidates:")
+            for page_index, page in enumerate(pdf):
+                for block in page.get_text("dict", sort=True)["blocks"]:
+                    for line in block.get("lines", []):
+                        value = "".join(span["text"] for span in line["spans"]).strip()
+                        if re.match(r"^\d{1,2}[.)]\s", value):
+                            print(page_index + 1, round(line["bbox"][0], 1), round(line["bbox"][1], 1), value[:100])
         if "markscheme" in name.lower():
             mcq = re.findall(r"(?<!\d)(\d{1,2})\s*[.)]\s*([A-D])\b", all_text)
             structured = []
