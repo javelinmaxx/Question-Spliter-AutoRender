@@ -82,7 +82,7 @@ def render_selected_markscheme(path, selected_entries, *, title="Generated Physi
             raise ValueError("No matching markscheme entries were available to generate.")
         total = len(output)
         for index, page in enumerate(output, 1):
-            page.insert_text((260, 820), f"Page {index} of {total}", fontsize=8, align=0)
+            page.insert_text((260, 820), f"Page {index} of {total}", fontsize=8)
         output.set_metadata({
             "title": title,
             "author": "Physics Question Bank",
