@@ -24,21 +24,10 @@ def pdf_text(path):
 
 
 def question_numbers_from_paper(path):
-    labels = []
+    import re
     with fitz.open(path) as pdf:
-        for page_index, page in enumerate(pdf):
-            for block in page.get_text("blocks", sort=True):
-                text = block[4].strip()
-                match = __import__("re").match(r"^(\d{1,2})[.)](?:\s|$)", text)
-                if match and page.rect.width * .03 <= block[0] <= page.rect.width * .30:
-                    if 50 < block[1] < page.rect.height - 45:
-                        labels.append((page_index, block[1], int(match.group(1))))
-    expected, result = 1, []
-    for _, _, detected in sorted(labels):
-        if detected == expected:
-            result.append(detected)
-            expected += 1
-    return set(result)
+        text = "\n".join(page.get_text(sort=True) for page in pdf[3:])
+    return {int(number) for number in re.findall(r"(?m)^\s*(\d{1,2})\.\s+(?=[A-Z(])", text)}
 
 
 @pytest.mark.parametrize("paper_name,marks_name,paper,expected_count", PAIRS)
