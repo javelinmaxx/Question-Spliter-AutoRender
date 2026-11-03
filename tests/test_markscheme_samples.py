@@ -27,14 +27,12 @@ def question_numbers_from_paper(path):
     labels = []
     with fitz.open(path) as pdf:
         for page_index, page in enumerate(pdf):
-            raw = page.get_text("dict", sort=True)
-            for block in raw["blocks"]:
-                for line in block.get("lines", []):
-                    text = "".join(span["text"] for span in line["spans"]).strip()
-                    match = __import__("re").match(r"^(\d{1,2})[.)](?:\s|$)", text)
-                    if match and page.rect.width * .05 <= line["bbox"][0] <= page.rect.width * .20:
-                        if 50 < line["bbox"][1] < page.rect.height - 45:
-                            labels.append((page_index, line["bbox"][1], int(match.group(1))))
+            for block in page.get_text("blocks", sort=True):
+                text = block[4].strip()
+                match = __import__("re").match(r"^(\d{1,2})[.)](?:\s|$)", text)
+                if match and page.rect.width * .03 <= block[0] <= page.rect.width * .30:
+                    if 50 < block[1] < page.rect.height - 45:
+                        labels.append((page_index, block[1], int(match.group(1))))
     expected, result = 1, []
     for _, _, detected in sorted(labels):
         if detected == expected:
