@@ -2,6 +2,7 @@
 import re
 import math
 import json
+import random
 from pathlib import Path
 from io import BytesIO
 
@@ -10,6 +11,7 @@ from PIL import Image
 from ocr import read_pages, region_text
 from assessment_timing import estimate
 from crop_display import display_regions
+from selection_random import usage_count, weighted_question_order
 
 TOPICS = {
     'A.0': 'Measurements and uncertainties',
@@ -300,14 +302,21 @@ def render_question(pdf, regions, *, paper='Unknown', parent_regions=None):
     return output.getvalue()
 
 
-def choose_questions(questions, target):
-    """Subset sum at tenth-minute resolution; each parent question is indivisible."""
+def choose_questions(questions, target, usage_counts=None, seed=None):
+    """Fill the time budget, minimize historical use, then break ties reproducibly."""
     limit = math.floor(target * 10 + 1e-8)
-    states = {0: ()}
-    for q in questions:
+    rng = random.Random(seed)
+    ordered = weighted_question_order(questions, usage_counts or {}, rng)
+    states = {0: ((), 0)}
+    for q in ordered:
         weight = max(1, math.ceil(q['minutes'] * 10 - 1e-8))
-        for duration, chosen in list(states.items()):
+        use_cost = usage_count(q, usage_counts)
+        for duration, (chosen, previous_cost) in list(states.items()):
             new = duration + weight
-            if new <= limit and new not in states:
-                states[new] = chosen + (q['id'],)
-    return states[max(states)]
+            if new > limit:
+                continue
+            candidate = (chosen + (q['id'],), previous_cost + use_cost)
+            existing = states.get(new)
+            if existing is None or candidate[1] < existing[1]:
+                states[new] = candidate
+    return states[max(states)][0]

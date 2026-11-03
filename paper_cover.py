@@ -19,7 +19,7 @@ def duration_label(minutes):
     return ' '.join(pieces)
 
 
-def add_practice_cover(pdf, *, level, syllabus, target, chosen, mode, topics=()):
+def add_practice_cover(pdf, *, level, syllabus, target, chosen, mode, topics=(), selection_seed=None):
     page = pdf.new_page(width=595, height=842)
     paper_types = sorted({q['paper'] for q in chosen})
     paper_label = paper_types[0] if len(paper_types) == 1 else 'Mixed-paper practice'
@@ -66,6 +66,8 @@ def add_practice_cover(pdf, *, level, syllabus, target, chosen, mode, topics=())
     details = [f'Syllabus: {syllabus_label}', f'Question groups: {len(chosen)}',
                f'Estimated question time: {duration_label(actual)}', f'Rendering: {mode.title()}']
     details.append('Question sources: ' + ', '.join(sorted({origin_label(q) for q in chosen})))
+    if selection_seed is not None:
+        details.append(f'Random seed: {selection_seed}')
     if actual < target:
         details.append(f'The selected questions are {target - actual:g} estimated minutes below the requested length.')
     page.insert_textbox(fitz.Rect(56, top + 34, 539, top + 150), '\n'.join(details), fontsize=10, lineheight=1.5, color=GRAY)
@@ -80,7 +82,9 @@ def add_practice_cover(pdf, *, level, syllabus, target, chosen, mode, topics=())
     page.insert_textbox(fitz.Rect(56, 734, 539, 777),
                         'Generated practice material. Not an official IB examination.\nTime estimates are approximate. This application is not affiliated with the International Baccalaureate.',
                         fontsize=8, lineheight=1.4, color=GRAY)
-    pdf.set_metadata({'title': f'Physics {level} - {paper_label} - Practice assessment',
+    topic_codes = ', '.join(dict.fromkeys(topics)) if topics else 'All topics'
+    seed_title = f' - Seed {selection_seed}' if selection_seed is not None else ''
+    pdf.set_metadata({'title': f'Physics {level} - {paper_label} - {topic_codes}{seed_title} - Practice assessment',
                       'author': 'Physics Question Bank', 'subject': 'Generated IB DP Physics practice material'})
 
 

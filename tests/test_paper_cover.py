@@ -71,3 +71,23 @@ def test_all_topic_titles_fit_without_overlapping_cover_footer():
         blocks=pdf[0].get_text('blocks')
         topic_blocks=[b for b in blocks if 'A.0 Measurements' in b[4]]
         assert topic_blocks and max(b[3] for b in topic_blocks)<734
+
+def test_automatic_selection_seed_is_reused_and_printed_with_topics(tmp_path):
+    client=create_app(tmp_path).test_client()
+    doc=upload(client)
+    save(client,doc,minutes=7,topics=['A.1'])
+    save(client,doc,1,minutes=6,topics=['A.1'])
+    options=dict(level='HL',minutes=13,topics=['A.1'])
+    preview=client.post('/api/papers/preview',json=dict(options,auto_select=True,selection_seed=314159))
+    assert preview.status_code==200,preview.json
+    assert preview.json['selection_seed']==314159
+    generated=client.post('/api/papers',json=dict(options,selection_seed=preview.json['selection_seed']))
+    assert generated.status_code==201,generated.json
+    assert generated.json['question_ids']==preview.json['selected_question_ids']
+    assert generated.json['selection_seed']==314159
+    downloaded=client.get(f"/api/papers/{generated.json['id']}/download")
+    with fitz.open(stream=downloaded.data,filetype='pdf') as pdf:
+        text=pdf[0].get_text()
+        assert 'A.1 Kinematics' in text
+        assert 'Random seed: 314159' in text
+        assert 'Seed 314159' in pdf.metadata['title']

@@ -2,6 +2,7 @@
 import json
 import hashlib
 import os
+import secrets
 import sqlite3
 import uuid
 from datetime import datetime, timezone
@@ -202,6 +203,14 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                 for qid in set(json.loads(row['data']).get('question_ids', [])):
                     counts[qid] = counts.get(qid, 0) + 1
         return counts
+
+    def resolve_selection_seed(value):
+        supplied = value.get('selection_seed')
+        if supplied is None:
+            return secrets.randbits(32)
+        if isinstance(supplied, bool) or not isinstance(supplied, int) or not 0 <= supplied <= 0xFFFFFFFF:
+            raise ValueError('Selection seed must be an integer between 0 and 4294967295.')
+        return supplied
 
     @app.get('/api/question-usage')
     def question_usage():
@@ -853,14 +862,14 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                                                    year_min=lower, year_max=upper, origin=validate_origin(value.get('origin'), filtering=True))
         return eligible, diagnostics
 
-    def automatic_choice(eligible, target, topics, mode):
+    def automatic_choice(eligible, target, topics, mode, usage_counts, selection_seed):
         if mode == 'short':
-            return choose_short(eligible, target, topics)
+            return choose_short(eligible, target, topics, usage_counts=usage_counts, seed=selection_seed)
         scoped = [variant for q in eligible if (variant := scoped_question(q, topics)) is not None]
-        ids = choose_questions(scoped, target)
+        ids = choose_questions(scoped, target, usage_counts=usage_counts, seed=selection_seed)
         return [q for q in scoped if q['id'] in ids]
 
-    def planned_questions(eligible, config, value):
+    def planned_questions(eligible, config, value, usage_counts=None, selection_seed=None):
         """One selection algorithm shared by editable plans and PDF output."""
         target, selected_topics, mode = (config[key] for key in ('minutes', 'topics', 'render_mode'))
         requested_ids = value.get('question_ids')
@@ -881,11 +890,12 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                 return [], [], f'The selected {len(required)} questions need at least {minimum:g} estimated minutes; the budget is {target:g}. Increase the budget or deselect questions.'
             if fill:
                 remaining = round(target - sum(q['minutes'] for q in chosen), 6)
-                extras = automatic_choice([q for q in eligible if q['id'] not in set(requested_ids)], remaining, selected_topics, mode)
+                extras = automatic_choice([q for q in eligible if q['id'] not in set(requested_ids)], remaining, selected_topics, mode,
+                                           usage_counts or {}, selection_seed)
                 filled_ids = [q['id'] for q in extras]
                 chosen.extend(extras)
         else:
-            chosen = automatic_choice(eligible, target, selected_topics, mode)
+            chosen = automatic_choice(eligible, target, selected_topics, mode, usage_counts or {}, selection_seed)
         chosen = group_questions(chosen)
         return chosen, filled_ids, None
 
@@ -898,14 +908,16 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         if not isinstance(auto_select, bool):
             raise ValueError('Auto-select must be true or false.')
         chosen, filled_ids = [], []
+        usage_counts = question_usage_counts()
+        selection_seed = resolve_selection_seed(value) if auto_select else None
         if auto_select:
-            chosen, filled_ids, error = planned_questions(eligible, config, value)
+            chosen, filled_ids, error = planned_questions(
+                eligible, config, value, usage_counts=usage_counts, selection_seed=selection_seed)
             if error or not chosen:
                 return jsonify(error=error or diagnostics['summary'], diagnostics=diagnostics), 400
         selected = {q['id']: q for q in chosen}
         candidates = []
         page_data = {}
-        usage_counts = question_usage_counts()
         for q in eligible:
             variants = question_variants(q, config['topics'], config['render_mode'])
             if q['document_id'] not in page_data:
@@ -924,7 +936,8 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                                    omitted_parts=preferred['omitted_parts']))
         return jsonify(questions=candidates, diagnostics=diagnostics,
                        selected_question_ids=[q['id'] for q in chosen], filled_question_ids=filled_ids,
-                       estimated_minutes=round(sum(q['minutes'] for q in chosen), 1))
+                       estimated_minutes=round(sum(q['minutes'] for q in chosen), 1),
+                       selection_seed=selection_seed)
 
     @app.post('/api/papers')
     def generate():
@@ -933,7 +946,11 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         config = diagnostics['requested']
         target, mode, level, syllabus, selected_topics = (config[key] for key in ('minutes', 'render_mode', 'level', 'syllabus', 'topics'))
         requested_ids, fill = value.get('question_ids'), value.get('fill_paper', False)
-        chosen, filled_ids, error = planned_questions(eligible, config, value)
+        uses_random_selection = requested_ids is None or bool(fill) or value.get('selection_seed') is not None
+        selection_seed = resolve_selection_seed(value) if uses_random_selection else None
+        usage_counts = question_usage_counts()
+        chosen, filled_ids, error = planned_questions(
+            eligible, config, value, usage_counts=usage_counts, selection_seed=selection_seed)
         if error:
             return jsonify(error=error, diagnostics=diagnostics), 400
         ids = [q['id'] for q in chosen]
@@ -944,7 +961,8 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         numbering_cache, numbering_results = {}, {}
         original_questions = {q['id']: q for q in questions()}
         with fitz.open() as pdf:
-            add_practice_cover(pdf, level=level, syllabus=syllabus, target=target, chosen=chosen, mode=mode, topics=selected_topics)
+            add_practice_cover(pdf, level=level, syllabus=syllabus, target=target, chosen=chosen, mode=mode,
+                               topics=selected_topics, selection_seed=selection_seed)
             layout = PaperLayout(pdf)
             for i, q in enumerate(chosen, 1):
                 # Keep every crop of the parent together and in source order.
@@ -963,13 +981,14 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             completed_diagnostics['summary'] = f'Your selected questions provide {actual:g} estimated minutes, leaving {target - actual:g} minutes. Enable Fill paper to add other matching questions.'
         result = dict(id=paper_id, question_ids=list(ids), target_minutes=target, actual_minutes=actual,
                       shortfall_minutes=round(target - actual, 1), count=len(chosen), render_mode=mode,
-                      diagnostics=completed_diagnostics,
+                      diagnostics=completed_diagnostics, selection_seed=selection_seed,
+                      selection_strategy='usage-balanced seeded selection' if requested_ids is None or fill else 'teacher-selected',
                       selection_mode='manual' if requested_ids is not None else 'automatic',
                       requested_question_ids=requested_ids or [], filled_question_ids=filled_ids,
                       numbering=numbering_results,
                       selections=[dict(question_id=q['id'], number=i, source_number=q['number'], selection_source='filled' if q['id'] in filled_ids else 'teacher' if requested_ids is not None else 'automatic', kept_parts=q['kept_parts'], omitted_parts=q['omitted_parts'],
                                        topic_omitted_parts=q.get('topic_omitted_parts', []),
-                                       topics=q['topics'],
+                                       topics=q['topics'], usage_count_before_selection=usage_counts.get(q['id'], 0),
                                        estimated_minutes=round(q['minutes'], 2), render_mode=q['render_mode']) for i, q in enumerate(chosen, 1)],
                       topic_scope=dict(requested=selected_topics, allowed=sorted(topic_closure(selected_topics)), policy_version=current_policy()['version'],
                                        policy_revision=current_policy()['revision']),

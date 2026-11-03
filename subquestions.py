@@ -2,10 +2,12 @@
 import hashlib
 import json
 import math
+import random
 import re
 
 from ocr import region_text
 from physics import TOPICS, suggest
+from selection_random import usage_count, weighted_question_order
 
 VERSION = 1
 
@@ -198,10 +200,13 @@ def short_variants(question, required_omissions=(), focus_topics=()):
     return variants
 
 
-def choose_short(questions, target, selected_topics=()):
+def choose_short(questions, target, selected_topics=(), usage_counts=None, seed=None):
+    """Prefer low-use questions while preserving the short-mode dependency rules."""
     limit = math.floor(target * 10 + 1e-8)
-    states = {0: ([], 0)}
-    for question in questions:
+    rng = random.Random(seed)
+    ordered = weighted_question_order(questions, usage_counts or {}, rng)
+    states = {0: ([], 0, 0)}
+    for question in ordered:
         if selected_topics:
             from topic_scope import scoped_question
             scoped = scoped_question(question, selected_topics)
@@ -211,18 +216,22 @@ def choose_short(questions, target, selected_topics=()):
         else:
             forced = []
         previous = dict(states)
+        question_use_cost = usage_count(question, usage_counts)
         for variant in short_variants(question, forced, selected_topics):
             variant['topic_omitted_parts'] = list(forced)
             mapping = approved_map(question)
             if mapping and all(p.get('topics') for p in mapping['parts'] if p['id'] != 'stem' and p['id'] in variant['kept_parts']):
                 variant['topics'] = sorted({c for p in mapping['parts'] if p['id'] in variant['kept_parts'] for c in p.get('topics', [])})
             cost = max(1, math.ceil(variant['minutes'] * 10 - 1e-8))
-            for duration, (chosen, omissions) in previous.items():
+            for duration, (chosen, omissions, previous_use_cost) in previous.items():
                 total = duration + cost
                 if total > limit:
                     continue
-                candidate = (chosen + [variant], omissions + variant['dependent_omissions'])
+                candidate = (chosen + [variant], omissions + variant['dependent_omissions'],
+                             previous_use_cost + question_use_cost)
                 existing = states.get(total)
-                if existing is None or (len(candidate[0]), -candidate[1]) > (len(existing[0]), -existing[1]):
+                candidate_score = (-candidate[2], len(candidate[0]), -candidate[1])
+                existing_score = (-existing[2], len(existing[0]), -existing[1]) if existing else None
+                if existing is None or candidate_score > existing_score:
                     states[total] = candidate
     return states[max(states)][0]
