@@ -89,5 +89,6 @@ def test_automatic_selection_seed_is_reused_and_printed_with_topics(tmp_path):
     with fitz.open(stream=downloaded.data,filetype='pdf') as pdf:
         text=pdf[0].get_text()
         assert 'A.1 Kinematics' in text
+        assert 'Topics: A.1' in text
         assert 'Random seed: 314159' in text
         assert 'Seed 314159' in pdf.metadata['title']

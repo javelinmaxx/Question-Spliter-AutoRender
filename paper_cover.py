@@ -30,7 +30,7 @@ def add_practice_cover(pdf, *, level, syllabus, target, chosen, mode, topics=(),
     page.insert_text((56, 101), subject, fontname='hebo', fontsize=12, color=BLACK)
     page.insert_text((56, 119), paper_label, fontname='hebo', fontsize=12, color=BLACK)
     page.insert_textbox(fitz.Rect(56, 126, 539, 145), f'Topics: {topic_codes}{selection_title}',
-                        fontsize=7.5, color=GRAY)
+                        fontsize=7, color=GRAY)
     page.insert_textbox(fitz.Rect(325, 50, 539, 85), 'PRACTICE ASSESSMENT\nIB DP Physics question bank',
                         fontname='hebo', fontsize=9, align=2, color=GRAY)
     page.insert_text((56, 151), 'Date: ____________________', fontsize=10, color=BLACK)
