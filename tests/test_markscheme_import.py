@@ -116,3 +116,41 @@ def test_structured_sample_markschemes_store_question_specific_page_regions(tmp_
         for number in range(1, expected_count + 1):
             assert entries[str(number)]["regions"], f"Question {number} has no source-page crop"
             assert all(0 <= region["page"] < len(source) for region in entries[str(number)]["regions"])
+
+
+
+def test_structured_paper_two_markscheme_export_uses_original_source_rows(tmp_path, monkeypatch):
+    client = create_app(tmp_path).test_client()
+    monkeypatch.setattr(
+        application, "review_disagreement",
+        lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("Markscheme import must not invoke language-model review")),
+    )
+    paper_path = ROOT / "Physics_paper_2__TZ1_HL.pdf"
+    paper_response = post_pdf(client, "/api/documents", paper_path)
+    assert paper_response.status_code == 201, paper_response.json
+    assert paper_response.json["metadata"]["timezone"] == "TZ1"
+    imported = client.post(f"/api/documents/{paper_response.json['id']}/confirm-import", json={})
+    assert imported.status_code == 200, imported.json
+    question = next(q for q in client.get("/api/questions").json
+                    if q["document_id"] == paper_response.json["id"] and q["number"] == 1)
+    assert question["timezone"] == "TZ1"
+
+    marks_path = ROOT / "Physics_paper_2__TZ1_HL_markscheme.pdf"
+    marks_response = post_pdf(client, "/api/markschemes", marks_path)
+    assert marks_response.status_code == 201, marks_response.json
+    entry = marks_response.json["entries"]["1"]
+    assert entry["regions"], "Question 1 should retain its original markscheme page regions"
+
+    generated = client.post("/api/papers", json={
+        "level": "HL", "syllabus": "Legacy", "minutes": 45, "topics": [],
+        "paper": "Paper 2", "year_min": 2019, "year_max": 2019,
+        "question_ids": [question["id"]],
+    })
+    assert generated.status_code == 201, generated.json
+    assert generated.json["markscheme"]["generated"] is True, generated.json["markscheme"]
+    assert generated.json["markscheme"]["matched_questions"] == 1
+    original_path = tmp_path / "papers" / (generated.json["id"] + "-markscheme.pdf")
+    with fitz.open(original_path) as mark_pdf:
+        text = "\n".join(page.get_text() for page in mark_pdf)
+        assert "Question 1" in text
+        assert len(mark_pdf) == len(entry["regions"])
