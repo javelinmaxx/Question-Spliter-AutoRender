@@ -387,11 +387,11 @@ $('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,as
   value.fill_paper=false;
  }
  try{
-  const result=await post('/api/papers',value);const link=el('a','Download practice paper PDF');link.href=`/api/papers/${result.id}/download`;
-  const printSafe=el('a','Download flattened print copy (300 dpi)');printSafe.href=`/api/papers/${result.id}/print-safe-download`;
+  const result=await post('/api/papers',value);const link=el('a','Download print-ready PDF (300 dpi)');link.href=`/api/papers/${result.id}/print-safe-download`;
+  const original=el('a','Download original searchable PDF');original.href=`/api/papers/${result.id}/download`;
   const generatedIds=new Set(result.question_ids);for(const q of pickerQuestions)if(generatedIds.has(q.id))q.usage_count=(q.usage_count??0)+1;renderPaperCandidates();
   const seedLabel=result.selection_seed!==null&&result.selection_seed!==undefined?' · Random seed '+result.selection_seed:'';
-  $('#paper-result').append(el('p',result.count+' question groups · '+(result.render_mode||'full')+' · Estimated '+result.actual_minutes+' / '+result.target_minutes+' minutes · '+result.shortfall_minutes+' minutes unfilled'+seedLabel+'.'),link,el('span',' · '),printSafe);
+  $('#paper-result').append(el('p',result.count+' question groups · '+(result.render_mode||'full')+' · Estimated '+result.actual_minutes+' / '+result.target_minutes+' minutes · '+result.shortfall_minutes+' minutes unfilled'+seedLabel+'.'),link,el('span',' · '),original);
   showPaperDiagnostics(result.diagnostics);
   const numberingWarnings=Object.values(result.numbering||{}).flatMap(info=>info.warnings||[]);if(numberingWarnings.length)$('#paper-result').append(el('p',numberingWarnings.join(' '),'notice'));
   status(`Practice paper generated from ${result.count} reviewed question groups. ${result.selections?.reduce((n,s)=>n+s.omitted_parts.length,0)||0} parts omitted. ${result.short_fallbacks?.length||0} questions retained whole because no approved dependency map was available.`);
