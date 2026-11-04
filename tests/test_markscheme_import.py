@@ -20,6 +20,52 @@ def post_pdf(client, endpoint, path):
     })
 
 
+def test_legacy_2000_markscheme_import_preserves_sections_and_unknown_timezone(tmp_path):
+    client = create_app(tmp_path).test_client()
+    path = ROOT / 'Physics HL - May 2000 - P2 MS.pdf'
+    response = post_pdf(client, '/api/markschemes', path)
+    assert response.status_code == 201, response.json
+    data = response.json
+    assert (data['identity']['year'], data['identity']['session'], data['identity']['level'],
+            data['identity']['paper'], data['identity']['timezone']) == (2000, 'May', 'HL', 'Paper 2', None)
+    assert data['question_numbers'] == ['A1', 'A2', 'A3', 'A4', 'B1', 'B2', 'B3', 'B4']
+    assert [r['page'] for r in data['entries']['A1']['regions']] == [1, 2]
+    assert [r['page'] for r in data['entries']['B4']['regions']] == [15, 16, 17]
+    question = dict(year=2000, paper='Paper 2', timezone='TZ1', number=1)
+    assert not match_question_to_markscheme(question, data['identity'], data['question_numbers'])['matched']
+    legacy_q = dict(question, exam_identifier='M00/430/H(2)', source_label='B1')
+    assert match_question_to_markscheme(legacy_q, data['identity'], data['question_numbers'])['matched']
+    assert not match_question_to_markscheme(dict(legacy_q, exam_identifier='N00/430/H(2)'), data['identity'], data['question_numbers'])['matched']
+
+
+def test_legacy_paper_section_labels_are_retained_for_matching(tmp_path):
+    client = create_app(tmp_path).test_client()
+    with fitz.open() as pdf:
+        page = pdf.new_page()
+        page.insert_text((50, 40), 'M00/430/H(2) Physics Higher Level Paper 2 May 2000')
+        page.insert_text((50, 100), 'A1. Calculate the momentum of the moving object.')
+        page.insert_text((50, 200), 'A2. Explain the effect of the net force.')
+        page.insert_text((50, 300), 'B1. Determine the energy of the moving object.')
+        data = pdf.tobytes()
+    response = client.post('/api/documents', data={'file': (BytesIO(data), 'physics.pdf'), 'ocr_mode': 'off'})
+    assert response.status_code == 201, response.json
+    doc = response.json
+    assert [q['source_label'] for q in doc['questions']] == ['A1', 'A2', 'B1']
+    assert client.post(f"/api/documents/{doc['id']}/confirm-import", json={}).status_code == 200
+    questions = client.get('/api/questions').json
+    assert {q['source_label'] for q in questions} == {'A1', 'A2', 'B1'}
+    assert all(q['exam_identifier'] == 'M00/430/H(2)' for q in questions)
+    assert post_pdf(client, '/api/markschemes', ROOT / 'Physics HL - May 2000 - P2 MS.pdf').status_code == 201
+    b1 = next(q for q in questions if q['source_label'] == 'B1')
+    result = client.post('/api/papers', json=dict(level='HL', syllabus='Legacy', minutes=100,
+                         topics=[], question_ids=[b1['id']]))
+    assert result.status_code == 201, result.json
+    assert result.json['markscheme']['matched_questions'] == 1
+    assert result.json['markscheme']['generated']
+    with fitz.open(tmp_path / 'papers' / (result.json['id'] + '-markscheme.pdf')) as marked:
+        assert 'source QB1' in marked[0].get_text()
+
+
 def test_restart_fills_missing_saved_question_timezone_from_source(tmp_path):
     client = create_app(tmp_path).test_client()
     paper = post_pdf(client, '/api/documents', ROOT / 'Physics_paper_1__TZ1_HL.pdf').json

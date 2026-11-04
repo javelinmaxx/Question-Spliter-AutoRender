@@ -28,6 +28,31 @@ def _line_records(page):
     return sorted(groups, key=lambda line: (line["y0"], line["x0"]))
 
 
+def legacy_section_entries(pdf):
+    """Index legacy A1/B1-style rows by section, preserving source page bands."""
+    entries = {}
+    for page_index, page in enumerate(pdf):
+        current = None
+        bands = {}
+        for line in _line_records(page):
+            text = line['text']
+            match = re.match(r'^(?:Question\s+)?([AB]\d{1,2})(?:\.|\s)', text, re.I)
+            if match and line['x0'] < 180:
+                current = match.group(1).upper()
+            if current is None:
+                continue
+            entry = entries.setdefault(current, {'lines': [], 'regions': []})
+            entry['lines'].append(text)
+            band = bands.setdefault(current, [line['y0'], line['y1']])
+            band[0] = min(band[0], line['y0'])
+            band[1] = max(band[1], line['y1'])
+        for label, (top, bottom) in bands.items():
+            if bottom > top:
+                entries[label]['regions'].append(dict(page=page_index,
+                    rect=[0, max(0, top - 3), page.rect.width, min(page.rect.height, bottom + 3)]))
+    return entries
+
+
 def extract_markscheme_regions(pdf, paper):
     """Locate exact question-row bands on structured markscheme pages."""
     if paper in ("Paper 1", "Paper 1A", "Paper 1B"):

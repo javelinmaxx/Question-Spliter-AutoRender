@@ -93,7 +93,7 @@ $('#search').addEventListener('submit',e=>{ e.preventDefault(); busy(e.target,se
 async function listMarkschemes() {
  const items=await api('/api/markschemes');
  $('#markscheme-list').replaceChildren(...(items.length?items.map(item=>el('p',
-  item.filename+' · '+item.identity.year+' · '+item.identity.paper+' · '+item.identity.timezone+' · '+item.question_numbers.length+' questions indexed · OCR only; language model not used')):[el('p','No markschemes imported yet.','muted')]));
+  item.filename+' · '+item.identity.year+' · '+item.identity.paper+' · '+(item.identity.timezone||(item.identity.identity_source==='ib_legacy_document_code'?'Legacy exam code':'Time zone unknown; automatic matching unavailable'))+' · '+item.question_numbers.length+' questions indexed'+(item.question_numbers.some(n=>typeof n==='string')?' (section-labelled)':'')+' · OCR only; language model not used')):[el('p','No markschemes imported yet.','muted')]));
 }
 async function listDocuments() {
  const docs=await api('/api/documents');$('#documents').replaceChildren(new Option('Choose an uploaded paper',''));

@@ -7,6 +7,7 @@ IDENTIFIER_RE = re.compile(
     r"[A-Z]{3}/TZ(?P<timezone>[0-3])/XX(?P<marksuffix>/M)?(?![A-Z0-9])",
     re.I,
 )
+LEGACY_IDENTIFIER_RE = re.compile(r'(?<![A-Z0-9])(?P<session>[MN])(?P<year>\d{2})/430/(?P<level>[HS])\((?P<paper>[123])\)(?P<marksuffix>M)?(?![A-Z0-9])', re.I)
 
 PAPER_CODES = {
     "HPM": "Paper 1", "SPM": "Paper 1",
@@ -44,6 +45,16 @@ def parse_exam_identity(text, filename=""):
             "identifier": match.group(0),
             "identity_source": "ib_document_code",
         }
+
+    match = LEGACY_IDENTIFIER_RE.search(source)
+    if match:
+        short_year = int(match.group('year'))
+        return dict(year=(1900 if short_year >= 70 else 2000) + short_year,
+                    session='May' if match.group('session').upper() == 'M' else 'November',
+                    paper='Paper ' + match.group('paper'), paper_code=None,
+                    level='HL' if match.group('level').upper() == 'H' else 'SL',
+                    timezone=None, is_markscheme=bool(match.group('marksuffix')),
+                    identifier=match.group(0), identity_source='ib_legacy_document_code')
 
     year_match = re.search(r"\b(?:April|May|Oct(?:ober)?|Nov(?:ember)?)\s+(20\d{2})\b", source[:12000], re.I)
     paper_match = re.search(r"\bPaper\s*([123])\s*([AB])?\b", source, re.I)
@@ -84,6 +95,17 @@ def match_question_to_markscheme(question, markscheme_identity, available_number
     markscheme_key = identity_key(markscheme_identity)
     if not markscheme_identity or not markscheme_identity.get("is_markscheme"):
         return {"matched": False, "reason": "not_a_markscheme"}
+    if markscheme_identity.get('identity_source') == 'ib_legacy_document_code':
+        question_code = LEGACY_IDENTIFIER_RE.fullmatch(question.get('exam_identifier') or '')
+        mark_code = LEGACY_IDENTIFIER_RE.fullmatch(markscheme_identity.get('identifier') or '')
+        if not question_code or not mark_code or question_code.group('marksuffix'):
+            return {'matched': False, 'reason': 'question_identity_incomplete'}
+        if question_code.group(0).upper() != mark_code.group(0).upper().removesuffix('M'):
+            return {'matched': False, 'reason': 'exam_identity_mismatch'}
+        label = (question.get('source_label') or '').upper()
+        if label not in set(available_numbers or []):
+            return {'matched': False, 'reason': 'question_not_in_markscheme'}
+        return {'matched': True, 'reason': 'exact_legacy_code_match', 'entry_key': label}
     if question_key is None:
         return {"matched": False, "reason": "question_identity_incomplete"}
     if markscheme_key is None:

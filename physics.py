@@ -259,6 +259,7 @@ def document_metadata(text, filename):
         suffix = (match[2] or '').upper() if match and match[1] == '1' else ''
         paper = ('Paper ' + match[1] + suffix) if match else 'Unknown'
     return dict(year=year, level=level, paper=paper, timezone=identity.get('timezone'), session=identity.get('session'),
+                exam_identifier=identity.get('identifier'), identity_source=identity.get('identity_source'),
                 syllabus='2025' if year and year >= 2025 else 'Legacy' if year else 'Unknown')
 
 

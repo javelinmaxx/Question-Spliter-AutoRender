@@ -16,27 +16,36 @@ def extract_pdf(path, filename, *, metadata_fn, suggest_fn, ocr_mode='auto', pag
         text = '\n'.join(r['native'] if len(r['native'].strip()) >= 50 else r['text'] for r in records)
         metadata = metadata_fn(text, filename)
         labels, starts, numbering_warnings = [], [], []
+        sectioned = metadata.get('identity_source') == 'ib_legacy_document_code'
         for index, record in enumerate(records):
             page = pdf[index]
             selected_lines = record['native_lines'] if len(record['native'].strip()) >= 50 else record['lines']
             for line in sorted(selected_lines, key=lambda l: (round(l['bbox'][1] / 3), l['bbox'][0])):
-                match = re.match(r'^(\d{1,2})[.)](?:\s|$)', line['text'].strip())
+                match = re.match(r'^([AB]\d{1,2})[.)](?:\s|$)' if sectioned else r'^(\d{1,2})[.)](?:\s|$)', line['text'].strip(), re.I)
                 if (match and page.rect.width * .05 <= line['bbox'][0] <= page.rect.width * .20
                         and 50 < line['bbox'][1] < page.rect.height - 45):
-                    labels.append((index, max(40, line['bbox'][1] - 5), int(match[1]), len(record['native'].strip()) < 50))
+                    labels.append((index, max(40, line['bbox'][1] - 5), match[1].upper() if sectioned else int(match[1]), len(record['native'].strip()) < 50))
         expected = 1
+        last_section, section_number = None, 0
         for i, (page_no, top, detected, is_ocr) in enumerate(labels):
+            if sectioned:
+                section, section_n = detected[0], int(detected[1:])
+                if (section == last_section and section_n == section_number + 1) or (section == 'A' and last_section is None and section_n == 1) or (section == 'B' and last_section == 'A' and section_n == 1):
+                    starts.append((page_no, top, expected, detected))
+                    expected += 1
+                    last_section, section_number = section, section_n
+                continue
             following = labels[i + 1][2] if i + 1 < len(labels) else None
             inferred = (is_ocr and detected != expected and str(detected).replace('4', '1') == str(expected)
                         and following == expected + 1)
             if detected == expected or inferred:
                 if inferred:
                     numbering_warnings.append(f'Page {page_no + 1}: OCR read question {detected}; proposed {expected} from adjacent numbering. Confirm the image.')
-                starts.append((page_no, top, expected))
+                starts.append((page_no, top, expected, None))
                 expected += 1
         candidates = []
-        for i, (page_no, top, number) in enumerate(starts):
-            end_page, end_y, _ = starts[i + 1] if i + 1 < len(starts) else (len(pdf) - 1, pdf[-1].rect.height - 30, 0)
+        for i, (page_no, top, number, source_label) in enumerate(starts):
+            end_page, end_y = starts[i + 1][:2] if i + 1 < len(starts) else (len(pdf) - 1, pdf[-1].rect.height - 30)
             regions = []
             for n in range(page_no, end_page + 1):
                 page = pdf[n]
@@ -63,7 +72,7 @@ def extract_pdf(path, filename, *, metadata_fn, suggest_fn, ocr_mode='auto', pag
                                   topics=ocr_suggestions['topics'], commands=ocr_suggestions['commands'])
                 if all(source == 'ocr' for source in sources):
                     comparison['status'] = 'ocr_only'
-            candidates.append(dict(number=number, regions=regions, text=body, text_source='mixed' if len(set(sources)) > 1 else sources[0],
+            candidates.append(dict(number=number, source_label=source_label, regions=regions, text=body, text_source='mixed' if len(set(sources)) > 1 else sources[0],
                                    ocr_comparison=comparison, **metadata, **suggestions))
         pages = [dict(width=round(p.rect.width, 2), height=round(p.rect.height, 2)) for p in pdf]
         warnings = ['Automatic crops and tags are suggestions. Review diagrams, continuations and boundaries before saving.', *ocr_warnings, *numbering_warnings]

@@ -34,7 +34,7 @@ from level_filter import normalize_mode, sl_mode, exclusion as level_exclusion, 
 from watermarks import prepare as prepare_watermarks, filter_analysis as filter_watermarks, rejected as watermark_rejected, page_records as watermark_records
 from upload_filter import markscheme_name, markscheme_heading
 from exam_identity import normalize_timezone, parse_exam_identity, match_question_to_markscheme
-from markscheme_data import extract_markscheme_entries, extract_markscheme_regions, render_selected_markscheme
+from markscheme_data import extract_markscheme_entries, extract_markscheme_regions, render_selected_markscheme, legacy_section_entries
 from subjects import registry as subject_registry, ACTIVE_SUBJECT_ID, API_VERSION as SUBJECT_API_VERSION
 from subjects.pipeline import analyze as analyze_subject
 
@@ -256,7 +256,8 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                                              else 'no_matching_exam' if available else 'no_markschemes_imported')))
             else:
                 markscheme = candidates[0]
-                entry = markscheme.get('entries', {}).get(str(question['number']), {})
+                entry_key = question.get('source_label') if markscheme['identity'].get('identity_source') == 'ib_legacy_document_code' else str(question['number'])
+                entry = markscheme.get('entries', {}).get(str(entry_key), {})
                 if isinstance(entry, list):
                     entry = dict(lines=entry, regions=[])
                 lines = entry.get('lines', [])
@@ -266,10 +267,10 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                                         year=question.get('year'), paper=question.get('paper'),
                                         timezone=question.get('timezone'), reason='entry_not_extracted'))
                     continue
-                matched.append(dict(question_id=question['id'], number=generated_number, source_number=question['number'], lines=lines,
+                matched.append(dict(question_id=question['id'], number=generated_number, source_number=question.get('source_label') or question['number'], lines=lines,
                                     regions=entry.get('regions', []),
                                     source_path=str(root / 'markschemes' / (markscheme['id'] + '.pdf')),
-                                    year=question['year'], paper=question['paper'], timezone=question['timezone'],
+                                    year=question['year'], paper=question['paper'], timezone=question.get('timezone'),
                                     source_filename=markscheme['filename'], markscheme_id=markscheme['id']))
         return matched, missing, ambiguous
 
@@ -492,14 +493,15 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             if not identity.get('is_markscheme') and not named:
                 raise ValueError('This PDF does not appear to be a markscheme. Check its filename or cover page.')
             identity['is_markscheme'] = True
-            if identity_key := (identity.get('year'), identity.get('paper'), identity.get('timezone')):
+            if identity_key := (identity.get('year'), identity.get('paper')):
                 if not all(identity_key):
-                    raise ValueError('Could not identify the markscheme year, paper and time zone. Check that its IB document code or cover text is readable.')
+                    raise ValueError('Could not identify the markscheme year and paper. Check that its IB document code or cover text is readable.')
             else:
                 raise ValueError('Could not identify the markscheme year, paper and time zone.')
             with fitz.open(path) as pdf:
                 regions = extract_markscheme_regions(pdf, identity['paper'])
-            entries = extract_markscheme_entries(page_texts, identity['paper'], regions)
+                legacy_entries = legacy_section_entries(pdf) if identity.get('identity_source') == 'ib_legacy_document_code' else {}
+            entries = legacy_entries or extract_markscheme_entries(page_texts, identity['paper'], regions)
             if not entries:
                 raise ValueError('No question-numbered markscheme entries could be extracted. Check the PDF text/OCR and try again.')
             data = dict(identity=identity, question_numbers=sorted(entries),
@@ -802,6 +804,9 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         original_level = doc.get('metadata', {}).get('level')
         saved['origin_override'] = not imported and value.get('origin','inherit')!='inherit'
         saved['source_level'] = original_level if original_level in ('HL','SL') else level
+        source_candidate = next((q for q in doc['questions'] if q['number'] == number), {})
+        saved['source_label'] = source_candidate.get('source_label')
+        saved['exam_identifier'] = doc.get('metadata', {}).get('exam_identifier')
         saved['session'] = doc.get('metadata', {}).get('session')
         saved['watermark_key'] = doc.get('watermark', {}).get('key')
         sl_suitability = value.get('sl_suitability', 'automatic')
