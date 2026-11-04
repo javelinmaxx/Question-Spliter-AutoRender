@@ -128,6 +128,37 @@ def test_ambiguous_markschemes_can_be_reviewed_and_resolved_without_new_paper(tm
         assert conn.execute('SELECT count(*) FROM papers').fetchone()[0] == 1
 
 
+def test_markscheme_workspace_saves_valid_choice_for_future_generation(tmp_path):
+    client = create_app(tmp_path).test_client()
+    paper = post_pdf(client, '/api/documents', ROOT / 'Physics_paper_1__TZ1_HL.pdf').json
+    assert client.post(f"/api/documents/{paper['id']}/confirm-import", json={}).status_code == 200
+    question = next(q for q in client.get('/api/questions').json if q['number'] == 3)
+    original = ROOT / 'Physics_paper_1__TZ1_HL_markscheme.pdf'
+    first = post_pdf(client, '/api/markschemes', original).json
+    with fitz.open(original) as source:
+        source.set_metadata(dict(source.metadata, title='Alternative markscheme'))
+        alternative = source.tobytes()
+    second = client.post('/api/markschemes', data={'file': (BytesIO(alternative), 'alternative_markscheme.pdf'), 'ocr_mode': 'off'}).json
+    overview = client.get('/api/markscheme-matches')
+    assert overview.status_code == 200, overview.json
+    row = next(q for q in overview.json if q['id'] == question['id'])
+    assert row['status'] == 'ambiguous' and {c['id'] for c in row['candidates']} == {first['id'], second['id']}
+    endpoint = f"/api/questions/{question['id']}/markscheme-choice"
+    assert client.post(endpoint, json={'markscheme_id':'invalid'}).status_code == 400
+    assert client.post(endpoint, json={'markscheme_id':second['id']}).status_code == 200
+    reopened = create_app(tmp_path).test_client()
+    row = next(q for q in reopened.get('/api/markscheme-matches').json if q['id'] == question['id'])
+    assert row['status'] == 'matched' and row['markscheme_id'] == second['id'] and len(row['candidates']) == 2
+    edited = dict(next(q for q in reopened.get('/api/questions').json if q['id'] == question['id']), topics=['A.1'])
+    saved = reopened.post('/api/questions', json=edited)
+    assert saved.status_code == 201 and saved.json['markscheme_choice'] == second['id']
+    result = reopened.post('/api/papers', json=dict(level='HL', syllabus='Legacy', minutes=45, topics=[], question_ids=[question['id']]))
+    assert result.status_code == 201 and result.json['markscheme']['matched_questions'] == 1
+    assert not result.json['markscheme']['ambiguous_questions']
+    assert reopened.post(endpoint, json={'markscheme_id':None}).status_code == 200
+    assert next(q for q in reopened.get('/api/markscheme-matches').json if q['id'] == question['id'])['status'] == 'ambiguous'
+
+
 def test_imported_markscheme_is_stored_without_language_model_review(tmp_path, monkeypatch):
     client = create_app(tmp_path).test_client()
     path = ROOT / "Physics_paper_1__TZ1_HL_markscheme.pdf"

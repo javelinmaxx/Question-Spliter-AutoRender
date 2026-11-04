@@ -11,7 +11,7 @@ function el(tag, text, className) { const node=document.createElement(tag); if(t
 async function api(url, options={}) { const response=await fetch(url, options); const value=await response.json(); if(!response.ok){const error=new Error(value.error || 'Request failed');error.diagnostics=value.diagnostics;throw error;} return value; }
 function post(url, value) { return api(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(value)}); }
 async function busy(form, work) { const button=form.querySelector('[type=submit]'); button.disabled=true; try { await work(); } catch(error) { status(error.message,true); } finally { button.disabled=false; } }
-document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>{ document.querySelectorAll('.tab').forEach(section=>section.hidden=section.id!==button.dataset.tab); document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b===button)); status(''); if(button.dataset.tab==='library') search().catch(e=>status(e.message,true)); if(button.dataset.tab==='usage') loadUsage().catch(e=>status(e.message,true)); }));
+document.querySelectorAll('[data-tab]').forEach(button=>button.addEventListener('click',()=>{ document.querySelectorAll('.tab').forEach(section=>section.hidden=section.id!==button.dataset.tab); document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b===button)); status(''); if(button.dataset.tab==='library') search().catch(e=>status(e.message,true)); if(button.dataset.tab==='usage') loadUsage().catch(e=>status(e.message,true)); if(button.dataset.tab==='markschemes') refreshMarkschemeMatches().catch(e=>status(e.message,true)); }));
 let usageItems=[];
 async function loadUsage() { usageItems=await api('/api/question-usage'); renderUsage(); }
 function renderUsage() {
@@ -95,6 +95,41 @@ async function listMarkschemes() {
  $('#markscheme-list').replaceChildren(...(items.length?items.map(item=>el('p',
   item.filename+' · '+item.identity.year+' · '+item.identity.paper+' · '+(item.identity.timezone||(item.identity.identity_source==='ib_legacy_document_code'?'Legacy exam code':'Time zone unknown; automatic matching unavailable'))+' · '+item.question_numbers.length+' questions indexed'+(item.question_numbers.some(n=>typeof n==='string')?' (section-labelled)':'')+' · OCR only; language model not used')):[el('p','No markschemes imported yet.','muted')]));
 }
+let markschemeMatches=[];
+async function refreshMarkschemeMatches(){
+ $('#marks-summary').textContent='Loading matches…';
+ const [items]=await Promise.all([api('/api/markscheme-matches'),listMarkschemes()]);markschemeMatches=items;
+ const documents=$('#marks-document'),old=documents.value,seen=new Map(items.map(q=>[q.document_id,q.filename]));
+ documents.replaceChildren(new Option('All papers',''));for(const [id,name] of seen)documents.add(new Option(name,id));
+ if(seen.has(old))documents.value=old;renderMarkschemeMatches();
+}
+function renderMarkschemeMatches(){
+ const query=$('#marks-search').value.trim().toLowerCase(),state=$('#marks-status').value,doc=$('#marks-document').value;
+ const items=markschemeMatches.filter(q=>(!state||q.status===state)&&(!doc||q.document_id===doc)&&(!query||`${q.filename} ${q.number} ${q.source_label||''} ${q.text}`.toLowerCase().includes(query)));
+ const box=$('#marks-results');box.replaceChildren();$('#marks-summary').textContent=`${items.length} questions shown · ${markschemeMatches.filter(q=>q.status==='ambiguous').length} need a choice · ${markschemeMatches.filter(q=>q.status==='missing').length} have no match`;
+ if(!items.length){box.append(el('p','No saved questions match these filters.','muted'));return;}
+ const reasons={question_identity_incomplete:'Missing exam identity or time zone; review the source question.',question_not_in_markscheme:'The matching markscheme does not contain this question number.',no_matching_exam:'No imported markscheme matches this exam.',no_markschemes_imported:'Import a markscheme to begin.',entry_not_extracted:'The markscheme entry could not be extracted.'};
+ for(const q of items){
+  const card=el('article',undefined,'panel');card.append(el('h3',`${q.filename} · Q${q.source_label||q.number}`),el('p',q.text||'No recognized question text.','muted'));
+  const question=el('a','Open question image');question.href=`/api/questions/${q.id}/image`;question.target='_blank';question.rel='noopener';card.append(question);
+  const review=el('button','Review question','secondary');review.type='button';review.addEventListener('click',async()=>{try{await openDocument(q.document_id);document.querySelector('[data-tab="import"]').click();const candidate=currentDoc.questions.find(item=>item.id===q.id)||currentDoc.questions.find(item=>item.number===q.number);if(!candidate)throw new Error('Question is no longer available for review.');selectQuestion(candidate);}catch(error){status(error.message,true);}});card.append(el('p'),review);
+  if(q.status==='matched'){
+   card.append(el('p',`Matched: ${q.markscheme_filename}${q.choice===q.markscheme_id?' (saved choice)':''}`));
+   const source=el('a','Open matched markscheme');source.href=`/api/markschemes/${q.markscheme_id}/source`;source.target='_blank';source.rel='noopener';card.append(source);
+  }else if(q.status==='missing')card.append(el('p',reasons[q.reason]||'No matching markscheme found.','notice'));
+  else card.append(el('p','Multiple matching markschemes: compare them and choose one.','notice'));
+  if(q.candidates.length){
+   const label=el('label','Choose markscheme'),select=el('select');select.add(new Option('Choose a matching markscheme',''));
+   for(const candidate of q.candidates){select.add(new Option(`${candidate.filename} (${candidate.id.slice(0,8)})`,candidate.id));const source=el('a',`Open ${candidate.filename} (${candidate.id.slice(0,8)})`);source.href=`/api/markschemes/${candidate.id}/source`;source.target='_blank';source.rel='noopener';card.append(el('p'),source);}
+   select.value=q.choice||'';label.append(select);const save=el('button','Save choice');save.type='button';save.addEventListener('click',async()=>{if(!select.value){status('Choose a markscheme first.',true);return;}save.disabled=true;try{await post(`/api/questions/${q.id}/markscheme-choice`,{markscheme_id:select.value});await refreshMarkschemeMatches();status('Markscheme choice saved.');}catch(error){status(error.message,true);save.disabled=false;}});card.append(label,save);
+  }
+  if(q.choice){const clear=el('button','Clear saved choice','secondary');clear.type='button';clear.addEventListener('click',async()=>{clear.disabled=true;try{await post(`/api/questions/${q.id}/markscheme-choice`,{markscheme_id:null});await refreshMarkschemeMatches();}catch(error){status(error.message,true);clear.disabled=false;}});card.append(clear);}
+  box.append(card);
+ }
+}
+for(const id of ['marks-search','marks-status','marks-document'])$('#'+id).addEventListener('input',renderMarkschemeMatches);
+$('#marks-refresh').addEventListener('click',()=>refreshMarkschemeMatches().catch(e=>status(e.message,true)));
+$('#marks-import').addEventListener('click',()=>{document.querySelector('[data-tab="import"]').click();$('#import-kind').value='markscheme';$('#import-kind').dispatchEvent(new Event('change'));$('#upload').scrollIntoView({behavior:'smooth'});});
 async function listDocuments() {
  const docs=await api('/api/documents');$('#documents').replaceChildren(new Option('Choose an uploaded paper',''));
  const source=$('#source-documents'), selected=new Set([...source.selectedOptions].map(option=>option.value));source.replaceChildren();
