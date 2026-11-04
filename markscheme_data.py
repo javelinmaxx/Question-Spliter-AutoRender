@@ -106,7 +106,7 @@ def render_selected_markscheme(path, selected_entries, *, title="Generated Physi
                         page.insert_text((48, 68), label, fontname="hebo", fontsize=10)
                         page.insert_text((48, 84),
                                          f"Source: {item.get('source_filename', 'Imported markscheme')} · "
-                                         f"{item.get('year')} · {item.get('paper')} · {item.get('timezone')}",
+                                         f"{item.get('year')} · {item.get('paper')} · {item.get('timezone')} · source Q{item.get('source_number', item['number'])}",
                                          fontsize=7, color=(0.35, 0.35, 0.35))
                         page.show_pdf_page(
                             fitz.Rect(24, 100, 571, 790), source, region["page"],
@@ -137,7 +137,7 @@ def render_selected_markscheme(path, selected_entries, *, title="Generated Physi
                 page.insert_text((48, 68), label, fontname="hebo", fontsize=10)
                 page.insert_text((48, 84),
                                  f"Source: {item.get('source_filename', 'Imported markscheme')} · "
-                                 f"{item.get('year')} · {item.get('paper')} · {item.get('timezone')}",
+                                 f"{item.get('year')} · {item.get('paper')} · {item.get('timezone')} · source Q{item.get('source_number', item['number'])}",
                                  fontsize=7, color=(0.35, 0.35, 0.35))
                 remaining = page.insert_textbox(
                     fitz.Rect(48, 100, 547, 790), chunk,

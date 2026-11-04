@@ -1,5 +1,7 @@
 from io import BytesIO
 from pathlib import Path
+import json
+import sqlite3
 
 import fitz
 import pytest
@@ -16,6 +18,34 @@ def post_pdf(client, endpoint, path):
         "file": (BytesIO(path.read_bytes()), path.name),
         "ocr_mode": "off",
     })
+
+
+def test_restart_fills_missing_saved_question_timezone_from_source(tmp_path):
+    client = create_app(tmp_path).test_client()
+    paper = post_pdf(client, '/api/documents', ROOT / 'Physics_paper_1__TZ1_HL.pdf').json
+    assert client.post(f"/api/documents/{paper['id']}/confirm-import", json={}).status_code == 200
+    with sqlite3.connect(tmp_path / 'bank.sqlite3') as conn:
+        rows = conn.execute('SELECT id, data FROM questions').fetchall()
+        for qid, raw in rows:
+            q = json.loads(raw)
+            q['timezone'] = None
+            conn.execute('UPDATE questions SET data=? WHERE id=?', (json.dumps(q), qid))
+    reopened = create_app(tmp_path).test_client()
+    assert all(q['timezone'] == 'TZ1' for q in reopened.get('/api/questions').json)
+
+
+def test_markscheme_import_indexes_ocr_after_native_text(tmp_path, monkeypatch):
+    client = create_app(tmp_path).test_client()
+    def read(pdf, *args):
+        return ([dict(text='1. A\n2. C', native=pdf[0].get_text())], [])
+    monkeypatch.setattr(application, 'read_pages', read)
+    with fitz.open() as pdf:
+        page = pdf.new_page()
+        page.insert_text((50, 90), 'Markscheme May 2024 Physics Higher level Paper 1 TZ1')
+        payload = pdf.tobytes()
+    result = client.post('/api/markschemes', data={'file': (BytesIO(payload), 'physics_markscheme.pdf')})
+    assert result.status_code == 201, result.json
+    assert result.json['question_numbers'] == [1, 2]
 
 
 def test_imported_markscheme_is_stored_without_language_model_review(tmp_path, monkeypatch):
@@ -64,6 +94,7 @@ def test_real_paper_question_matches_imported_markscheme_and_generates_answer_pd
     marks_path = ROOT / "Physics_paper_1__TZ1_HL_markscheme.pdf"
     marks_response = post_pdf(client, "/api/markschemes", marks_path)
     assert marks_response.status_code == 201, marks_response.json
+    assert post_pdf(client, "/api/markschemes", marks_path).status_code == 201
     markscheme = client.get("/api/markschemes").json[0]
     direct_match = match_question_to_markscheme(
         question, markscheme["identity"], markscheme["question_numbers"])
@@ -83,7 +114,8 @@ def test_real_paper_question_matches_imported_markscheme_and_generates_answer_pd
     original_path = tmp_path / "papers" / (generated.json["id"] + "-markscheme.pdf")
     with fitz.open(original_path) as mark_pdf:
         mark_text = "\n".join(page.get_text() for page in mark_pdf)
-        assert f"Question {question['number']}" in mark_text
+        assert 'Question 1' in mark_text
+        assert f"source Q{question['number']}" in mark_text
         assert "Answer:" in mark_text
 
     download = client.get(f"/api/papers/{generated.json['id']}/markscheme")

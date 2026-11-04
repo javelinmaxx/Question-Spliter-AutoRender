@@ -21,8 +21,8 @@ PAPER_CODES = {
 def normalize_timezone(value):
     if value in (None, ""):
         return None
-    match = re.fullmatch(r"(?:TZ)?\s*([0-3])", str(value).strip(), re.I)
-    return f"TZ{match.group(1)}" if match else None
+    match = re.fullmatch(r"(?:TZ)?\s*([0-3A-C])", str(value).strip(), re.I)
+    return f"TZ{match.group(1).upper()}" if match else None
 
 
 def parse_exam_identity(text, filename=""):
@@ -45,10 +45,10 @@ def parse_exam_identity(text, filename=""):
             "identity_source": "ib_document_code",
         }
 
-    year_match = re.search(r"\b(?:May|Nov(?:ember)?)\s+(20\d{2})\b", source, re.I)
+    year_match = re.search(r"\b(?:April|May|Oct(?:ober)?|Nov(?:ember)?)\s+(20\d{2})\b", source[:12000], re.I)
     paper_match = re.search(r"\bPaper\s*([123])\s*([AB])?\b", source, re.I)
     level_match = re.search(r"\b(HL|higher level|SL|standard level)\b", source, re.I)
-    timezone_match = re.search(r"\bTZ\s*([0-3])\b", source, re.I)
+    timezone_match = re.search(r"(?<![A-Z0-9])TZ[\s_-]*([0-3A-C])(?![A-Z0-9])", source, re.I)
     paper = None
     if paper_match:
         paper = f"Paper {paper_match.group(1)}{(paper_match.group(2) or '').upper()}"
@@ -57,7 +57,7 @@ def parse_exam_identity(text, filename=""):
         level = "HL" if level_match.group(1).lower() in ("hl", "higher level") else "SL"
     return {
         "year": int(year_match.group(1)) if year_match else None,
-        "session": None,
+        "session": ("May" if year_match and year_match.group(0).lower().startswith(('april', 'may')) else "November") if year_match else None,
         "paper": paper,
         "paper_code": None,
         "level": level,
@@ -96,6 +96,11 @@ def match_question_to_markscheme(question, markscheme_identity, available_number
             markscheme_identity.get(field) if field != "timezone" else normalize_timezone(markscheme_identity.get(field))
         )]
         return {"matched": False, "reason": "exam_identity_mismatch", "mismatched_fields": mismatch}
+    for field, question_value in (("level", question.get("source_level") or question.get("level")),
+                                  ("session", question.get("session"))):
+        mark_value = markscheme_identity.get(field)
+        if question_value in ("HL", "SL", "May", "November") and mark_value and question_value != mark_value:
+            return {"matched": False, "reason": "exam_identity_mismatch", "mismatched_fields": [field]}
     try:
         number = int(question.get("number"))
     except (TypeError, ValueError):

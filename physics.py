@@ -258,7 +258,7 @@ def document_metadata(text, filename):
         match = re.search(r'paper[\s_-]*([123])(?:[\s_-]*([ab])(?![a-z]))?(?![0-9])', source, re.I)
         suffix = (match[2] or '').upper() if match and match[1] == '1' else ''
         paper = ('Paper ' + match[1] + suffix) if match else 'Unknown'
-    return dict(year=year, level=level, paper=paper, timezone=identity.get('timezone'),
+    return dict(year=year, level=level, paper=paper, timezone=identity.get('timezone'), session=identity.get('session'),
                 syllabus='2025' if year and year >= 2025 else 'Legacy' if year else 'Unknown')
 
 

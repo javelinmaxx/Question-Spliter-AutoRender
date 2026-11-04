@@ -119,7 +119,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                 mapping['source_hash'] = question_hash(question)
 
     with db() as conn:
-        source_levels, source_papers, source_origins, source_timezones = {}, {}, {}, {}
+        source_levels, source_papers, source_origins, source_timezones, source_sessions = {}, {}, {}, {}, {}
         for row in conn.execute('SELECT id,filename,data FROM documents').fetchall():
             value = json.loads(row['data'])
             if value.get('subject_id', subject.id) != subject.id:
@@ -135,19 +135,25 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                 text = '\n'.join(p.get('native') or p.get('text', '') for p in value.get('text_pages', [])[:4])
                 if document_metadata(text, row['filename'])['paper'] == 'Paper 3':
                     metadata['paper'] = 'Paper 3'
-            if not metadata.get('timezone'):
+            if not metadata.get('timezone') or not metadata.get('session'):
                 identity_text = '\n'.join(p.get('native') or p.get('text', '') for p in value.get('text_pages', []))
-                metadata['timezone'] = document_metadata(identity_text, row['filename']).get('timezone')
+                parsed_metadata = document_metadata(identity_text, row['filename'])
+                for field in ('timezone', 'session'):
+                    if not metadata.get(field):
+                        metadata[field] = parsed_metadata.get(field)
             source_papers[row['id']] = metadata.get('paper', 'Unknown')
             source_levels[row['id']] = value.get('metadata', {}).get('level', 'Unknown')
             source_timezones[row['id']] = metadata.get('timezone')
+            source_sessions[row['id']] = metadata.get('session')
             for candidate in value.get('questions', []):
                 candidate['subject_id'] = subject.id
                 if not candidate.get('origin_override'):
                     candidate['origin'] = value['origin']
                 upgrade_unknown_paper(candidate, source_papers[row['id']])
                 candidate['source_level'] = source_levels[row['id']]
-                candidate.setdefault('timezone', source_timezones[row['id']])
+                if not candidate.get('timezone'):
+                    candidate['timezone'] = source_timezones[row['id']]
+                candidate['session'] = candidate.get('session') or source_sessions[row['id']]
                 refresh_timing(candidate)
             conn.execute('UPDATE documents SET data=? WHERE id=?', (json.dumps(value), row['id']))
         for row in conn.execute('SELECT id FROM documents WHERE id NOT IN (SELECT document_id FROM source_fingerprints)').fetchall():
@@ -164,7 +170,9 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                 value['origin'] = source_origins.get(row['document_id'], 'unknown')
             original_level = source_levels.get(row['document_id'])
             value.setdefault('source_level', original_level if original_level in ('HL','SL') else value.get('level'))
-            value.setdefault('timezone', source_timezones.get(row['document_id']))
+            if not value.get('timezone'):
+                value['timezone'] = source_timezones.get(row['document_id'])
+            value['session'] = value.get('session') or source_sessions.get(row['document_id'])
             refresh_timing(value)
             image = root / 'images' / (row['id'] + '.png')
             if not value.get('content_hash') and image.is_file():
@@ -213,21 +221,39 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
     def match_markscheme_entries(selected_questions):
         available = saved_markschemes()
         matched, missing, ambiguous = [], [], []
-        for question in selected_questions:
+        hashes = {}
+        for generated_number, question in enumerate(selected_questions, 1):
             candidates = []
+            candidate_hashes = set()
+            failures = []
             for markscheme in available:
                 result = match_question_to_markscheme(
                     question, markscheme['identity'], markscheme.get('question_numbers', []))
                 if result['matched']:
+                    path = root / 'markschemes' / (markscheme['id'] + '.pdf')
+                    if markscheme['id'] not in hashes:
+                        hashes[markscheme['id']] = source_hash(path) if path.is_file() else None
+                    digest = hashes[markscheme['id']]
+                    if digest and digest in candidate_hashes:
+                        continue
+                    if digest:
+                        candidate_hashes.add(digest)
                     candidates.append(markscheme)
+                else:
+                    failures.append(result)
             if len(candidates) > 1:
                 ambiguous.append(dict(question_id=question['id'], number=question['number'],
+                                      generated_number=generated_number, source_filename=question.get('filename'),
                                       year=question.get('year'), paper=question.get('paper'),
                                       timezone=question.get('timezone'), filenames=[m['filename'] for m in candidates]))
             elif not candidates:
                 missing.append(dict(question_id=question['id'], number=question['number'],
+                                     generated_number=generated_number, source_filename=question.get('filename'),
                                      year=question.get('year'), paper=question.get('paper'),
-                                     timezone=question.get('timezone')))
+                                     timezone=question.get('timezone'),
+                                     reason=('question_identity_incomplete' if not all(question.get(k) for k in ('year', 'paper', 'timezone'))
+                                             else 'question_not_in_markscheme' if any(f['reason'] == 'question_not_in_markscheme' for f in failures)
+                                             else 'no_matching_exam' if available else 'no_markschemes_imported')))
             else:
                 markscheme = candidates[0]
                 entry = markscheme.get('entries', {}).get(str(question['number']), {})
@@ -236,10 +262,11 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                 lines = entry.get('lines', [])
                 if not lines:
                     missing.append(dict(question_id=question['id'], number=question['number'],
+                                        generated_number=generated_number, source_filename=question.get('filename'),
                                         year=question.get('year'), paper=question.get('paper'),
                                         timezone=question.get('timezone'), reason='entry_not_extracted'))
                     continue
-                matched.append(dict(question_id=question['id'], number=question['number'], lines=lines,
+                matched.append(dict(question_id=question['id'], number=generated_number, source_number=question['number'], lines=lines,
                                     regions=entry.get('regions', []),
                                     source_path=str(root / 'markschemes' / (markscheme['id'] + '.pdf')),
                                     year=question['year'], paper=question['paper'], timezone=question['timezone'],
@@ -458,7 +485,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                 native = native_pages[index] if index < len(native_pages) else ''
                 ocr = record.get('text', '')
                 page_texts.append(native if not ocr.strip() or ocr.strip() == native.strip()
-                                  else native + '\\n' + ocr)
+                                  else native + '\n' + ocr)
             all_text = '\n'.join(page_texts)
             identity = parse_exam_identity(all_text, uploaded.filename)
             named = markscheme_name(uploaded.filename) or any(markscheme_heading(text) for text in page_texts[:4])
@@ -775,6 +802,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         original_level = doc.get('metadata', {}).get('level')
         saved['origin_override'] = not imported and value.get('origin','inherit')!='inherit'
         saved['source_level'] = original_level if original_level in ('HL','SL') else level
+        saved['session'] = doc.get('metadata', {}).get('session')
         saved['watermark_key'] = doc.get('watermark', {}).get('key')
         sl_suitability = value.get('sl_suitability', 'automatic')
         if sl_suitability not in ('automatic','sl_suitable','hl_only','needs_review'):

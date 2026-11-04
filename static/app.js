@@ -421,6 +421,11 @@ $('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,as
    const count=result.markscheme.missing_questions?.length||0, ambiguous=result.markscheme.ambiguous_questions?.length||0;
    $('#paper-result').append(el('p',`No complete matching markscheme was generated. ${count} question(s) had no exact match; ${ambiguous} were ambiguous.`,'notice'));
   }
+  if(result.markscheme){
+   const reasons={question_identity_incomplete:'Missing year, paper or time zone on the question.',question_not_in_markscheme:'Question number was not found in the matching markscheme.',no_matching_exam:'No imported markscheme matches this exam.',no_markschemes_imported:'No markschemes have been imported.',entry_not_extracted:'The markscheme entry could not be extracted.'};
+   for(const item of result.markscheme.missing_questions||[])$('#paper-result').append(el('p',`Question ${item.generated_number} (source Q${item.number}, ${item.source_filename||'unknown file'}, ${item.year||'year unknown'}, ${item.paper||'paper unknown'}, ${item.timezone||'time zone unknown'}): ${reasons[item.reason]||'No matching markscheme entry.'}`,'notice'));
+   for(const item of result.markscheme.ambiguous_questions||[])$('#paper-result').append(el('p',`Question ${item.generated_number} (source Q${item.number}, ${item.source_filename||'unknown file'}): multiple matching markschemes (${item.filenames.join(', ')}).`,'notice'));
+  }
   showPaperDiagnostics(result.diagnostics);
   const numberingWarnings=Object.values(result.numbering||{}).flatMap(info=>info.warnings||[]);if(numberingWarnings.length)$('#paper-result').append(el('p',numberingWarnings.join(' '),'notice'));
   status(`Practice paper generated from ${result.count} reviewed question groups. ${result.selections?.reduce((n,s)=>n+s.omitted_parts.length,0)||0} parts omitted. ${result.short_fallbacks?.length||0} questions retained whole because no approved dependency map was available.`);

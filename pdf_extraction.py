@@ -41,7 +41,7 @@ def extract_pdf(path, filename, *, metadata_fn, suggest_fn, ocr_mode='auto', pag
             for n in range(page_no, end_page + 1):
                 page = pdf[n]
                 page_body = records[n]['native'] or records[n]['text']
-                if re.search(r'(?im)^\s*(Disclaimer:|References:|Please do not write on this page)', page_body):
+                if n != page_no and re.search(r'(?im)^\s*(Disclaimer:|References:|Please do not write on this page)', page_body):
                     continue
                 bottom = end_y if n == end_page else page.rect.height - 45
                 y = top if n == page_no else 50
@@ -49,6 +49,9 @@ def extract_pdf(path, filename, *, metadata_fn, suggest_fn, ocr_mode='auto', pag
                     continue
                 rect = [30, y, page.rect.width - 30, bottom]
                 regions.append(dict(page=n, rect=rect))
+            if not regions:
+                numbering_warnings.append(f'Question {number}: no usable crop was found; review the source page.')
+                continue
             body = region_text(records, regions)
             ocr_text = region_text(records, regions, 'ocr')
             suggestions = suggest_fn(body, metadata['paper'], metadata['level'],metadata['syllabus'])

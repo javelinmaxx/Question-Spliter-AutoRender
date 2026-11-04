@@ -66,3 +66,26 @@ def test_markscheme_match_rejects_wrong_year_paper_timezone_and_number():
         assert expected in result["mismatched_fields"]
     assert match_question_to_markscheme({**base, "number": 12}, marks, available)["reason"] == "question_not_in_markscheme"
     assert match_question_to_markscheme({**base, "timezone": None}, marks, available)["reason"] == "question_identity_incomplete"
+
+
+@pytest.mark.parametrize('paper_no,zone', [(p, z) for p in (1, 2, 3) for z in (1, 2)])
+def test_2024_sample_pairs_match_extracted_questions(paper_no, zone):
+    from physics import extract
+    from markscheme_data import extract_markscheme_entries
+    paper_path = ROOT / f'Physics p{paper_no} TZ{zone} HL.pdf'
+    marks_path = ROOT / f'Physics p{paper_no} TZ{zone} HL MS.pdf'
+    extracted = extract(paper_path, paper_path.name, ocr_mode='off')
+    pages = pdf_text(marks_path)
+    identity = parse_exam_identity('\n'.join(pages), marks_path.name)
+    entries = extract_markscheme_entries(pages, identity['paper'])
+    assert len(extracted['questions']) >= {1: 40, 2: 10, 3: 20}[paper_no]
+    assert all(match_question_to_markscheme(q, identity, entries)['matched'] for q in extracted['questions'])
+
+
+def test_source_level_and_session_conflicts_do_not_match():
+    marks = dict(year=2024, paper='Paper 1', timezone='TZC', level='HL', session='May', is_markscheme=True)
+    q = dict(year=2024, paper='Paper 1', timezone='TZC', level='SL', source_level='HL', session='May', number=1)
+    assert match_question_to_markscheme(q, marks, [1])['matched']
+    for update in (dict(source_level='SL'), dict(session='November')):
+        assert not match_question_to_markscheme(dict(q, **update), marks, [1])['matched']
+    assert parse_exam_identity('', 'physics_paper_1_TZC_HL.pdf')['timezone'] == 'TZC'
