@@ -94,6 +94,40 @@ def test_markscheme_import_indexes_ocr_after_native_text(tmp_path, monkeypatch):
     assert result.json['question_numbers'] == [1, 2]
 
 
+def test_ambiguous_markschemes_can_be_reviewed_and_resolved_without_new_paper(tmp_path):
+    client = create_app(tmp_path).test_client()
+    paper = post_pdf(client, '/api/documents', ROOT / 'Physics_paper_1__TZ1_HL.pdf').json
+    assert client.post(f"/api/documents/{paper['id']}/confirm-import", json={}).status_code == 200
+    question = next(q for q in client.get('/api/questions').json if q['number'] == 3)
+    original = ROOT / 'Physics_paper_1__TZ1_HL_markscheme.pdf'
+    first = post_pdf(client, '/api/markschemes', original).json
+    with fitz.open(original) as source:
+        source.set_metadata(dict(source.metadata, title='Alternative copy'))
+        copy = source.tobytes()
+    second = client.post('/api/markschemes', data={'file': (BytesIO(copy), 'alternative_markscheme.pdf'), 'ocr_mode': 'off'}).json
+    generated = client.post('/api/papers', json=dict(level='HL', syllabus='Legacy', minutes=45, topics=[], question_ids=[question['id']]))
+    assert generated.status_code == 201, generated.json
+    paper_id = generated.json['id']
+    ambiguous = generated.json['markscheme']['ambiguous_questions']
+    assert len(ambiguous) == 1
+    assert {c['id'] for c in ambiguous[0]['candidates']} == {first['id'], second['id']}
+    assert client.get(f"/api/markschemes/{second['id']}/source").status_code == 200
+    endpoint = f'/api/papers/{paper_id}/markscheme/resolve'
+    assert client.post(endpoint, json={'choices': {question['id']: 'invalid'}}).status_code == 400
+    with sqlite3.connect(tmp_path / 'bank.sqlite3') as conn:
+        raw = conn.execute('SELECT data FROM questions WHERE id=?', (question['id'],)).fetchone()[0]
+        modified = json.loads(raw)
+        modified['year'] = 2020
+        conn.execute('UPDATE questions SET data=? WHERE id=?', (json.dumps(modified), question['id']))
+    result = client.post(endpoint, json={'choices': {question['id']: second['id']}})
+    assert result.status_code == 200, result.json
+    assert result.json['matched_questions'] == 1 and not result.json['ambiguous_questions']
+    assert result.json['choices'] == {question['id']: second['id']}
+    assert client.get(f'/api/papers/{paper_id}/markscheme').status_code == 200
+    with sqlite3.connect(tmp_path / 'bank.sqlite3') as conn:
+        assert conn.execute('SELECT count(*) FROM papers').fetchone()[0] == 1
+
+
 def test_imported_markscheme_is_stored_without_language_model_review(tmp_path, monkeypatch):
     client = create_app(tmp_path).test_client()
     path = ROOT / "Physics_paper_1__TZ1_HL_markscheme.pdf"

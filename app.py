@@ -218,7 +218,8 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             return [dict(id=row['id'], filename=row['filename'], **json.loads(row['data']))
                     for row in conn.execute('SELECT id, filename, data FROM markschemes ORDER BY rowid DESC')]
 
-    def match_markscheme_entries(selected_questions):
+    def match_markscheme_entries(selected_questions, choices=None):
+        choices = choices or {}
         available = saved_markschemes()
         matched, missing, ambiguous = [], [], []
         hashes = {}
@@ -241,11 +242,17 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                     candidates.append(markscheme)
                 else:
                     failures.append(result)
+            if question['id'] in choices:
+                selected = next((m for m in candidates if m['id'] == choices[question['id']]), None)
+                if selected is None:
+                    raise ValueError('A selected markscheme no longer matches this question. Refresh the choices.')
+                candidates = [selected]
             if len(candidates) > 1:
                 ambiguous.append(dict(question_id=question['id'], number=question['number'],
                                       generated_number=generated_number, source_filename=question.get('filename'),
                                       year=question.get('year'), paper=question.get('paper'),
-                                      timezone=question.get('timezone'), filenames=[m['filename'] for m in candidates]))
+                                      timezone=question.get('timezone'), filenames=[m['filename'] for m in candidates],
+                                      candidates=[dict(id=m['id'], filename=m['filename'], identity=m['identity']) for m in candidates]))
             elif not candidates:
                 missing.append(dict(question_id=question['id'], number=question['number'],
                                      generated_number=generated_number, source_filename=question.get('filename'),
@@ -465,6 +472,12 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                              question_numbers=m['question_numbers'], pages=m['pages'],
                              language_model_review=m.get('language_model_review', 'not_run'))
                         for m in saved_markschemes()])
+
+    @app.get('/api/markschemes/<markscheme_id>/source')
+    def markscheme_source(markscheme_id):
+        if not any(m['id'] == markscheme_id for m in saved_markschemes()):
+            raise ValueError('Markscheme not found.')
+        return send_file(root / 'markschemes' / (markscheme_id + '.pdf'), mimetype='application/pdf')
 
     @app.post('/api/markschemes')
     def upload_markscheme():
@@ -1158,6 +1171,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                       markscheme=dict(generated=markscheme_generated, matched_questions=len(matched_markscheme_entries),
                                       missing_questions=missing_markscheme_questions,
                                       ambiguous_questions=ambiguous_markscheme_questions, error=markscheme_error),
+                      markscheme_question_sources=[{key: q.get(key) for key in ('id', 'number', 'filename', 'year', 'paper', 'timezone', 'source_level', 'level', 'session', 'source_label', 'exam_identifier')} for q in chosen],
                       selection_strategy='usage-balanced seeded selection' if requested_ids is None or fill else 'teacher-selected',
                       selection_mode='manual' if requested_ids is not None else 'automatic',
                       requested_question_ids=requested_ids or [], filled_question_ids=filled_ids,
@@ -1179,6 +1193,45 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             if not conn.execute('SELECT id FROM papers WHERE id=?', (paper_id,)).fetchone():
                 raise ValueError('Paper not found.')
         return send_file(root / 'papers' / (paper_id + '.pdf'), as_attachment=True, download_name='physics-practice-paper.pdf')
+
+    @app.post('/api/papers/<paper_id>/markscheme/resolve')
+    def resolve_markscheme(paper_id):
+        value = request.get_json(silent=True) or {}
+        choices = value.get('choices')
+        if not isinstance(choices, dict) or not choices or any(not isinstance(k, str) or not isinstance(v, str) for k, v in choices.items()):
+            raise ValueError('Choose a markscheme for each ambiguous question.')
+        with db() as conn:
+            row = conn.execute('SELECT data FROM papers WHERE id=?', (paper_id,)).fetchone()
+        if row is None:
+            raise ValueError('Paper not found.')
+        result = json.loads(row['data'])
+        ids = result['question_ids']
+        selected = result.get('markscheme_question_sources')
+        if not selected:
+            by_id = {q['id']: q for q in questions()}
+            if any(qid not in by_id for qid in ids):
+                raise ValueError('A question from this paper is no longer in the bank; its markscheme cannot be rebuilt.')
+            selected = [by_id[qid] for qid in ids]
+        _, _, ambiguous = match_markscheme_entries(selected)
+        expected = {item['question_id'] for item in ambiguous}
+        if set(choices) != expected:
+            raise ValueError('Choose one markscheme for every currently ambiguous question, then try again.')
+        matched, missing, remaining = match_markscheme_entries(selected, choices)
+        if not matched:
+            raise ValueError('No markscheme entries are available for this paper.')
+        target = root / 'papers' / (paper_id + '-markscheme.pdf')
+        temporary = root / 'papers' / (uuid.uuid4().hex + '-markscheme-tmp.pdf')
+        try:
+            level = result.get('diagnostics', {}).get('requested', {}).get('level', 'Mixed')
+            render_selected_markscheme(temporary, matched, title=f'Physics {level} selected markscheme')
+            os.replace(temporary, target)
+        finally:
+            temporary.unlink(missing_ok=True)
+        result['markscheme'] = dict(generated=True, matched_questions=len(matched), missing_questions=missing,
+                                    ambiguous_questions=remaining, error=None, choices=choices)
+        with db() as conn:
+            conn.execute('UPDATE papers SET data=? WHERE id=?', (json.dumps(result), paper_id))
+        return jsonify(result['markscheme'])
 
     @app.get('/api/papers/<paper_id>/markscheme')
     def download_markscheme(paper_id):

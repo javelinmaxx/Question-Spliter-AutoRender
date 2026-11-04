@@ -424,7 +424,27 @@ $('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,as
   if(result.markscheme){
    const reasons={question_identity_incomplete:'Missing year, paper or time zone on the question.',question_not_in_markscheme:'Question number was not found in the matching markscheme.',no_matching_exam:'No imported markscheme matches this exam.',no_markschemes_imported:'No markschemes have been imported.',entry_not_extracted:'The markscheme entry could not be extracted.'};
    for(const item of result.markscheme.missing_questions||[])$('#paper-result').append(el('p',`Question ${item.generated_number} (source Q${item.number}, ${item.source_filename||'unknown file'}, ${item.year||'year unknown'}, ${item.paper||'paper unknown'}, ${item.timezone||'time zone unknown'}): ${reasons[item.reason]||'No matching markscheme entry.'}`,'notice'));
-   for(const item of result.markscheme.ambiguous_questions||[])$('#paper-result').append(el('p',`Question ${item.generated_number} (source Q${item.number}, ${item.source_filename||'unknown file'}): multiple matching markschemes (${item.filenames.join(', ')}).`,'notice'));
+   const ambiguous=result.markscheme.ambiguous_questions||[];
+   if(ambiguous.length){
+    const form=el('div',undefined,'notice'), selects=[];
+    form.append(el('p','Choose the correct markscheme for each question. Open the sources to compare them.'));
+    for(const item of ambiguous){
+     const label=el('label',`Question ${item.generated_number} (source Q${item.number}, ${item.source_filename||'unknown file'})`),select=el('select');
+     select.required=true;select.add(new Option('Choose a markscheme',''));
+     for(const candidate of item.candidates){
+      select.add(new Option(`${candidate.filename} (${candidate.id.slice(0,8)})`,candidate.id));
+      const link=el('a',`Open ${candidate.filename} (${candidate.id.slice(0,8)})`);link.href=`/api/markschemes/${candidate.id}/source`;link.target='_blank';link.rel='noopener';form.append(link,el('span',' · '));
+     }
+     label.append(select);form.append(label);selects.push([item.question_id,select]);
+    }
+    const button=el('button','Apply markscheme choices');button.type='button';form.append(button);
+    button.addEventListener('click',async()=>{if(selects.some(([,select])=>!select.value)){status('Choose a markscheme for every ambiguous question.',true);return;}button.disabled=true;try{
+     const resolved=await post(`/api/papers/${result.id}/markscheme/resolve`,{choices:Object.fromEntries(selects.map(([id,select])=>[id,select.value]))});
+     form.replaceChildren(el('p',`Markscheme updated: ${resolved.matched_questions} questions matched; ${resolved.missing_questions.length} still missing.`));
+     const link=el('a','Download updated markscheme (print-ready)');link.href=`/api/papers/${result.id}/markscheme`;form.append(link);
+    }catch(error){status(error.message,true);button.disabled=false;}});
+    $('#paper-result').append(form);
+   }
   }
   showPaperDiagnostics(result.diagnostics);
   const numberingWarnings=Object.values(result.numbering||{}).flatMap(info=>info.warnings||[]);if(numberingWarnings.length)$('#paper-result').append(el('p',numberingWarnings.join(' '),'notice'));
