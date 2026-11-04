@@ -273,7 +273,8 @@ function pickerSummary(){
  const chosen=pickerQuestions.filter(q=>teacherSelection.has(q.id));
  const preferred=chosen.reduce((sum,q)=>sum+q.preferred_minutes,0),minimum=chosen.reduce((sum,q)=>sum+q.minimum_minutes,0);
  const replacing=pickerQuestions.find(q=>q.id===replacementTarget);
- $('#picker-status').textContent=(replacing?`Replacing source Q${replacing.number}: choose an alternative below. `:'')+`${chosen.length} selected · ${minimum.toFixed(1)}–${preferred.toFixed(1)} estimated minutes · budget ${$('#generate').elements.minutes.value} minutes.`+(pickerSignature?'':' Filters changed; refresh the question list.');
+ const budget=Number($('#generate').elements.minutes.value);
+ $('#picker-status').textContent=(replacing?`Replacing source Q${replacing.number}. `:'')+`${chosen.length} selected · ${minimum.toFixed(1)}–${preferred.toFixed(1)} estimated minutes · budget ${budget} minutes.`+(minimum>budget?` At least ${(minimum-budget).toFixed(1)} minutes over budget.`:'')+(pickerSignature?'':' Filters changed; refresh the question list.');
  $('#selection-controls').hidden=!$('#manual-selection').checked||!pickerOptions;
  $('.paper-controls').classList.toggle('has-selection',$('#manual-selection').checked&&!!pickerOptions);
  $('#cancel-replacement').hidden=!replacementTarget;
@@ -286,8 +287,7 @@ function selectionChanged(focusId){
  if(focusId)($('#paper-candidates').querySelector(`.pick-question[data-question-id="${CSS.escape(focusId)}"]`)||$('#show-all-candidates')).focus();
 }
 function replacementFits(candidate){
- const others=pickerQuestions.filter(q=>teacherSelection.has(q.id)&&q.id!==replacementTarget);
- return !teacherSelection.has(candidate.id)&&others.reduce((sum,q)=>sum+q.minimum_minutes,0)+candidate.minimum_minutes<=Number($('#generate').elements.minutes.value)+1e-6;
+ return !teacherSelection.has(candidate.id);
 }
 function renderPaperCandidates(){
  const list=$('#paper-candidates');list.replaceChildren();
@@ -312,7 +312,7 @@ function renderPaperCandidates(){
   if(chosen) actions.append(el('span',`Used in ${q.usage_count ?? 0} generated ${(q.usage_count ?? 0)===1?'paper':'papers'}`,'muted'));
   if(chosen&&!replacementTarget){
    const replace=el('button','Replace','secondary replace-question');replace.type='button';replace.setAttribute('aria-label',`Replace source question ${q.number}`);
-   replace.addEventListener('click',()=>{replacementPreviousView=pickerView;replacementTarget=q.id;renderPaperCandidates();pickerSummary();$('#cancel-replacement').focus();});
+   replace.addEventListener('click',()=>{replacementPreviousView=pickerView;replacementTarget=q.id;pickerSummary();openReplacement();});
    const remove=el('button','Remove','secondary remove-question');remove.type='button';remove.setAttribute('aria-label',`Remove source question ${q.number}`);
    remove.addEventListener('click',()=>{teacherSelection.delete(q.id);selectionChanged();$('#show-all-candidates').focus();});actions.append(replace,remove);
   }
@@ -350,8 +350,29 @@ function chooseAllQuestions(selected){replacementTarget=null;teacherSelection=ne
 $('#select-all-questions').addEventListener('click',()=>chooseAllQuestions(true));
 $('#clear-selected-questions').addEventListener('click',()=>chooseAllQuestions(false));
 $('#show-all-candidates').addEventListener('click',()=>{pickerView=pickerView==='selected'?'all':'selected';renderPaperCandidates();pickerSummary();});
-function cancelReplacement(){replacementTarget=null;pickerView=replacementPreviousView;renderPaperCandidates();pickerSummary();$('#show-all-candidates').focus();}
+function cancelReplacement(){replacementTarget=null;pickerView=replacementPreviousView;if($('#replacement-dialog').open)$('#replacement-dialog').close();renderPaperCandidates();pickerSummary();$('#show-all-candidates').focus();}
 $('#cancel-replacement').addEventListener('click',cancelReplacement);
+$('#replacement-close').addEventListener('click',cancelReplacement);
+$('#replacement-dialog').addEventListener('cancel',event=>{event.preventDefault();cancelReplacement();});
+function openReplacement(){
+ for(const id of ['replacement-search','replacement-topic','replacement-syllabus','replacement-paper','replacement-year-min','replacement-year-max'])$('#'+id).value='';
+ const topic=$('#replacement-topic');topic.replaceChildren(new Option('All matching topics',''));
+ for(const code of [...new Set(pickerQuestions.flatMap(q=>q.topics||[]))].sort())topic.add(new Option(`${code} · ${catalog[code]||''}`,code));
+ renderReplacement();$('#replacement-dialog').showModal();$('#replacement-search').focus();
+}
+function renderReplacement(){
+ const query=$('#replacement-search').value.trim().toLowerCase(),topic=$('#replacement-topic').value,paper=$('#replacement-paper').value,syllabus=$('#replacement-syllabus').value;
+ const min=Number($('#replacement-year-min').value)||0,max=Number($('#replacement-year-max').value)||9999;
+ const items=pickerQuestions.filter(q=>replacementFits(q)&&(!topic||(q.topics||[]).includes(topic))&&(!paper||q.paper===paper)&&(!syllabus||q.syllabus===syllabus)&&(!(min||$('#replacement-year-max').value)||(q.year!=null&&q.year>=min&&q.year<=max))&&(!query||`${q.text} ${q.filename} ${q.number}`.toLowerCase().includes(query))).sort((a,b)=>(a.usage_count||0)-(b.usage_count||0));
+ const list=$('#replacement-results');list.replaceChildren();$('#replacement-count').textContent=`${items.length} matching replacements`;
+ for(const q of items){
+  const row=el('article',undefined,'paper-candidate'),button=el('button',undefined,'pick-question');button.type='button';button.append(el('span',q.text?.trim()||'No recognized text available.','pick-question-text'));
+  const actions=el('div',undefined,'candidate-actions'),detail=el('span',`${q.paper} · ${q.syllabus} · ${q.year||'year unknown'} · ${q.minimum_minutes} min · used ${q.usage_count||0} times`,'muted'),preview=el('button','Preview','secondary');preview.type='button';preview.addEventListener('click',()=>openPaperPreview(q,pickerOptions));
+  button.addEventListener('click',()=>{const old=pickerQuestions.findIndex(item=>item.id===replacementTarget),next=pickerQuestions.findIndex(item=>item.id===q.id);[pickerQuestions[old],pickerQuestions[next]]=[pickerQuestions[next],pickerQuestions[old]];teacherSelection.delete(replacementTarget);teacherSelection.add(q.id);replacementTarget=null;pickerView=replacementPreviousView;$('#replacement-dialog').close();selectionChanged(q.id);status('Question replaced. Review the selection, then generate the PDF.');});
+  actions.append(detail,preview);row.append(button,actions);list.append(row);
+ }
+}
+for(const id of ['replacement-search','replacement-topic','replacement-syllabus','replacement-paper','replacement-year-min','replacement-year-max'])$('#'+id).addEventListener('input',renderReplacement);
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&replacementTarget&&!$('#paper-preview-dialog').open){event.preventDefault();cancelReplacement();}});
 function openPaperPreview(question,options){
  const dialog=$('#paper-preview-dialog'),image=$('#paper-preview-image'),message=$('#paper-preview-status');
@@ -413,7 +434,7 @@ $('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,as
   const original=el('a','Download original searchable PDF');original.href=`/api/papers/${result.id}/download`;
   const generatedIds=new Set(result.question_ids);for(const q of pickerQuestions)if(generatedIds.has(q.id))q.usage_count=(q.usage_count??0)+1;renderPaperCandidates();
   const seedLabel=result.selection_seed!==null&&result.selection_seed!==undefined?' · Random seed '+result.selection_seed:'';
-  $('#paper-result').append(el('p',result.count+' question groups · '+(result.render_mode||'full')+' · Estimated '+result.actual_minutes+' / '+result.target_minutes+' minutes · '+result.shortfall_minutes+' minutes unfilled'+seedLabel+'.'),link,el('span',' · '),original);
+  $('#paper-result').append(el('p',result.count+' question groups · '+(result.render_mode||'full')+' · Estimated '+result.actual_minutes+' / '+result.target_minutes+' minutes · '+(result.overrun_minutes?result.overrun_minutes+' minutes over budget':result.shortfall_minutes+' minutes unfilled')+seedLabel+'.'),link,el('span',' · '),original);
   if(result.markscheme?.generated){
    const markLink=el('a','Download matching markscheme (print-ready)');markLink.href=`/api/papers/${result.id}/markscheme`;
    $('#paper-result').append(el('p',`Matched markscheme entries for ${result.markscheme.matched_questions} selected question(s).`),markLink);

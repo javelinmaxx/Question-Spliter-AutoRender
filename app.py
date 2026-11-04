@@ -1000,7 +1000,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         if not 1 <= target <= 300:
             raise ValueError('Choose a duration between 1 and 300 minutes.')
         level, syllabus = normalize_mode(value.get('level')), value.get('syllabus', '2025')
-        if syllabus not in ('2025', 'Legacy'):
+        if syllabus not in ('2025', 'Legacy', ''):
             raise ValueError('Choose a syllabus.')
         selected_topics = value.get('topics', [])
         if not isinstance(selected_topics, list) or any(t not in TOPICS for t in selected_topics):
@@ -1019,7 +1019,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         eligible, diagnostics = diagnose_selection(questions(), analyzed, level=level, syllabus=syllabus,
                                                    paper=value.get('paper'), topics=selected_topics, mode=mode,
                                                    target=target, source_ids=source_ids, document_ids=document_ids,
-                                                   year_min=lower, year_max=upper, origin=validate_origin(value.get('origin'), filtering=True))
+                                                   year_min=lower, year_max=upper, origin=validate_origin(value.get('origin'), filtering=True), include_over_budget=True)
         return eligible, diagnostics
 
     def automatic_choice(eligible, target, topics, mode, usage_counts, selection_seed):
@@ -1046,9 +1046,8 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             required = [by_id[i] for i in requested_ids]
             chosen = select_required(required, target, selected_topics, mode)
             if required and not chosen:
-                minimum = sum(min(v['minutes'] for v in question_variants(q, selected_topics, mode)) for q in required)
-                return [], [], f'The selected {len(required)} questions need at least {minimum:g} estimated minutes; the budget is {target:g}. Increase the budget or deselect questions.'
-            if fill:
+                chosen = [min(question_variants(q, selected_topics, mode), key=lambda v: (v['minutes'], v.get('dependent_omissions', 0))) for q in required]
+            if fill and sum(q['minutes'] for q in chosen) < target:
                 remaining = round(target - sum(q['minutes'] for q in chosen), 6)
                 extras = automatic_choice([q for q in eligible if q['id'] not in set(requested_ids)], remaining, selected_topics, mode,
                                            usage_counts or {}, selection_seed)
@@ -1090,7 +1089,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                              for r in preferred['regions']) if records else q.get('text', '')
             candidates.append(dict(id=q['id'], document_id=q['document_id'], number=q['number'],
                                    filename=q['filename'], topics=scoped_question(q, config['topics'])['topics'],
-                                   text=text,
+                                   text=text, paper=q['paper'], year=q.get('year'), level=q['level'], syllabus=q['syllabus'],
                                    usage_count=usage_counts.get(q['id'], 0),
                                    preferred_minutes=preferred['minutes'], minimum_minutes=min(v['minutes'] for v in variants),
                                    omitted_parts=preferred['omitted_parts']))
@@ -1166,7 +1165,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         if requested_ids is not None and not fill and actual < target:
             completed_diagnostics['summary'] = f'Your selected questions provide {actual:g} estimated minutes, leaving {target - actual:g} minutes. Enable Fill paper to add other matching questions.'
         result = dict(id=paper_id, question_ids=list(ids), target_minutes=target, actual_minutes=actual,
-                      shortfall_minutes=round(target - actual, 1), count=len(chosen), render_mode=mode,
+                      shortfall_minutes=round(max(0, target - actual), 1), overrun_minutes=round(max(0, actual - target), 1), count=len(chosen), render_mode=mode,
                       diagnostics=completed_diagnostics, selection_seed=selection_seed,
                       markscheme=dict(generated=markscheme_generated, matched_questions=len(matched_markscheme_entries),
                                       missing_questions=missing_markscheme_questions,

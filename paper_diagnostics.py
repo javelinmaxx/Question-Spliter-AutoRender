@@ -30,9 +30,9 @@ REASONS = {
 }
 
 
-def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode, target, source_ids, document_ids=(), year_min=None, year_max=None, origin=None):
+def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode, target, source_ids, document_ids=(), year_min=None, year_max=None, origin=None, include_over_budget=False):
     """Return fitting original parents and a mutually exclusive exclusion breakdown."""
-    fitting, excluded, matching_minutes, minimums = [], {}, [], []
+    fitting, over_budget, excluded, matching_minutes, minimums = [], [], {}, [], []
     allowed_budget = math.floor(target * 10 + 1e-8) / 10
 
     def exclude(question, code):
@@ -46,7 +46,7 @@ def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode,
 
     seen_content = set()
     for q in bank:
-        code = level_exclusion(q,level) or ('syllabus' if q['syllabus'] != syllabus else
+        code = level_exclusion(q,level) or ('syllabus' if syllabus and q['syllabus'] != syllabus else
                 'origin' if origin and q.get('origin', 'unknown') != origin else
                 'year' if not matches_year(q.get('year'), year_min, year_max) else
                 'paper' if not matches_paper(q['paper'], paper) else
@@ -71,6 +71,7 @@ def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode,
         minimums.append(minimum)
         if minimum > allowed_budget:
             exclude(q, 'duration')
+            over_budget.append(q)
         else:
             fitting.append(q)
 
@@ -93,13 +94,13 @@ def diagnose_selection(bank, documents, *, level, syllabus, paper, topics, mode,
                   bank_origins=dict(Counter(ORIGINS.get(q.get('origin'),'Unspecified') for q in bank)),
                   bank_levels=dict(Counter(q['level'] for q in bank)), bank_syllabuses=dict(Counter(q['syllabus'] for q in bank)),
                   bank_papers=dict(Counter(q['paper'] for q in bank)), exclusions=list(excluded.values()))
-    return fitting, report
+    return fitting + over_budget if include_over_budget else fitting, report
 
 
 def finish_diagnostics(report, chosen, target):
     actual = round(sum(q['minutes'] for q in chosen), 1)
     report = dict(report, selected_questions=len(chosen), selected_minutes=actual,
-                  shortfall_minutes=round(target - actual, 1))
+                  shortfall_minutes=round(max(0, target - actual), 1), overrun_minutes=round(max(0, actual - target), 1))
     if actual < target:
         if report['available_minutes'] < target:
             report['summary'] = (f"Matching questions provide at most {report['available_minutes']:g} estimated minutes "
@@ -108,6 +109,8 @@ def finish_diagnostics(report, chosen, target):
         else:
             report['summary'] = (f'The selected combination leaves {target - actual:g} minutes unfilled. '
                                  'Question groups, time estimates and prerequisite rules limit which combinations fit without exceeding the budget.')
+    elif actual > target:
+        report['summary'] = f'The selected questions exceed the requested duration by {actual - target:g} estimated minutes.'
     else:
         report['summary'] = 'The selected questions fill the requested estimated duration.'
     return report

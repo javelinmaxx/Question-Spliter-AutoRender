@@ -64,7 +64,7 @@ def add_practice_cover(pdf, *, level, syllabus, target, chosen, mode, topics=(),
         y += height
     top = max(420, y + 24)
     page.draw_line((56, top), (539, top), color=(.72,.72,.72), width=.5)
-    syllabus_label = 'First assessment 2025' if syllabus == '2025' else 'Legacy syllabus'
+    syllabus_label = {'2025': 'First assessment 2025', 'Legacy': 'Legacy syllabus', '': 'All syllabuses'}.get(syllabus, 'All syllabuses')
     actual = round(sum(q['minutes'] for q in chosen), 1)
     page.insert_text((56, top + 23), 'Practice-paper details', fontname='hebo', fontsize=10, color=BLACK)
     details = [f'Syllabus: {syllabus_label}', f'Question groups: {len(chosen)}',
@@ -74,6 +74,8 @@ def add_practice_cover(pdf, *, level, syllabus, target, chosen, mode, topics=(),
         details.append(f'Random seed: {selection_seed}')
     if actual < target:
         details.append(f'The selected questions are {target - actual:g} estimated minutes below the requested length.')
+    elif actual > target:
+        details.append(f'The selected questions exceed the requested length by {actual - target:g} estimated minutes.')
     page.insert_textbox(fitz.Rect(56, top + 34, 539, top + 150), '\n'.join(details), fontsize=10, lineheight=1.5, color=GRAY)
     page.insert_text((56, top + 163), 'Topics', fontname='hebo', fontsize=10, color=BLACK)
     topic_text = '; '.join(f'{code} {TOPICS[code]}' for code in dict.fromkeys(topics)) if topics else 'All topics'

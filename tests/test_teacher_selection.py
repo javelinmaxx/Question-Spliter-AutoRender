@@ -128,7 +128,7 @@ def test_fill_can_be_reviewed_without_creating_pdf_and_stale_ids_are_rejected(ba
     stale=client.post('/api/papers/preview',json=dict(options,question_ids=['missing']))
     assert stale.status_code==400 and 'no longer fit' in stale.json['error']
     over=client.post('/api/papers/preview',json=dict(options,minutes=10,question_ids=[first['id'],second['id']]))
-    assert over.status_code==400 and 'need at least 13' in over.json['error']
+    assert over.status_code==200 and over.json['estimated_minutes']==13 and not over.json['filled_question_ids']
 
 
 def test_short_automatic_plan_and_image_use_actual_budget_variant(tmp_path):
@@ -148,9 +148,26 @@ def test_short_automatic_plan_and_image_use_actual_budget_variant(tmp_path):
 def test_manual_over_budget_is_not_silently_reduced(bank):
     client,_,_,first,second=bank
     result=client.post('/api/papers',json=dict(level='HL',minutes=10,topics=[],question_ids=[first['id'],second['id']]))
-    assert result.status_code == 400
-    assert 'need at least 13' in result.json['error']
+    assert result.status_code == 201
+    assert result.json['actual_minutes'] == 13 and result.json['overrun_minutes'] == 3
+    assert result.json['shortfall_minutes'] == 0
+    assert 'exceed' in result.json['diagnostics']['summary']
+    assert {q['id'] for q in client.post('/api/papers/preview',json=dict(level='HL',minutes=5,topics=[])).json['questions']} == {first['id'],second['id']}
     assert client.post('/api/papers',json=dict(level='HL',minutes=10,topics=[],question_ids=[])).status_code == 400
+
+
+def test_all_syllabuses_includes_both_in_preview_and_cover(tmp_path):
+    client = create_app(tmp_path).test_client()
+    doc = upload(client)
+    first = save(client, doc, minutes=7, syllabus='2025')
+    second = save(client, doc, 1, minutes=6, syllabus='Legacy')
+    options = dict(level='HL', minutes=10, topics=[], syllabus='')
+    preview = client.post('/api/papers/preview', json=options)
+    assert {q['syllabus'] for q in preview.json['questions']} == {'2025', 'Legacy'}
+    result = client.post('/api/papers', json=dict(options, question_ids=[first['id'], second['id']]))
+    assert result.status_code == 201 and result.json['overrun_minutes'] == 3
+    with fitz.open(tmp_path/'papers'/(result.json['id']+'.pdf')) as pdf:
+        assert 'All syllabuses' in pdf[0].get_text() and 'exceed' in pdf[0].get_text()
 
 
 def test_fill_paper_keeps_teacher_questions_and_adds_only_other_matching_questions(bank):
