@@ -128,6 +128,49 @@ def test_ambiguous_markschemes_can_be_reviewed_and_resolved_without_new_paper(tm
         assert conn.execute('SELECT count(*) FROM papers').fetchone()[0] == 1
 
 
+def test_missing_matches_can_be_manually_selected_per_paper(tmp_path):
+    from test_workflow import upload, save
+    client = create_app(tmp_path).test_client()
+    doc = upload(client)
+    first = save(client, doc, minutes=7)
+    second = save(client, doc, 1, minutes=6)
+    marks = post_pdf(client, '/api/markschemes', ROOT / 'Physics_paper_1__TZ1_HL_markscheme.pdf').json
+    generated = client.post('/api/papers', json=dict(level='HL', minutes=20, topics=[], question_ids=[first['id'], second['id']]))
+    assert generated.status_code == 201 and len(generated.json['markscheme']['missing_questions']) == 2
+    paper_id = generated.json['id']
+    endpoint = f'/api/papers/{paper_id}/markscheme/resolve'
+    assert client.post(endpoint, json={'manual_choices': {first['id']: {'markscheme_id': marks['id'], 'entry_key':'999'}}}).status_code == 400
+    assert client.post(endpoint, json={'manual_choices': {'unknown': {'markscheme_id': marks['id'], 'entry_key':'1'}}}).status_code == 400
+    for question, key, remaining in [(first, '3', 1), (second, '4', 0)]:
+        response = client.post(endpoint, json={'manual_choices': {question['id']: {'markscheme_id': marks['id'], 'entry_key':key}}})
+        assert response.status_code == 200, response.json
+        assert len(response.json['missing_questions']) == remaining
+    assert len(response.json['manual_choices']) == 2
+    with fitz.open(tmp_path/'papers'/(paper_id+'-markscheme.pdf')) as output:
+        assert len(output) == 2
+        assert 'Question 1' in output[0].get_text() and 'source Q3' in output[0].get_text()
+        assert 'Question 2' in output[1].get_text() and 'source Q4' in output[1].get_text()
+    assert client.get(f'/api/papers/{paper_id}/markscheme').status_code == 200
+    with sqlite3.connect(tmp_path/'bank.sqlite3') as conn:
+        assert conn.execute('SELECT count(*) FROM papers').fetchone()[0] == 1
+    assert all(not q.get('markscheme_choice') for q in client.get('/api/questions').json)
+
+
+def test_manual_choice_after_importing_an_exact_match(tmp_path):
+    client = create_app(tmp_path).test_client()
+    paper = post_pdf(client, '/api/documents', ROOT / 'Physics_paper_1__TZ1_HL.pdf').json
+    client.post(f"/api/documents/{paper['id']}/confirm-import", json={})
+    q = next(q for q in client.get('/api/questions').json if q['number'] == 3)
+    q2 = next(q for q in client.get('/api/questions').json if q['number'] == 4)
+    generated = client.post('/api/papers', json=dict(level='HL', syllabus='Legacy', minutes=45, topics=[], question_ids=[q['id'], q2['id']])).json
+    assert len(generated['markscheme']['missing_questions']) == 2
+    marks = post_pdf(client, '/api/markschemes', ROOT / 'Physics_paper_1__TZ1_HL_markscheme.pdf').json
+    result = client.post(f"/api/papers/{generated['id']}/markscheme/resolve", json={'manual_choices': {q['id']: {'markscheme_id': marks['id'], 'entry_key': '3'}}})
+    assert result.status_code == 200 and result.json['matched_questions'] == 2
+    result = client.post(f"/api/papers/{generated['id']}/markscheme/resolve", json={'manual_choices': {q2['id']: {'markscheme_id': marks['id'], 'entry_key': '4'}}})
+    assert result.status_code == 200 and len(result.json['manual_choices']) == 2
+
+
 def test_markscheme_workspace_saves_valid_choice_for_future_generation(tmp_path):
     client = create_app(tmp_path).test_client()
     paper = post_pdf(client, '/api/documents', ROOT / 'Physics_paper_1__TZ1_HL.pdf').json

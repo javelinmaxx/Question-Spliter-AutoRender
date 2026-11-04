@@ -480,6 +480,7 @@ $('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,as
   if(result.markscheme){
    const reasons={question_identity_incomplete:'Missing year, paper or time zone on the question.',question_not_in_markscheme:'Question number was not found in the matching markscheme.',no_matching_exam:'No imported markscheme matches this exam.',no_markschemes_imported:'No markschemes have been imported.',entry_not_extracted:'The markscheme entry could not be extracted.'};
    for(const item of result.markscheme.missing_questions||[])$('#paper-result').append(el('p',`Question ${item.generated_number} (source Q${item.number}, ${item.source_filename||'unknown file'}, ${item.year||'year unknown'}, ${item.paper||'paper unknown'}, ${item.timezone||'time zone unknown'}): ${reasons[item.reason]||'No matching markscheme entry.'}`,'notice'));
+   if(result.markscheme.missing_questions?.length) await showManualMarkschemeChoices(result.id,result.markscheme.missing_questions);
    const ambiguous=result.markscheme.ambiguous_questions||[];
    if(ambiguous.length){
     const form=el('div',undefined,'notice'), selects=[];
@@ -507,6 +508,29 @@ $('#generate').addEventListener('submit',e=>{e.preventDefault();busy(e.target,as
   status(`Practice paper generated from ${result.count} reviewed question groups. ${result.selections?.reduce((n,s)=>n+s.omitted_parts.length,0)||0} parts omitted. ${result.short_fallbacks?.length||0} questions retained whole because no approved dependency map was available.`);
  }catch(error){showPaperDiagnostics(error.diagnostics);throw error;}
 });});
+async function showManualMarkschemeChoices(paperId,missing){
+ let schemes;try{schemes=await api('/api/markschemes');}catch(error){$('#paper-result').append(el('p',`Could not load markschemes: ${error.message}`,'notice'));return;}
+ const container=el('section',undefined,'notice');container.append(el('h3','Choose missing markscheme entries'));
+ const importLabel=el('label','Import a markscheme PDF'),upload=el('input');upload.type='file';upload.accept='application/pdf,.pdf';importLabel.append(upload);container.append(importLabel);
+ upload.addEventListener('change',async()=>{if(!upload.files.length)return;upload.disabled=true;try{const form=new FormData();form.append('file',upload.files[0]);form.append('ocr_mode','auto');await api('/api/markschemes',{method:'POST',body:form});await listMarkschemes();container.remove();await showManualMarkschemeChoices(paperId,missing);status('Markscheme imported; choose an entry.');}catch(error){status(error.message,true);upload.disabled=false;}});
+ if(!schemes.length){container.append(el('p','No markschemes have been imported yet.'));$('#paper-result').append(container);return;}
+ container.append(el('p','These entries were not matched automatically. Open the source and verify that the chosen entry answers this question. Choices apply only to this generated paper.'));
+ for(const item of missing){
+  const row=el('div',undefined,'panel'),label=el('label',`Question ${item.generated_number} · source Q${item.number} · ${item.source_filename||'unknown file'}`),select=el('select');
+  select.add(new Option('Choose a markscheme',''));
+  for(const scheme of schemes){const identity=scheme.identity;select.add(new Option(`${scheme.filename} · ${identity.year||'year unknown'} · ${identity.paper||'paper unknown'} · ${identity.timezone||'time zone unknown'} (${scheme.id.slice(0,8)})`,scheme.id));}
+  label.append(select);const entryLabel=el('label','Markscheme question'),entry=el('select');entry.add(new Option('Choose a markscheme first',''));entryLabel.append(entry);
+  const source=el('a','Open selected markscheme');source.target='_blank';source.rel='noopener';source.hidden=true;
+  select.addEventListener('change',()=>{const chosen=schemes.find(s=>s.id===select.value);entry.replaceChildren(new Option('Choose a question',''));if(chosen){for(const number of chosen.question_numbers)entry.add(new Option(`Question ${number}`,String(number)));source.href=`/api/markschemes/${chosen.id}/source`;source.hidden=false;}else source.hidden=true;});
+  const button=el('button','Apply to this paper');button.type='button';button.addEventListener('click',async()=>{if(!select.value||!entry.value){status('Choose a markscheme and question entry.',true);return;}button.disabled=true;try{
+   const resolved=await post(`/api/papers/${paperId}/markscheme/resolve`,{manual_choices:{[item.question_id]:{markscheme_id:select.value,entry_key:entry.value}}});
+   missing=missing.filter(question=>question.question_id!==item.question_id);
+   row.replaceChildren(el('p',`Question ${item.generated_number}: selected markscheme entry saved. ${resolved.missing_questions.length} questions still missing.`));const link=el('a','Download updated markscheme');link.href=`/api/papers/${paperId}/markscheme`;row.append(link);
+  }catch(error){status(error.message,true);button.disabled=false;}});
+  row.append(label,entryLabel,source,el('p'),button);container.append(row);
+ }
+ $('#paper-result').append(container);
+}
 async function init() { const value=await api('/api/catalog'); catalog=value.topics; timingProfiles=value.timing_profiles||[]; hlOnlyTopics=new Set(value.hl_only_topics||[]); prerequisitePolicy=value.prerequisite_policy||{}; document.querySelectorAll('.topic-list,.topic-filter').forEach(select=>{ for(const [code,name] of Object.entries(catalog)) select.add(new Option(`${code} · ${name}`,code)); enhanceTopicSelect(select); }); for(const id of ['question','generate','search'])applyTopicLevel($('#'+id)); showTopicScope($('#generate'),'#generate-scope'); await Promise.all([search(),listDocuments(),listMarkschemes(),loadPrerequisites()]); }
 init().catch(e=>status(e.message,true));
 
