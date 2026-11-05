@@ -74,26 +74,34 @@ def test_all_topic_titles_fit_without_overlapping_cover_footer():
         topic_blocks=[b for b in blocks if 'A.0 Measurements' in b[4]]
         assert topic_blocks and max(b[3] for b in topic_blocks)<734
 
-def test_automatic_selection_seed_is_reused_and_printed_with_topics(tmp_path):
+def test_paper_id_restores_exact_selection_and_is_printed_with_topics(tmp_path):
     client=create_app(tmp_path).test_client()
     doc=upload(client)
-    save(client,doc,minutes=7,topics=['A.1'])
-    save(client,doc,1,minutes=6,topics=['A.1'])
+    first=save(client,doc,minutes=7,topics=['A.1'])
+    second=save(client,doc,1,minutes=6,topics=['A.1'])
     options=dict(level='HL',minutes=13,topics=['A.1'])
-    preview=client.post('/api/papers/preview',json=dict(options,auto_select=True,selection_seed=314159))
+    preview=client.post('/api/papers/preview',json=dict(options,auto_select=True))
     assert preview.status_code==200,preview.json
-    assert preview.json['selection_seed']==314159
-    generated=client.post('/api/papers',json=dict(options,selection_seed=preview.json['selection_seed']))
+    digest=preview.json['selection_hash']
+    assert len(digest)==64 and all(c in '0123456789abcdef' for c in digest)
+    ids=preview.json['selected_question_ids']
+    assert set(ids)=={first['id'],second['id']}
+    restored=create_app(tmp_path).test_client().get(f'/api/paper-selections/{digest}')
+    assert restored.status_code==200 and restored.json['question_ids']==ids
+    assert restored.json['options']['topics']==['A.1']
+    changed=client.post('/api/paper-selections',json=dict(options,question_ids=ids[:1]))
+    assert changed.status_code==200 and changed.json['selection_hash']!=digest
+    generated=client.post('/api/papers',json=dict(options,question_ids=ids))
     assert generated.status_code==201,generated.json
-    assert generated.json['question_ids']==preview.json['selected_question_ids']
-    assert generated.json['selection_seed']==314159
+    assert generated.json['question_ids']==ids
+    assert generated.json['selection_hash']==digest
     downloaded=client.get(f"/api/papers/{generated.json['id']}/download")
     with fitz.open(stream=downloaded.data,filetype='pdf') as pdf:
         text=pdf[0].get_text()
         assert 'A.1 Kinematics' in text
         assert 'Topics: A.1' in text
-        assert 'Random seed: 314159' in text
-        assert 'Seed 314159' in pdf.metadata['title']
+        assert f'Paper ID: {digest}' in text
+        assert f'ID {digest[:16]}' in pdf.metadata['title']
 
 
 def test_print_safe_download_flattens_each_page_and_keeps_page_count(tmp_path):

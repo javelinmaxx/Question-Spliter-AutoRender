@@ -25,6 +25,7 @@ from prerequisite_policy import DEFAULT_POLICY, active_policy, current_policy, e
 from paper_diagnostics import diagnose_selection, finish_diagnostics
 from paper_cover import add_practice_cover, finalize_practice_cover
 from paper_selection import question_variants, select_required
+from paper_identity import selection_snapshot, selection_hash
 from paper_numbering import erase_source_numbers
 from paper_layout import add_question_pages, PaperLayout, group_questions
 from model_backfill import ModelBackfill
@@ -76,6 +77,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         CREATE TABLE IF NOT EXISTS documents (id TEXT PRIMARY KEY, filename TEXT NOT NULL, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS questions (id TEXT PRIMARY KEY, document_id TEXT NOT NULL, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS papers (id TEXT PRIMARY KEY, data TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS paper_selections (hash TEXT PRIMARY KEY, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS markschemes (id TEXT PRIMARY KEY, filename TEXT NOT NULL, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS source_fingerprints (sha256 TEXT PRIMARY KEY, document_id TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS application_settings (key TEXT PRIMARY KEY, data TEXT NOT NULL);
@@ -292,13 +294,38 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                     counts[qid] = counts.get(qid, 0) + 1
         return counts
 
-    def resolve_selection_seed(value):
-        supplied = value.get('selection_seed')
-        if supplied is None:
-            return secrets.randbits(32)
-        if isinstance(supplied, bool) or not isinstance(supplied, int) or not 0 <= supplied <= 0xFFFFFFFF:
-            raise ValueError('Selection seed must be an integer between 0 and 4294967295.')
-        return supplied
+    def save_paper_selection(value, question_ids):
+        snapshot = selection_snapshot(value, question_ids)
+        digest = selection_hash(snapshot)
+        with db() as conn:
+            conn.execute('INSERT OR IGNORE INTO paper_selections (hash, data) VALUES (?, ?)',
+                         (digest, json.dumps(snapshot, sort_keys=True)))
+        return digest
+
+    @app.post('/api/paper-selections')
+    def store_paper_selection():
+        value = request.get_json()
+        if not isinstance(value, dict):
+            raise ValueError('Paper settings must be an object.')
+        ids = value.get('question_ids')
+        snapshot = selection_snapshot(value, ids)
+        eligible, _ = paper_pool(snapshot['options'])
+        if set(ids) - {q['id'] for q in eligible}:
+            raise ValueError('Some selected questions no longer match these filters. Refresh the question list.')
+        return jsonify(selection_hash=save_paper_selection(snapshot['options'], ids))
+
+    @app.get('/api/paper-selections/<digest>')
+    def restore_paper_selection(digest):
+        if len(digest) != 64 or any(c not in '0123456789abcdef' for c in digest):
+            raise ValueError('Enter a 64-character paper ID.')
+        with db() as conn:
+            row = conn.execute('SELECT data FROM paper_selections WHERE hash=?', (digest,)).fetchone()
+        if row is None:
+            return jsonify(error='Paper ID not found in this question bank.'), 404
+        snapshot = json.loads(row['data'])
+        if selection_hash(snapshot) != digest:
+            raise ValueError('Saved paper ID failed its integrity check.')
+        return jsonify(selection_hash=digest, **snapshot)
 
     @app.get('/api/question-usage')
     def question_usage():
@@ -1071,14 +1098,14 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                                                    year_min=lower, year_max=upper, origin=validate_origin(value.get('origin'), filtering=True), include_over_budget=True)
         return eligible, diagnostics
 
-    def automatic_choice(eligible, target, topics, mode, usage_counts, selection_seed):
+    def automatic_choice(eligible, target, topics, mode, usage_counts, random_state):
         if mode == 'short':
-            return choose_short(eligible, target, topics, usage_counts=usage_counts, seed=selection_seed)
+            return choose_short(eligible, target, topics, usage_counts=usage_counts, seed=random_state)
         scoped = [variant for q in eligible if (variant := scoped_question(q, topics)) is not None]
-        ids = choose_questions(scoped, target, usage_counts=usage_counts, seed=selection_seed)
+        ids = choose_questions(scoped, target, usage_counts=usage_counts, seed=random_state)
         return [q for q in scoped if q['id'] in ids]
 
-    def planned_questions(eligible, config, value, usage_counts=None, selection_seed=None):
+    def planned_questions(eligible, config, value, usage_counts=None, random_state=None):
         """One selection algorithm shared by editable plans and PDF output."""
         target, selected_topics, mode = (config[key] for key in ('minutes', 'topics', 'render_mode'))
         requested_ids = value.get('question_ids')
@@ -1099,11 +1126,11 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             if fill and sum(q['minutes'] for q in chosen) < target:
                 remaining = round(target - sum(q['minutes'] for q in chosen), 6)
                 extras = automatic_choice([q for q in eligible if q['id'] not in set(requested_ids)], remaining, selected_topics, mode,
-                                           usage_counts or {}, selection_seed)
+                                           usage_counts or {}, random_state)
                 filled_ids = [q['id'] for q in extras]
                 chosen.extend(extras)
         else:
-            chosen = automatic_choice(eligible, target, selected_topics, mode, usage_counts or {}, selection_seed)
+            chosen = automatic_choice(eligible, target, selected_topics, mode, usage_counts or {}, random_state)
         chosen = group_questions(chosen)
         return chosen, filled_ids, None
 
@@ -1117,10 +1144,9 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             raise ValueError('Auto-select must be true or false.')
         chosen, filled_ids = [], []
         usage_counts = question_usage_counts()
-        selection_seed = resolve_selection_seed(value) if auto_select else None
         if auto_select:
             chosen, filled_ids, error = planned_questions(
-                eligible, config, value, usage_counts=usage_counts, selection_seed=selection_seed)
+                eligible, config, value, usage_counts=usage_counts, random_state=secrets.randbits(32))
             if error or not chosen:
                 return jsonify(error=error or diagnostics['summary'], diagnostics=diagnostics), 400
         selected = {q['id']: q for q in chosen}
@@ -1145,7 +1171,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         return jsonify(questions=candidates, diagnostics=diagnostics,
                        selected_question_ids=[q['id'] for q in chosen], filled_question_ids=filled_ids,
                        estimated_minutes=round(sum(q['minutes'] for q in chosen), 1),
-                       selection_seed=selection_seed)
+                       selection_hash=save_paper_selection(value, [q['id'] for q in chosen]) if chosen else None)
 
     @app.post('/api/papers')
     def generate():
@@ -1154,23 +1180,23 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         config = diagnostics['requested']
         target, mode, level, syllabus, selected_topics = (config[key] for key in ('minutes', 'render_mode', 'level', 'syllabus', 'topics'))
         requested_ids, fill = value.get('question_ids'), value.get('fill_paper', False)
-        uses_random_selection = requested_ids is None or bool(fill) or value.get('selection_seed') is not None
-        selection_seed = resolve_selection_seed(value) if uses_random_selection else None
         usage_counts = question_usage_counts()
         chosen, filled_ids, error = planned_questions(
-            eligible, config, value, usage_counts=usage_counts, selection_seed=selection_seed)
+            eligible, config, value, usage_counts=usage_counts,
+            random_state=secrets.randbits(32) if requested_ids is None or fill else None)
         if error:
             return jsonify(error=error, diagnostics=diagnostics), 400
         ids = [q['id'] for q in chosen]
         if not chosen:
             return jsonify(error=diagnostics['summary'], diagnostics=diagnostics), 400
+        paper_hash = save_paper_selection(value, ids)
         paper_id = uuid.uuid4().hex
         actual = round(sum(q['minutes'] for q in chosen), 1)
         numbering_cache, numbering_results = {}, {}
         original_questions = {q['id']: q for q in questions()}
         with fitz.open() as pdf:
             add_practice_cover(pdf, level=level, syllabus=syllabus, target=target, chosen=chosen, mode=mode,
-                               topics=selected_topics, selection_seed=selection_seed)
+                               topics=selected_topics, selection_hash=paper_hash)
             layout = PaperLayout(pdf)
             for i, q in enumerate(chosen, 1):
                 # Keep every crop of the parent together and in source order.
@@ -1215,12 +1241,12 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             completed_diagnostics['summary'] = f'Your selected questions provide {actual:g} estimated minutes, leaving {target - actual:g} minutes. Enable Fill paper to add other matching questions.'
         result = dict(id=paper_id, question_ids=list(ids), target_minutes=target, actual_minutes=actual,
                       shortfall_minutes=round(max(0, target - actual), 1), overrun_minutes=round(max(0, actual - target), 1), count=len(chosen), render_mode=mode,
-                      diagnostics=completed_diagnostics, selection_seed=selection_seed,
+                      diagnostics=completed_diagnostics, selection_hash=paper_hash,
                       markscheme=dict(generated=markscheme_generated, matched_questions=len(matched_markscheme_entries),
                                       missing_questions=missing_markscheme_questions,
                                       ambiguous_questions=ambiguous_markscheme_questions, error=markscheme_error),
                       markscheme_question_sources=[{key: q.get(key) for key in ('id', 'number', 'filename', 'year', 'paper', 'timezone', 'source_level', 'level', 'session', 'source_label', 'exam_identifier', 'markscheme_choice')} for q in chosen],
-                      selection_strategy='usage-balanced seeded selection' if requested_ids is None or fill else 'teacher-selected',
+                      selection_strategy='usage-balanced selection' if requested_ids is None or fill else 'teacher-selected',
                       selection_mode='manual' if requested_ids is not None else 'automatic',
                       requested_question_ids=requested_ids or [], filled_question_ids=filled_ids,
                       numbering=numbering_results,

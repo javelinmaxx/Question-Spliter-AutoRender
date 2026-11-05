@@ -31,7 +31,7 @@ def test_short_selection_also_balances_usage_and_reuses_seed():
     assert [q['id'] for q in repeated] == ['rare']
 
 
-def test_short_selection_seed_changes_equal_usage_tie_breaks():
+def test_short_selection_random_state_changes_equal_usage_tie_breaks():
     questions = [dict(id=code, minutes=5) for code in ('a', 'b', 'c')]
     outcomes = {choose_short(questions, 5, usage_counts={}, seed=seed)[0]['id'] for seed in range(30)}
     assert len(outcomes) > 1
