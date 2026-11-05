@@ -87,7 +87,7 @@ def add_practice_cover(pdf, *, level, syllabus, target, chosen, mode, topics=(),
     page.insert_textbox(fitz.Rect(56, 734, 539, 777),
                         'Generated practice material. Not an official IB examination.\nTime estimates are approximate. This application is not affiliated with the International Baccalaureate.',
                         fontsize=8, lineheight=1.4, color=GRAY)
-    id_title = f' - ID {selection_hash[:16]}' if selection_hash is not None else ''
+    id_title = f' - ID {selection_hash}' if selection_hash is not None else ''
     pdf.set_metadata({'title': f'Physics {level} - {paper_label} - {topic_codes}{id_title} - Practice assessment',
                       'author': 'Physics Question Bank', 'subject': 'Generated IB DP Physics practice material'})
 

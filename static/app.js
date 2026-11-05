@@ -316,7 +316,7 @@ async function savePaperHash(){
 async function loadPaperHash(){
  if(pickerLoading)throw new Error('Wait for the question list to finish loading.');
  const input=$('#paper-hash'),digest=input.value.trim().toLowerCase();
- if(!/^[0-9a-f]{64}$/.test(digest))throw new Error('Enter a complete 64-character paper ID.');
+ if(!/^[0-9a-f]{20}(?:[0-9a-f]{4}){0,11}$/.test(digest))throw new Error('Enter a complete paper ID (normally 20 characters).');
  const saved=await api(`/api/paper-selections/${digest}`),form=$('#generate');
  if(saved.version!==1)throw new Error('This paper ID uses an unsupported selection format.');
  for(const [key,value] of Object.entries(saved.options)){
@@ -336,7 +336,7 @@ async function loadPaperHash(){
  teacherSelection=new Set(saved.question_ids.filter(id=>available.has(id)));
  pickerView='selected';renderPaperCandidates();pickerSummary();
  if(missing.length){input.value='';throw new Error(`${missing.length} saved question(s) no longer match these filters or are missing from the bank. The available questions are selected.`);}
- input.value=digest;
+ input.value=saved.selection_hash;
  status(`${saved.question_ids.length} questions restored from paper ID. Review or edit the selection before generating.`);
 }
 $('#load-paper-hash').addEventListener('click',()=>loadPaperHash().catch(error=>status(error.message,true)));

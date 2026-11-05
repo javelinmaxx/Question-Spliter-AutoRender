@@ -1,10 +1,12 @@
 import fitz
+import sqlite3
 
 from app import create_app
 from test_workflow import upload, save
 from test_subquestions import saved_parent, approve
 from paper_cover import add_practice_cover
 from physics import TOPICS
+from paper_identity import selection_snapshot, selection_hash
 
 
 def generated(client, **changes):
@@ -83,12 +85,17 @@ def test_paper_id_restores_exact_selection_and_is_printed_with_topics(tmp_path):
     preview=client.post('/api/papers/preview',json=dict(options,auto_select=True))
     assert preview.status_code==200,preview.json
     digest=preview.json['selection_hash']
-    assert len(digest)==64 and all(c in '0123456789abcdef' for c in digest)
+    assert len(digest)==20 and all(c in '0123456789abcdef' for c in digest)
     ids=preview.json['selected_question_ids']
     assert set(ids)=={first['id'],second['id']}
     restored=create_app(tmp_path).test_client().get(f'/api/paper-selections/{digest}')
     assert restored.status_code==200 and restored.json['question_ids']==ids
     assert restored.json['options']['topics']==['A.1']
+    full_hash=selection_hash(selection_snapshot(options,ids))
+    with sqlite3.connect(tmp_path/'bank.sqlite3') as conn:
+        conn.execute('DELETE FROM paper_selection_ids WHERE short_id=?', (digest,))
+    legacy=client.get(f'/api/paper-selections/{full_hash}')
+    assert legacy.status_code==200 and legacy.json['selection_hash']==digest
     changed=client.post('/api/paper-selections',json=dict(options,question_ids=ids[:1]))
     assert changed.status_code==200 and changed.json['selection_hash']!=digest
     generated=client.post('/api/papers',json=dict(options,question_ids=ids))
@@ -101,7 +108,23 @@ def test_paper_id_restores_exact_selection_and_is_printed_with_topics(tmp_path):
         assert 'A.1 Kinematics' in text
         assert 'Topics: A.1' in text
         assert f'Paper ID: {digest}' in text
-        assert f'ID {digest[:16]}' in pdf.metadata['title']
+        assert f'ID {digest}' in pdf.metadata['title']
+
+
+def test_paper_id_extends_if_short_prefix_is_already_taken(tmp_path):
+    client=create_app(tmp_path).test_client()
+    doc=upload(client)
+    question=save(client,doc)
+    options=dict(level='HL',minutes=45,topics=[])
+    digest=selection_hash(selection_snapshot(options,[question['id']]))
+    with sqlite3.connect(tmp_path/'bank.sqlite3') as conn:
+        conn.execute('INSERT INTO paper_selection_ids (short_id, hash) VALUES (?, ?)',
+                     (digest[:20], 'f'*64 if digest[:20]!='f'*20 else 'e'*64))
+    saved=client.post('/api/paper-selections',json=dict(options,question_ids=[question['id']]))
+    assert saved.status_code==200,saved.json
+    assert saved.json['selection_hash']==digest[:24]
+    restored=client.get(f"/api/paper-selections/{digest[:24]}")
+    assert restored.status_code==200 and restored.json['question_ids']==[question['id']]
 
 
 def test_print_safe_download_flattens_each_page_and_keeps_page_count(tmp_path):
@@ -110,6 +133,7 @@ def test_print_safe_download_flattens_each_page_and_keeps_page_count(tmp_path):
     generated_result=client.post('/api/papers',json=dict(level='HL',minutes=90,topics=[]))
     assert generated_result.status_code==201,generated_result.json
     paper_id=generated_result.json['id']
+    paper_hash=generated_result.json['selection_hash']
     original=client.get(f'/api/papers/{paper_id}/download')
     with fitz.open(stream=original.data,filetype='pdf') as source:
         expected_pages=len(source)
@@ -117,8 +141,10 @@ def test_print_safe_download_flattens_each_page_and_keeps_page_count(tmp_path):
     assert response.status_code==200 and response.mimetype=='application/pdf'
     with fitz.open(stream=response.data,filetype='pdf') as pdf:
         assert len(pdf)==expected_pages
-        for page in pdf:
-            assert page.get_text().strip()==''  # Flattened copy contains image-only pages.
+        assert pdf[0].get_text().strip()==f'Paper ID: {paper_hash}'
+        for index,page in enumerate(pdf):
+            if index:
+                assert page.get_text().strip()==''  # Question pages stay image-only.
             assert len(page.get_images(full=True))==1
             assert page.rect.width==595 and page.rect.height==842
             page.get_pixmap(matrix=fitz.Matrix(.15,.15),alpha=False)

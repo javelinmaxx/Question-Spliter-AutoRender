@@ -78,6 +78,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         CREATE TABLE IF NOT EXISTS questions (id TEXT PRIMARY KEY, document_id TEXT NOT NULL, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS papers (id TEXT PRIMARY KEY, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS paper_selections (hash TEXT PRIMARY KEY, data TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS paper_selection_ids (short_id TEXT PRIMARY KEY, hash TEXT UNIQUE NOT NULL);
         CREATE TABLE IF NOT EXISTS markschemes (id TEXT PRIMARY KEY, filename TEXT NOT NULL, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS source_fingerprints (sha256 TEXT PRIMARY KEY, document_id TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS application_settings (key TEXT PRIMARY KEY, data TEXT NOT NULL);
@@ -300,7 +301,16 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         with db() as conn:
             conn.execute('INSERT OR IGNORE INTO paper_selections (hash, data) VALUES (?, ?)',
                          (digest, json.dumps(snapshot, sort_keys=True)))
-        return digest
+            existing = conn.execute('SELECT short_id FROM paper_selection_ids WHERE hash=?', (digest,)).fetchone()
+            if existing:
+                return existing['short_id']
+            for length in range(20, 65, 4):
+                short_id = digest[:length]
+                occupied = conn.execute('SELECT hash FROM paper_selection_ids WHERE short_id=?', (short_id,)).fetchone()
+                if occupied is None:
+                    conn.execute('INSERT INTO paper_selection_ids (short_id, hash) VALUES (?, ?)', (short_id, digest))
+                    return short_id
+        raise ValueError('Could not allocate a unique paper ID.')
 
     @app.post('/api/paper-selections')
     def store_paper_selection():
@@ -316,16 +326,20 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
 
     @app.get('/api/paper-selections/<digest>')
     def restore_paper_selection(digest):
-        if len(digest) != 64 or any(c not in '0123456789abcdef' for c in digest):
-            raise ValueError('Enter a 64-character paper ID.')
+        if len(digest) not in range(20, 65, 4) or any(c not in '0123456789abcdef' for c in digest):
+            raise ValueError('Enter a paper ID (normally 20 characters; older 64-character IDs also work).')
         with db() as conn:
-            row = conn.execute('SELECT data FROM paper_selections WHERE hash=?', (digest,)).fetchone()
+            full_hash = digest if len(digest) == 64 else None
+            if full_hash is None:
+                alias = conn.execute('SELECT hash FROM paper_selection_ids WHERE short_id=?', (digest,)).fetchone()
+                full_hash = alias['hash'] if alias else None
+            row = conn.execute('SELECT data FROM paper_selections WHERE hash=?', (full_hash,)).fetchone() if full_hash else None
         if row is None:
             return jsonify(error='Paper ID not found in this question bank.'), 404
         snapshot = json.loads(row['data'])
-        if selection_hash(snapshot) != digest:
+        if selection_hash(snapshot) != full_hash:
             raise ValueError('Saved paper ID failed its integrity check.')
-        return jsonify(selection_hash=digest, **snapshot)
+        return jsonify(selection_hash=save_paper_selection(snapshot['options'], snapshot['question_ids']), **snapshot)
 
     @app.get('/api/question-usage')
     def question_usage():
@@ -1364,18 +1378,25 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
     @app.get('/api/papers/<paper_id>/print-safe-download')
     def download_print_safe(paper_id):
         with db() as conn:
-            if not conn.execute('SELECT id FROM papers WHERE id=?', (paper_id,)).fetchone():
-                raise ValueError('Paper not found.')
+            row = conn.execute('SELECT data FROM papers WHERE id=?', (paper_id,)).fetchone()
+        if row is None:
+            raise ValueError('Paper not found.')
+        paper_hash = json.loads(row['data']).get('selection_hash')
         source_path = root / 'papers' / (paper_id + '.pdf')
         output = BytesIO()
         # Flatten each page to a lossless 300-dpi RGB image. This avoids
         # printer-side interpretation of imported vector content, fonts,
         # transparency groups and nested PDF resources.
         with fitz.open(source_path) as source, fitz.open() as flattened:
-            for source_page in source:
+            for index, source_page in enumerate(source):
                 pixmap = source_page.get_pixmap(dpi=300, colorspace=fitz.csRGB, alpha=False)
                 page = flattened.new_page(width=source_page.rect.width, height=source_page.rect.height)
                 page.insert_image(page.rect, stream=pixmap.tobytes('png'))
+                if index == 0 and paper_hash:
+                    # Keep the source content rasterized, but give the cover a
+                    # simple selectable ID for copying back into the bank.
+                    page.insert_text((56, 786), f'Paper ID: {paper_hash}', fontname='helv',
+                                     fontsize=8, color=(.40, .40, .40))
             metadata = dict(source.metadata or {})
             title = metadata.get('title') or 'Physics practice assessment'
             metadata['title'] = title + ' - Flattened print copy'
