@@ -59,6 +59,30 @@ def test_diagram_only_region_is_preserved_and_blank_region_is_skipped():
         assert len(clips)==1 and clips[0][1].y0 < 110 and clips[0][1].y1 > 210
 
 
+def test_source_reference_displays_session_and_timezone_on_each_continuation():
+    with fitz.open() as source, fitz.open() as output:
+        for marker in ('FIRST_BODY', 'SECOND_BODY'):
+            page = source.new_page()
+            page.insert_text((50, 100), marker)
+            page.draw_rect(fitz.Rect(70, 140, 430, 680))
+        q = question([dict(page=i, rect=[30, 75, 565, 700]) for i in range(2)])
+        q.update(session='November', timezone='TZ3', filename='very_long_source_filename_' * 8 + '.pdf')
+        assert add_question_pages(output, source, q, 1) == 2
+        for page in output:
+            reference = next(b for b in page.get_text('blocks') if b[4].startswith('Source:'))
+            assert 'November 2025' in reference[4] and 'TZ3' in reference[4]
+            assert reference[2] <= 545
+
+
+def test_source_reference_labels_unknown_session_and_timezone():
+    with fitz.open() as source, fitz.open() as output:
+        source.new_page().insert_text((50, 100), 'State the velocity.')
+        q = question([dict(page=0, rect=[30, 75, 565, 200])])
+        add_question_pages(output, source, q, 1)
+        text = output[0].get_text()
+        assert 'Session unknown' in text and 'Time zone unknown' in text
+
+
 def test_scanned_continuation_label_is_erased_without_erasing_question_content():
     with fitz.open() as native:
         page=native.new_page()
