@@ -227,6 +227,27 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
         matched, missing, ambiguous = [], [], []
         hashes = {}
         for generated_number, question in enumerate(selected_questions, 1):
+            manual_link = question.get('markscheme_link')
+            if manual_link:
+                markscheme = next((m for m in available if m['id'] == manual_link.get('markscheme_id')), None)
+                entry_key = str(manual_link.get('entry_key', ''))
+                entry = markscheme.get('entries', {}).get(entry_key) if markscheme else None
+                if isinstance(entry, list):
+                    entry = dict(lines=entry, regions=[])
+                if (markscheme and entry and entry.get('lines')
+                        and (root / 'markschemes' / (markscheme['id'] + '.pdf')).is_file()):
+                    matched.append(dict(question_id=question['id'], number=generated_number,
+                                        source_number=entry_key, lines=entry['lines'], regions=entry.get('regions', []),
+                                        source_path=str(root / 'markschemes' / (markscheme['id'] + '.pdf')),
+                                        year=question.get('year'), paper=question.get('paper'), timezone=question.get('timezone'),
+                                        source_filename=markscheme['filename'], markscheme_id=markscheme['id'],
+                                        entry_key=entry_key, match_method='manual'))
+                else:
+                    missing.append(dict(question_id=question['id'], number=question['number'],
+                                        generated_number=generated_number, source_filename=question.get('filename'),
+                                        year=question.get('year'), paper=question.get('paper'), timezone=question.get('timezone'),
+                                        reason='saved_link_unavailable'))
+                continue
             candidates = []
             candidate_hashes = set()
             failures = []
@@ -284,7 +305,8 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                                     regions=entry.get('regions', []),
                                     source_path=str(root / 'markschemes' / (markscheme['id'] + '.pdf')),
                                     year=question['year'], paper=question['paper'], timezone=question.get('timezone'),
-                                    source_filename=markscheme['filename'], markscheme_id=markscheme['id']))
+                                    source_filename=markscheme['filename'], markscheme_id=markscheme['id'],
+                                    entry_key=str(entry_key), match_method='choice' if preferred else 'automatic'))
         return matched, missing, ambiguous
 
     def question_usage_counts():
@@ -536,8 +558,59 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                                year=q.get('year'), paper=q.get('paper'), timezone=q.get('timezone'),
                                status=state, reason=detail.get('reason'), choice=q.get('markscheme_choice'),
                                markscheme_id=detail.get('markscheme_id'), markscheme_filename=detail.get('source_filename'),
+                               match_method=detail.get('match_method'), entry_key=detail.get('entry_key'),
                                candidates=candidates_by_id.get(qid, detail.get('candidates', []))))
         return jsonify(result)
+
+    @app.post('/api/papers/markscheme-status')
+    def selected_markscheme_status():
+        value = request.get_json(silent=True) or {}
+        ids = value.get('question_ids')
+        if (not isinstance(ids, list) or len(ids) > 5000 or any(not isinstance(qid, str) for qid in ids)
+                or len(set(ids)) != len(ids)):
+            raise ValueError('Provide up to 5000 unique selected question IDs.')
+        bank = {q['id']: q for q in questions()}
+        if set(ids) - set(bank):
+            raise ValueError('A selected question is no longer in the bank. Refresh the question list.')
+        selected = [bank[qid] for qid in ids]
+        matched, missing, ambiguous = match_markscheme_entries(selected)
+        matched_by_id = {item['question_id']: item for item in matched}
+        missing_by_id = {item['question_id']: item for item in missing}
+        ambiguous_by_id = {item['question_id']: item for item in ambiguous}
+        return jsonify([dict(question_id=qid,
+                             status='matched' if qid in matched_by_id else 'ambiguous' if qid in ambiguous_by_id else 'missing',
+                             reason=missing_by_id.get(qid, {}).get('reason'),
+                             candidates=ambiguous_by_id.get(qid, {}).get('candidates', []),
+                             markscheme_id=matched_by_id.get(qid, {}).get('markscheme_id'),
+                             markscheme_filename=matched_by_id.get(qid, {}).get('source_filename'),
+                             entry_key=matched_by_id.get(qid, {}).get('entry_key'),
+                             match_method=matched_by_id.get(qid, {}).get('match_method')) for qid in ids])
+
+    @app.post('/api/questions/<qid>/markscheme-link')
+    def set_question_markscheme_link(qid):
+        value = request.get_json(silent=True) or {}
+        marks_id, entry_key = value.get('markscheme_id'), value.get('entry_key')
+        if marks_id is not None and (not isinstance(marks_id, str) or not isinstance(entry_key, str) or not entry_key.strip()):
+            raise ValueError('Choose a markscheme and a question entry.')
+        with db() as conn:
+            conn.execute('BEGIN IMMEDIATE')
+            row = conn.execute('SELECT data FROM questions WHERE id=?', (qid,)).fetchone()
+            if row is None:
+                raise ValueError('Question not found.')
+            data = json.loads(row['data'])
+            if marks_id is None:
+                data.pop('markscheme_link', None)
+            else:
+                marks = next((m for m in saved_markschemes() if m['id'] == marks_id), None)
+                entry = marks.get('entries', {}).get(entry_key) if marks else None
+                if isinstance(entry, list):
+                    entry = dict(lines=entry, regions=[])
+                if not marks or not entry or not entry.get('lines') or not (root / 'markschemes' / (marks_id + '.pdf')).is_file():
+                    raise ValueError('This markscheme entry is unavailable. Choose an indexed question with extracted answer text.')
+                data['markscheme_link'] = dict(markscheme_id=marks_id, entry_key=entry_key)
+                data.pop('markscheme_choice', None)
+            conn.execute('UPDATE questions SET data=? WHERE id=?', (json.dumps(data), qid))
+        return jsonify(question_id=qid, markscheme_link=data.get('markscheme_link'))
 
     @app.post('/api/questions/<qid>/markscheme-choice')
     def set_markscheme_choice(qid):
@@ -556,6 +629,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                 if not marks or not (root / 'markschemes' / (choice + '.pdf')).is_file() or not match_question_to_markscheme(data, marks['identity'], marks.get('question_numbers', []))['matched']:
                     raise ValueError('This markscheme does not match the question identity and number.')
                 data['markscheme_choice'] = choice
+                data.pop('markscheme_link', None)
             else:
                 data.pop('markscheme_choice', None)
             conn.execute('UPDATE questions SET data=? WHERE id=?', (json.dumps(data), qid))
@@ -933,6 +1007,8 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
             existing = next((q for q in questions() if q['document_id'] == doc['id'] and q['number'] == number), None)
             if existing and existing.get('markscheme_choice'):
                 saved['markscheme_choice'] = existing['markscheme_choice']
+            if existing and existing.get('markscheme_link'):
+                saved['markscheme_link'] = existing['markscheme_link']
             prior_map = existing.get('subquestions') if existing else None
             saved['subquestions'] = prior_map if prior_map and prior_map.get('source_hash') == question_hash(saved) else None
             qid = existing['id'] if existing else uuid.uuid4().hex
@@ -1259,7 +1335,7 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                       markscheme=dict(generated=markscheme_generated, matched_questions=len(matched_markscheme_entries),
                                       missing_questions=missing_markscheme_questions,
                                       ambiguous_questions=ambiguous_markscheme_questions, error=markscheme_error),
-                      markscheme_question_sources=[{key: q.get(key) for key in ('id', 'number', 'filename', 'year', 'paper', 'timezone', 'source_level', 'level', 'session', 'source_label', 'exam_identifier', 'markscheme_choice')} for q in chosen],
+                      markscheme_question_sources=[{key: q.get(key) for key in ('id', 'number', 'filename', 'year', 'paper', 'timezone', 'source_level', 'level', 'session', 'source_label', 'exam_identifier', 'markscheme_choice', 'markscheme_link')} for q in chosen],
                       selection_strategy='usage-balanced selection' if requested_ids is None or fill else 'teacher-selected',
                       selection_mode='manual' if requested_ids is not None else 'automatic',
                       requested_question_ids=requested_ids or [], filled_question_ids=filled_ids,
@@ -1349,6 +1425,27 @@ def create_app(data_dir=None, *, subject_id=ACTIVE_SUBJECT_ID):
                                     ambiguous_questions=remaining, error=None, choices=all_choices, manual_choices=all_manual,
                                     manual_eligible_question_ids=sorted(missing_ids))
         with db() as conn:
+            conn.execute('BEGIN IMMEDIATE')
+            for qid in set(choices) | set(manual_choices):
+                selected_entry = next((item for item in matched if item['question_id'] == qid), None)
+                if selected_entry is None:
+                    continue
+                bank_row = conn.execute('SELECT data FROM questions WHERE id=?', (qid,)).fetchone()
+                if bank_row is None:
+                    continue  # The generated paper can still be repaired from its saved question snapshot.
+                question_data = json.loads(bank_row['data'])
+                if qid in manual_choices:
+                    question_data['markscheme_link'] = dict(manual_choices[qid])
+                    question_data.pop('markscheme_choice', None)
+                else:
+                    marks = schemes[choices[qid]]
+                    if match_question_to_markscheme(question_data, marks['identity'], marks.get('question_numbers', []))['matched']:
+                        question_data['markscheme_choice'] = choices[qid]
+                        question_data.pop('markscheme_link', None)
+                    else:
+                        question_data['markscheme_link'] = dict(markscheme_id=choices[qid], entry_key=selected_entry['entry_key'])
+                        question_data.pop('markscheme_choice', None)
+                conn.execute('UPDATE questions SET data=? WHERE id=?', (json.dumps(question_data), qid))
             conn.execute('UPDATE papers SET data=? WHERE id=?', (json.dumps(result), paper_id))
         return jsonify(result['markscheme'])
 

@@ -123,9 +123,13 @@ def test_ambiguous_markschemes_can_be_reviewed_and_resolved_without_new_paper(tm
     assert result.status_code == 200, result.json
     assert result.json['matched_questions'] == 1 and not result.json['ambiguous_questions']
     assert result.json['choices'] == {question['id']: second['id']}
-    assert client.get(f'/api/papers/{paper_id}/markscheme').status_code == 200
+    saved_question = next(q for q in client.get('/api/questions').json if q['id'] == question['id'])
+    assert saved_question['markscheme_link'] == {'markscheme_id': second['id'], 'entry_key': '3'}
     with sqlite3.connect(tmp_path / 'bank.sqlite3') as conn:
         assert conn.execute('SELECT count(*) FROM papers').fetchone()[0] == 1
+    future = client.post('/api/papers', json=dict(level='HL', syllabus='Legacy', minutes=45, topics=[], question_ids=[question['id']]))
+    assert future.status_code == 201 and future.json['markscheme']['matched_questions'] == 1
+    assert client.get(f'/api/papers/{paper_id}/markscheme').status_code == 200
 
 
 def test_missing_matches_can_be_manually_selected_per_paper(tmp_path):
@@ -153,7 +157,11 @@ def test_missing_matches_can_be_manually_selected_per_paper(tmp_path):
     assert client.get(f'/api/papers/{paper_id}/markscheme').status_code == 200
     with sqlite3.connect(tmp_path/'bank.sqlite3') as conn:
         assert conn.execute('SELECT count(*) FROM papers').fetchone()[0] == 1
-    assert all(not q.get('markscheme_choice') for q in client.get('/api/questions').json)
+    bank = {q['id']: q for q in client.get('/api/questions').json}
+    assert bank[first['id']]['markscheme_link'] == {'markscheme_id': marks['id'], 'entry_key':'3'}
+    assert bank[second['id']]['markscheme_link'] == {'markscheme_id': marks['id'], 'entry_key':'4'}
+    future = client.post('/api/papers', json=dict(level='HL', minutes=20, topics=[], question_ids=[first['id'], second['id']]))
+    assert future.status_code == 201 and future.json['markscheme']['matched_questions'] == 2
 
 
 def test_manual_choice_after_importing_an_exact_match(tmp_path):
@@ -186,6 +194,9 @@ def test_markscheme_workspace_saves_valid_choice_for_future_generation(tmp_path)
     assert overview.status_code == 200, overview.json
     row = next(q for q in overview.json if q['id'] == question['id'])
     assert row['status'] == 'ambiguous' and {c['id'] for c in row['candidates']} == {first['id'], second['id']}
+    picker = client.post('/api/papers/markscheme-status', json={'question_ids':[question['id']]})
+    assert picker.status_code == 200 and picker.json[0]['status'] == 'ambiguous'
+    assert {c['id'] for c in picker.json[0]['candidates']} == {first['id'], second['id']}
     endpoint = f"/api/questions/{question['id']}/markscheme-choice"
     assert client.post(endpoint, json={'markscheme_id':'invalid'}).status_code == 400
     assert client.post(endpoint, json={'markscheme_id':second['id']}).status_code == 200
@@ -198,8 +209,37 @@ def test_markscheme_workspace_saves_valid_choice_for_future_generation(tmp_path)
     result = reopened.post('/api/papers', json=dict(level='HL', syllabus='Legacy', minutes=45, topics=[], question_ids=[question['id']]))
     assert result.status_code == 201 and result.json['markscheme']['matched_questions'] == 1
     assert not result.json['markscheme']['ambiguous_questions']
+    assert reopened.post('/api/papers/markscheme-status', json={'question_ids':[question['id']]}).json[0]['status'] == 'matched'
     assert reopened.post(endpoint, json={'markscheme_id':None}).status_code == 200
     assert next(q for q in reopened.get('/api/markscheme-matches').json if q['id'] == question['id'])['status'] == 'ambiguous'
+
+
+def test_picker_manual_markscheme_link_is_saved_before_generation(tmp_path):
+    from test_workflow import upload, save
+    client = create_app(tmp_path).test_client()
+    doc = upload(client)
+    question = save(client, doc)
+    marks = post_pdf(client, '/api/markschemes', ROOT / 'Physics_paper_1__TZ1_HL_markscheme.pdf').json
+    status = client.post('/api/papers/markscheme-status', json={'question_ids':[question['id']]}).json[0]
+    assert status['status'] == 'missing'
+    endpoint = f"/api/questions/{question['id']}/markscheme-link"
+    assert client.post(endpoint, json={'markscheme_id': marks['id'], 'entry_key':'999'}).status_code == 400
+    linked = client.post(endpoint, json={'markscheme_id': marks['id'], 'entry_key':'3'})
+    assert linked.status_code == 200, linked.json
+    reopened = create_app(tmp_path).test_client()
+    status = reopened.post('/api/papers/markscheme-status', json={'question_ids':[question['id']]}).json[0]
+    assert status['status'] == 'matched' and status['match_method'] == 'manual'
+    assert status['markscheme_id'] == marks['id'] and status['entry_key'] == '3'
+    edited = dict(next(q for q in reopened.get('/api/questions').json if q['id'] == question['id']), topics=['A.1'])
+    saved = reopened.post('/api/questions', json=edited)
+    assert saved.status_code == 201 and saved.json['markscheme_link'] == {'markscheme_id': marks['id'], 'entry_key':'3'}
+    generated = reopened.post('/api/papers', json=dict(level='HL',minutes=45,topics=[],question_ids=[question['id']]))
+    assert generated.status_code == 201, generated.json
+    assert generated.json['markscheme']['matched_questions'] == 1
+    assert generated.json['markscheme']['generated'] is True
+    assert reopened.get(f"/api/papers/{generated.json['id']}/markscheme").status_code == 200
+    assert reopened.post(endpoint, json={'markscheme_id':None}).status_code == 200
+    assert reopened.post('/api/papers/markscheme-status', json={'question_ids':[question['id']]}).json[0]['status'] == 'missing'
 
 
 def test_imported_markscheme_is_stored_without_language_model_review(tmp_path, monkeypatch):
