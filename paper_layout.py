@@ -82,7 +82,8 @@ class PaperLayout:
         session = question.get('session') or 'Session unknown'
         zone = question.get('timezone') or 'Time zone unknown'
         year = question.get('year') or 'Year unknown'
-        suffix = f" | {session} {year} | {zone} | {question['paper']} | {origin_label(question)}"
+        source_number = question.get('source_label') or question.get('number', '?')
+        suffix = f" | Q{source_number} | {session} {year} | {zone} | {question['paper']} | {origin_label(question)}"
         while filename and fitz.get_text_length('Source: ' + filename + suffix, fontsize=8) > 495:
             filename = filename[:-1]
         text = 'Source: ' + filename + suffix
